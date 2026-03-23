@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Planilha de Gastos Pessoais{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    {% block extra_head %}{% endblock %}
+
+    <style>
+        :root {
+            /* Cores Figma Clone (Light Mode) */
+            --bg-body: #F9FAFB;
+            --bg-card: #FFFFFF;
+            --border-light: #E5E7EB;
+            --text-dark: #111827;
+            --text-muted: #6B7280;
+            --primary: #6366F1; /* Roxo principal */
+            --primary-hover: #4F46E5;
+            --success: #10B981; /* Verde entradas */
+            --danger: #EF4444;  /* Vermelho gastos */
+            --warning: #F59E0B;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            -webkit-font-smoothing: antialiased;
+            padding: 30px 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* HEADER */
+        header {
+            text-align: left;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+        
+        header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-top: 4px;
+        }
+
+        /* ROW DE KPIS */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .kpi-card .title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .kpi-card .value {
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+        
+        .val-success { color: var(--success); }
+        .val-danger { color: var(--danger); }
+        .val-balance { color: var(--primary); }
+
+        /* ABAS (TABS NAVIGATION) */
+        .tabs-container {
+            display: flex;
+            gap: 4px;
+            background: #F3F4F6;
+            padding: 6px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            overflow-x: auto;
+            border: 1px solid var(--border-light);
+        }
+
+        .tab-link {
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 6px;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+
+        .tab-link:hover {
+            color: var(--text-dark);
+        }
+
+        .tab-link.active {
+            background: var(--bg-card);
+            color: var(--text-dark);
+            font-weight: 600;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        /* COMPONENTES GERAIS DAS VIEWS */
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin-bottom: 24px;
+        }
+
+        .panel-header {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-dark);
+        }
+
+        /* FORMS */
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            background: #FFFFFF;
+            transition: all 0.2s;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        .form-check-input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
+        
+        /* BOTÕES */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            border: 1px solid transparent;
+            transition: 0.2s;
+        }
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+        .btn-danger:hover { background-color: #DC2626; }
+        .btn-outline {
+            background-color: transparent;
+            border-color: var(--border-light);
+            color: var(--text-dark);
+        }
+        .btn-outline:hover { background-color: #F3F4F6; }
+
+        /* TABLES */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            text-align: left;
+            padding: 12px 16px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-light);
+            font-weight: 600;
+        }
+        td {
+            padding: 14px 16px;
+            font-size: 0.95rem;
+            border-bottom: 1px solid var(--border-light);
+            color: var(--text-dark);
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background-color: #F9FAFB; }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .badge-success { background: #D1FAE5; color: #065F46; }
+        .badge-danger { background: #FEE2E2; color: #991B1B; }
+
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Planilha de Gastos Pessoais</h1>
+        <p>Gerencie suas finanças de forma simples e eficiente</p>
+    </header>
+
+    <!-- 4 KPIs Sempre Visíveis -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="title">🟩 Entradas Recebidas</div>
+            <div class="value val-success">R$ {{ kpi_receitas|floatformat:2 }}</div>
+        </div>
+        <div class="kpi-card">
+            <div class="title">🟥 Gastos Pagos</div>
+            <div class="value val-danger">R$ {{ kpi_despesas|floatformat:2 }}</div>
+        </div>
+        <div class="kpi-card">
+            <div class="title">💼 Saldo Atual</div>
+            <div class="value val-balance">R$ {{ kpi_saldo|floatformat:2 }}</div>
+        </div>
+        <div class="kpi-card">
+            <div class="title">🔮 Saldo Projetado</div>
+            <div class="value">R$ {{ kpi_previsto|floatformat:2 }}</div>
+        </div>
+    </div>
+
+    <!-- Navegação em Abas "SPA Fake" -->
+    <div class="tabs-container">
+        <a href="{% url 'receita_create' %}" class="tab-link {% if active_tab == 'receita_create' %}active{% endif %}">Entradas</a>
+        <a href="{% url 'despesa_create' %}" class="tab-link {% if active_tab == 'despesa_create' %}active{% endif %}">Gastos</a>
+        <a href="{% url 'receita_list' %}" class="tab-link {% if active_tab == 'receita_list' %}active{% endif %}">Lista Entradas</a>
+        <a href="{% url 'despesa_list' %}" class="tab-link {% if active_tab == 'despesa_list' %}active{% endif %}">Lista Gastos</a>
+        <a href="{% url 'dashboard' %}" class="tab-link {% if active_tab == 'dashboard' %}active{% endif %}">Gráficos & Previsão</a>
+        <!-- Aba de configurações/exportação poderia vir depois -->
+    </div>
+
+    <!-- Conteúdo Específico que troca ao clicar na Aba -->
+    {% block content %}
+    {% endblock %}
+</div>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

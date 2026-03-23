@@ -1,0 +1,21 @@
+{% extends 'financeiro_app/base.html' %}
+{% block title %}Excluir Registro{% endblock %}
+
+{% block content %}
+<div class="panel" style="max-width: 600px; margin: 0 auto; text-align: center;">
+    <h2 class="panel-header">Tem certeza que deseja apagar?</h2>
+    
+    <p style="margin: 20px 0; font-size: 1.1rem; color: var(--text-dark);">
+        Você está prestes a excluir este documento irreversivelmente:<br><br>
+        <strong style="color: var(--danger); font-size: 1.2rem;">{{ object }}</strong>
+    </p>
+
+    <form method="post">
+        {% csrf_token %}
+        <div style="margin-top: 30px; display: flex; gap: 10px; justify-content: center;">
+            <button type="button" class="btn btn-outline" onclick="window.history.back()">Deixar como está</button>
+            <button type="submit" class="btn btn-danger">Sim, Excluir Documento</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+# Python
+venv/
+backend/venv/
+backend/.venv/
+
+__pycache__/
+*.pyc
+
+# Banco
+db.sqlite3
+
+# Node
+node_modules/
+dist/
+
+# Ambiente
+.env
+.env.local

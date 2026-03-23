@@ -1,0 +1,56 @@
+{% extends 'financeiro_app/base.html' %}
+
+{% block title %}Despesas{% endblock %}
+
+{% block content %}
+<div class="panel">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 class="panel-header" style="margin-bottom: 0;">Registro de Gastos</h2>
+        <a href="{% url 'despesa_create' %}" class="btn btn-primary">+ Adicionar Gasto</a>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Vencimento</th>
+                    <th>Categoria</th>
+                    <th>Descrição</th>
+                    <th>Valor</th>
+                    <th>Situação</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in despesas %}
+                <tr>
+                    <td>{{ item.data|date:"d/m/Y" }}</td>
+                    <td>{{ item.vencimento|date:"d/m/Y" }}</td>
+                    <td>{{ item.categoria }}</td>
+                    <td>{{ item.descricao }}</td>
+                    <td style="color: var(--danger); font-weight: 600;">R$ {{ item.valor|floatformat:2 }}</td>
+                    <td>
+                        {% if item.paga %}
+                            <span class="badge badge-success">Paga</span>
+                        {% else %}
+                            <span class="badge badge-danger">Pendente</span>
+                        {% endif %}
+                    </td>
+                    <td style="display: flex; gap: 8px;">
+                        <a href="{% url 'despesa_update' item.pk %}" class="btn btn-outline" style="padding: 4px 10px; font-size: 0.8rem;">Editar</a>
+                        <a href="{% url 'despesa_delete' item.pk %}" class="btn btn-danger" style="padding: 4px 10px; font-size: 0.8rem;">Excluir</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 40px; font-style: italic;">
+                        Nenhuma despesa cadastrada nos seus registros ainda.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,1129 @@
+{
+  "expenses": [
+    {
+      "id": "1772326239474",
+      "date": "2026-03-01",
+      "dueDate": "2026-03-01",
+      "category": "Transporte",
+      "description": "99",
+      "amount": 25,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1772321611842",
+      "date": "2026-03-01",
+      "dueDate": "2026-03-01",
+      "category": "Residência",
+      "description": "Chaveiro",
+      "amount": 15,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1772321389445",
+      "date": "2026-03-01",
+      "dueDate": "2026-03-01",
+      "category": "Armarinhos",
+      "description": "Fercovel",
+      "amount": 48,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1772321325846",
+      "date": "2026-03-01",
+      "dueDate": "2026-03-01",
+      "category": "Alimentação",
+      "description": "Mercado Festval",
+      "amount": 17.9,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1772301599032",
+      "date": "2026-03-01",
+      "dueDate": "2026-03-01",
+      "category": "Veiculo",
+      "description": "Shell",
+      "amount": 150,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1772222195249",
+      "date": "2026-03-01",
+      "dueDate": "2026-03-01",
+      "category": "Lazer",
+      "description": "Loterias",
+      "amount": 3.5,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1772222063156",
+      "date": "2026-03-01",
+      "dueDate": "2026-03-01",
+      "category": "Alimentação",
+      "description": "Mercado Muffato",
+      "amount": 56.14,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1772222012253",
+      "date": "2026-03-01",
+      "dueDate": "2026-03-01",
+      "category": "Alimentação",
+      "description": "Mercado Superpuppo",
+      "amount": 313.54,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1772216130119",
+      "date": "2026-03-01",
+      "dueDate": "2026-03-01",
+      "category": "Vestuário",
+      "description": "Outlet Sports",
+      "amount": 119.8,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1772206051464",
+      "date": "2026-03-01",
+      "dueDate": "2026-03-01",
+      "category": "Vestuário",
+      "description": "Loja Meinersz",
+      "amount": 384.93,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1772188322076",
+      "date": "2026-02-27",
+      "dueDate": "2026-02-27",
+      "category": "Quitação de Dividas",
+      "description": "Banco do Brasil",
+      "amount": 144.88,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1772153211380",
+      "date": "2026-02-26",
+      "dueDate": "2026-02-26",
+      "category": "Armarinhos",
+      "description": "Kirey",
+      "amount": 14,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1772151040148",
+      "date": "2026-02-26",
+      "dueDate": "2026-02-26",
+      "category": "Alimentação",
+      "description": "Mercado Festval",
+      "amount": 88.51,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1772131314340",
+      "date": "2026-02-26",
+      "dueDate": "2026-02-26",
+      "category": "Veiculo",
+      "description": "Posto Estrada",
+      "amount": 50,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1772062291002",
+      "date": "2026-02-25",
+      "dueDate": "2026-02-25",
+      "category": "Alannis",
+      "description": "Mini Preço",
+      "amount": 15,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1772062173132",
+      "date": "2026-02-25",
+      "dueDate": "2026-02-25",
+      "category": "Vestuário",
+      "description": "Lojas Renner",
+      "amount": 89.8,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1772062143899",
+      "date": "2026-02-25",
+      "dueDate": "2026-02-25",
+      "category": "Saúde",
+      "description": "Farmácia Estrela",
+      "amount": 23.94,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1772052260477",
+      "date": "2026-02-25",
+      "dueDate": "2026-02-25",
+      "category": "Vestuário",
+      "description": "Bom Sucesso",
+      "amount": 29.99,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1772051660139",
+      "date": "2026-02-25",
+      "dueDate": "2026-02-25",
+      "category": "Lanches",
+      "description": "Lojas Americanas",
+      "amount": 12.29,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1772044902655",
+      "date": "2026-03-01",
+      "dueDate": "2026-03-01",
+      "category": "Cuidados Pessoais",
+      "description": "Deby",
+      "amount": 660,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1772015355061",
+      "date": "2026-02-25",
+      "dueDate": "2026-02-25",
+      "category": "Quitação de Dividas",
+      "description": "Banco do Brasil",
+      "amount": 544.59,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1772003243124",
+      "date": "2026-03-01",
+      "dueDate": "2026-03-01",
+      "category": "Educação",
+      "description": "Escola de Música",
+      "amount": 150,
+      "isPaid": true,
+      "isRecurring": true,
+      "recurringMonths": 0
+    },
+    {
+      "id": "1772003168925",
+      "date": "2026-03-01",
+      "dueDate": "2026-03-01",
+      "category": "Armarinhos",
+      "description": "Shopee",
+      "amount": 165.46,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771999868264",
+      "date": "2026-03-01",
+      "dueDate": "2026-03-01",
+      "category": "Veiculo",
+      "description": "Shell",
+      "amount": 150,
+      "isPaid": true,
+      "isRecurring": false,
+      "recurringMonths": 0
+    },
+    {
+      "id": "1771998661986",
+      "date": "2026-03-10",
+      "dueDate": "2026-03-10",
+      "category": "Aplicativos",
+      "description": "ChatGpt",
+      "amount": 39.99,
+      "isPaid": false,
+      "isRecurring": true,
+      "recurringMonths": 0
+    },
+    {
+      "id": "1771997877975",
+      "date": "2026-04-01",
+      "dueDate": "2026-04-01",
+      "category": "Quitação de Dividas",
+      "description": "Nubank - Deby",
+      "amount": 99.07,
+      "isPaid": false,
+      "isRecurring": true,
+      "recurringMonths": 6
+    },
+    {
+      "id": "1771997839439",
+      "date": "2026-03-01",
+      "dueDate": "2026-03-01",
+      "category": "Quitação de Dividas",
+      "description": "Nubank - Deby",
+      "amount": 98.72,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771997720344",
+      "date": "2026-03-01",
+      "dueDate": "2026-03-01",
+      "category": "Empréstimos",
+      "description": "Shopee",
+      "amount": 620.22,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771997674656",
+      "date": "2026-03-01",
+      "dueDate": "2026-03-20",
+      "category": "Quitação de Dividas",
+      "description": "Banco do Brasil",
+      "amount": 656.19,
+      "isPaid": false,
+      "isRecurring": true,
+      "recurringMonths": 0
+    },
+    {
+      "id": "1771997520302",
+      "date": "2026-03-01",
+      "dueDate": "2026-03-01",
+      "category": "Educação",
+      "description": "UniCv",
+      "amount": 109,
+      "isPaid": true,
+      "isRecurring": true,
+      "recurringMonths": 24
+    },
+    {
+      "id": "1771980189279",
+      "date": "2026-02-01",
+      "dueDate": "2026-02-01",
+      "category": "Associação",
+      "description": "Afpol",
+      "amount": 80,
+      "isPaid": true,
+      "isRecurring": true,
+      "recurringMonths": 0
+    },
+    {
+      "id": "1771979987300",
+      "date": "2026-02-01",
+      "dueDate": "2026-02-01",
+      "category": "Empréstimos",
+      "description": "Shopee",
+      "amount": 1053.01,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771979825397",
+      "date": "2026-02-01",
+      "dueDate": "2026-02-01",
+      "category": "Quitação de Dividas",
+      "description": "Nubank - Deby",
+      "amount": 98.72,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771979792429",
+      "date": "2026-02-01",
+      "dueDate": "2026-02-01",
+      "category": "Quitação de Dividas",
+      "description": "Nubank - Deby",
+      "amount": 40.45,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771979771765",
+      "date": "2026-02-01",
+      "dueDate": "2026-02-01",
+      "category": "Quitação de Dividas",
+      "description": "Banco do Brasil",
+      "amount": 145.9,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771979730436",
+      "date": "2026-02-11",
+      "dueDate": "2026-02-11",
+      "category": "Aplicativos",
+      "description": "Planilha",
+      "amount": 3.9,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771979703468",
+      "date": "2026-02-10",
+      "dueDate": "2026-02-10",
+      "category": "Aplicativos",
+      "description": "Chat Gpt",
+      "amount": 22.02,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771979656843",
+      "date": "2026-02-07",
+      "dueDate": "2026-02-07",
+      "category": "Aplicativos",
+      "description": "Figma",
+      "amount": 27.09,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771979626988",
+      "date": "2026-02-05",
+      "dueDate": "2026-02-05",
+      "category": "Aplicativos",
+      "description": "Google One",
+      "amount": 49.99,
+      "isPaid": true,
+      "isRecurring": true,
+      "recurringMonths": 0
+    },
+    {
+      "id": "1771979572620",
+      "date": "2026-02-01",
+      "dueDate": "2026-02-01",
+      "category": "Residência",
+      "description": "RepNet",
+      "amount": 109.9,
+      "isPaid": true,
+      "isRecurring": true,
+      "recurringMonths": 0
+    },
+    {
+      "id": "1771979519668",
+      "date": "2026-02-01",
+      "dueDate": "2026-02-01",
+      "category": "Celular",
+      "description": "Claro - Deby",
+      "amount": 44.99,
+      "isPaid": true,
+      "isRecurring": true,
+      "recurringMonths": 0
+    },
+    {
+      "id": "1771979498844",
+      "date": "2026-02-01",
+      "dueDate": "2026-02-01",
+      "category": "Celular",
+      "description": "Claro - ERS",
+      "amount": 44.99,
+      "isPaid": true,
+      "isRecurring": true,
+      "recurringMonths": 0
+    },
+    {
+      "id": "1771979457283",
+      "date": "2026-02-01",
+      "dueDate": "2026-02-01",
+      "category": "Celular",
+      "description": "Claro - Alannis",
+      "amount": 25,
+      "isPaid": true,
+      "isRecurring": true,
+      "recurringMonths": 0
+    },
+    {
+      "id": "1771979385619",
+      "date": "2026-02-01",
+      "dueDate": "2026-02-01",
+      "category": "Aplicativos",
+      "description": "Youtube Premium",
+      "amount": 53.9,
+      "isPaid": true,
+      "isRecurring": true,
+      "recurringMonths": 0
+    },
+    {
+      "id": "1771979338531",
+      "date": "2026-02-01",
+      "dueDate": "2026-02-01",
+      "category": "Mesada",
+      "description": "Alannis",
+      "amount": 50,
+      "isPaid": true,
+      "isRecurring": true,
+      "recurringMonths": 0
+    },
+    {
+      "id": "1771979315764",
+      "date": "2026-02-01",
+      "dueDate": "2026-02-01",
+      "category": "Educação",
+      "description": "Anhanguera",
+      "amount": 828.17,
+      "isPaid": true,
+      "isRecurring": true,
+      "recurringMonths": 0
+    },
+    {
+      "id": "1771979274692",
+      "date": "2026-02-01",
+      "dueDate": "2026-02-01",
+      "category": "Doação",
+      "description": "AD Missão",
+      "amount": 50,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771979248242",
+      "date": "2026-02-03",
+      "dueDate": "2026-02-03",
+      "category": "Doação",
+      "description": "Gulak",
+      "amount": 40,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771979228082",
+      "date": "2026-02-04",
+      "dueDate": "2026-02-04",
+      "category": "Cuidados Pessoais",
+      "description": "Leandro Cabelereiro",
+      "amount": 35,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771979046658",
+      "date": "2026-02-20",
+      "dueDate": "2026-02-20",
+      "category": "Veiculo",
+      "description": "Shell",
+      "amount": 80,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771978823792",
+      "date": "2026-02-01",
+      "dueDate": "2026-02-01",
+      "category": "Imposto Gov/Pr.",
+      "description": "Ipva - 2025",
+      "amount": 176.52,
+      "isPaid": true,
+      "isRecurring": true,
+      "recurringMonths": 5
+    },
+    {
+      "id": "1771978786808",
+      "date": "2026-02-02",
+      "dueDate": "2026-02-02",
+      "category": "Veiculo",
+      "description": "Shell",
+      "amount": 300,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771978697230",
+      "date": "2026-02-05",
+      "dueDate": "2026-02-05",
+      "category": "Transporte",
+      "description": "99",
+      "amount": 15,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771978681286",
+      "date": "2026-02-19",
+      "dueDate": "2026-02-19",
+      "category": "Transporte",
+      "description": "99",
+      "amount": 21.05,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771978609375",
+      "date": "2026-02-11",
+      "dueDate": "2026-02-11",
+      "category": "Alannis",
+      "description": "Sorveteria",
+      "amount": 5,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771978587733",
+      "date": "2026-02-11",
+      "dueDate": "2026-02-11",
+      "category": "Alannis",
+      "description": "Acampamento Forteens",
+      "amount": 50,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771978501350",
+      "date": "2026-02-11",
+      "dueDate": "2026-02-11",
+      "category": "Educação",
+      "description": "Escola de Música",
+      "amount": 112.5,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771978417204",
+      "date": "2026-02-10",
+      "dueDate": "2026-02-10",
+      "category": "Alannis",
+      "description": "Lojas",
+      "amount": 25,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771978384469",
+      "date": "2026-02-06",
+      "dueDate": "2026-02-06",
+      "category": "Alannis",
+      "description": "Aplicativo",
+      "amount": 10,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771978331605",
+      "date": "2026-02-02",
+      "dueDate": "2026-02-02",
+      "category": "Alannis",
+      "description": "Sorveteria",
+      "amount": 3,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771978273148",
+      "date": "2026-02-02",
+      "dueDate": "2026-02-02",
+      "category": "Educação",
+      "description": "Big 1,99",
+      "amount": 169.81,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771978205270",
+      "date": "2026-02-01",
+      "dueDate": "2026-02-01",
+      "category": "Armarinhos",
+      "description": "Shopee",
+      "amount": 187.65,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771978134692",
+      "date": "2026-02-01",
+      "dueDate": "2026-02-01",
+      "category": "Vestuário",
+      "description": "Deby",
+      "amount": 600,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771978111380",
+      "date": "2026-02-01",
+      "dueDate": "2026-02-01",
+      "category": "Vestuário",
+      "description": "Costureira Cirene",
+      "amount": 15,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771978006668",
+      "date": "2026-02-01",
+      "dueDate": "2026-02-01",
+      "category": "Vestuário",
+      "description": "Shopee",
+      "amount": 50.12,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771977897506",
+      "date": "2026-02-13",
+      "dueDate": "2026-02-13",
+      "category": "Armarinhos",
+      "description": "Fercovel",
+      "amount": 43,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771977820996",
+      "date": "2026-02-12",
+      "dueDate": "2026-02-12",
+      "category": "Saúde",
+      "description": "Farmácia Estrela",
+      "amount": 50.92,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771977788146",
+      "date": "2026-02-06",
+      "dueDate": "2026-02-06",
+      "category": "Alimentação",
+      "description": "Gás Bilibio",
+      "amount": 120,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771977738371",
+      "date": "2026-02-05",
+      "dueDate": "2026-02-05",
+      "category": "Lazer",
+      "description": "Loterias Cef",
+      "amount": 6,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771977685282",
+      "date": "2026-02-05",
+      "dueDate": "2026-02-05",
+      "category": "Armarinhos",
+      "description": "Fercovel",
+      "amount": 3,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771977647730",
+      "date": "2026-02-02",
+      "dueDate": "2026-02-02",
+      "category": "Saúde",
+      "description": "Farmácia Nissei",
+      "amount": 21.54,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771977621562",
+      "date": "2026-02-02",
+      "dueDate": "2026-02-02",
+      "category": "Armarinhos",
+      "description": "Havan",
+      "amount": 19.99,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771977571083",
+      "date": "2026-02-01",
+      "dueDate": "2026-02-01",
+      "category": "Saúde",
+      "description": "Farmácia Estrela",
+      "amount": 30.53,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771977512419",
+      "date": "2026-02-24",
+      "dueDate": "2026-02-24",
+      "category": "Alimentação",
+      "description": "Mercado Gatti",
+      "amount": 51.09,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771977489033",
+      "date": "2026-02-24",
+      "dueDate": "2026-02-24",
+      "category": "Alimentação",
+      "description": "Mercado Festval",
+      "amount": 52.86,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771977474298",
+      "date": "2026-02-24",
+      "dueDate": "2026-02-24",
+      "category": "Alimentação",
+      "description": "Agrorincão",
+      "amount": 24.5,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771977364353",
+      "date": "2026-02-22",
+      "dueDate": "2026-02-22",
+      "category": "Lanches",
+      "description": "Corujão",
+      "amount": 20.77,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771977334554",
+      "date": "2026-02-22",
+      "dueDate": "2026-02-22",
+      "category": "Lanches",
+      "description": "Kyukei",
+      "amount": 51,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771977281418",
+      "date": "2026-02-21",
+      "dueDate": "2026-02-21",
+      "category": "Lazer",
+      "description": "Sorveteria",
+      "amount": 18,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771977246096",
+      "date": "2026-02-21",
+      "dueDate": "2026-02-21",
+      "category": "Alimentação",
+      "description": "Gás Hércules",
+      "amount": 16,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771977217633",
+      "date": "2026-02-21",
+      "dueDate": "2026-02-21",
+      "category": "Alimentação",
+      "description": "Taborda Ração",
+      "amount": 40.46,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771977179961",
+      "date": "2026-02-18",
+      "dueDate": "2026-02-18",
+      "category": "Armarinhos",
+      "description": "Casa dos Doces",
+      "amount": 1.4,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771977029072",
+      "date": "2026-02-18",
+      "dueDate": "2026-02-18",
+      "category": "Alimentação",
+      "description": "Mercado Superpuppo",
+      "amount": 220.63,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771976987785",
+      "date": "2026-02-14",
+      "dueDate": "2026-02-14",
+      "category": "Lanches",
+      "description": "Corujão",
+      "amount": 13,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771976964177",
+      "date": "2026-02-14",
+      "dueDate": "2026-02-14",
+      "category": "Lanches",
+      "description": "Meu Lanche",
+      "amount": 60,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771976897583",
+      "date": "2026-02-13",
+      "dueDate": "2026-02-13",
+      "category": "Alimentação",
+      "description": "Mercado Gatti",
+      "amount": 52.69,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771976865816",
+      "date": "2026-02-10",
+      "dueDate": "2026-02-10",
+      "category": "Lazer",
+      "description": "Shopping Catuai",
+      "amount": 135.6,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771976831760",
+      "date": "2026-02-10",
+      "dueDate": "2026-02-10",
+      "category": "Alimentação",
+      "description": "Pastelaria Melos",
+      "amount": 5.69,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771976761143",
+      "date": "2026-02-10",
+      "dueDate": "2026-02-10",
+      "category": "Alimentação",
+      "description": "Mercado Superpuppo",
+      "amount": 81.63,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771976718326",
+      "date": "2026-02-04",
+      "dueDate": "2026-02-04",
+      "category": "Alimentação",
+      "description": "Mercado Festval",
+      "amount": 45.39,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771976628951",
+      "date": "2026-02-01",
+      "dueDate": "2026-02-01",
+      "category": "Alimentação",
+      "description": "Gás Hércules",
+      "amount": 51,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771976591591",
+      "date": "2026-02-01",
+      "dueDate": "2026-02-01",
+      "category": "Alimentação",
+      "description": "Mercado Muffato",
+      "amount": 182.03,
+      "isPaid": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771976560558",
+      "date": "2026-02-01",
+      "dueDate": "2026-02-01",
+      "category": "Alimentação",
+      "description": "Mercado Festval",
+      "amount": 106.45,
+      "isPaid": true,
+      "isRecurring": false
+    }
+  ],
+  "incomes": [
+    {
+      "id": "1772062789628",
+      "date": "2026-02-25",
+      "dueDate": "2026-02-25",
+      "type": "Ajuste de Caixa",
+      "description": "Ajuste de Caixa",
+      "amount": 13.87,
+      "isReceived": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1772041923964",
+      "date": "2026-03-10",
+      "dueDate": "2026-03-10",
+      "type": "Outros",
+      "description": "Rad",
+      "amount": 600,
+      "isReceived": false,
+      "isRecurring": true,
+      "recurringMonths": 0
+    },
+    {
+      "id": "1772041791139",
+      "date": "2026-11-01",
+      "dueDate": "2026-11-01",
+      "type": "Salário",
+      "description": "Subsidio",
+      "amount": 5014.19,
+      "isReceived": false,
+      "isRecurring": true,
+      "recurringMonths": 0
+    },
+    {
+      "id": "1772041742337",
+      "date": "2026-02-01",
+      "dueDate": "2026-02-01",
+      "type": "Salário",
+      "description": "Subsidio",
+      "amount": 4739.36,
+      "isReceived": true,
+      "isRecurring": true,
+      "recurringMonths": 9
+    },
+    {
+      "id": "1772041483034",
+      "date": "2026-12-10",
+      "dueDate": "2026-12-10",
+      "type": "Outros",
+      "description": "13º Salário",
+      "amount": 6200,
+      "isReceived": false,
+      "isRecurring": false
+    },
+    {
+      "id": "1772040818088",
+      "date": "2026-06-30",
+      "dueDate": "2026-06-30",
+      "type": "Outros",
+      "description": "Restituição - IR 2026",
+      "amount": 3100,
+      "isReceived": false,
+      "isRecurring": false
+    },
+    {
+      "id": "1772039815009",
+      "date": "2026-04-01",
+      "dueDate": "2026-04-01",
+      "type": "Extras",
+      "description": "Extrajornada",
+      "amount": 720,
+      "isReceived": false,
+      "isRecurring": true,
+      "recurringMonths": 8
+    },
+    {
+      "id": "1772039568057",
+      "date": "2026-06-01",
+      "dueDate": "2026-06-01",
+      "type": "Bônus",
+      "description": "Férias",
+      "amount": 2605.32,
+      "isReceived": false,
+      "isRecurring": false
+    },
+    {
+      "id": "1772038603018",
+      "date": "2026-03-20",
+      "dueDate": "2026-03-20",
+      "type": "Extras",
+      "description": "Extrajornada",
+      "amount": 540,
+      "isReceived": false,
+      "isRecurring": false
+    },
+    {
+      "id": "1772013865336",
+      "date": "2026-02-25",
+      "dueDate": "2026-02-25",
+      "type": "Extras",
+      "description": "Extrajornada",
+      "amount": 900,
+      "isReceived": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771980636312",
+      "date": "2026-02-24",
+      "dueDate": "2026-02-24",
+      "type": "Empréstimo",
+      "description": "Shopee",
+      "amount": 100,
+      "isReceived": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771980090238",
+      "date": "2026-02-10",
+      "dueDate": "2026-02-10",
+      "type": "Outros",
+      "description": "Rad",
+      "amount": 510,
+      "isReceived": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771979950382",
+      "date": "2026-02-18",
+      "dueDate": "2026-02-18",
+      "type": "Empréstimo",
+      "description": "Shopee",
+      "amount": 300,
+      "isReceived": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771979919718",
+      "date": "2026-02-20",
+      "dueDate": "2026-02-20",
+      "type": "Empréstimo",
+      "description": "Shopee",
+      "amount": 200,
+      "isReceived": true,
+      "isRecurring": false
+    },
+    {
+      "id": "1771978167046",
+      "date": "2026-02-01",
+      "dueDate": "2026-02-01",
+      "type": "Outros",
+      "description": "Venda de Celular",
+      "amount": 300,
+      "isReceived": true,
+      "isRecurring": false
+    }
+  ],
+  "customCategories": [
+    "Quitação de Dividas",
+    "Imposto Gov/Pr.",
+    "Celular",
+    "Mesada",
+    "Residência",
+    "Empréstimos",
+    "Armarinhos",
+    "Aplicativos",
+    "Doação",
+    "Veiculo",
+    "Lanches",
+    "Alannis",
+    "Cuidados Pessoais",
+    "Associação"
+  ],
+  "customIncomeTypes": [
+    "Extras",
+    "Empréstimo",
+    "Ajuste de Caixa"
+  ],
+  "exportDate": "2026-03-01T04:56:47.945Z",
+  "version": "1.0"
+}
