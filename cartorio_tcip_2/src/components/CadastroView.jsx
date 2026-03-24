@@ -64,9 +64,9 @@ export default function CadastroView() {
   const formatarRG = (v) => {
     const d = v.replace(/\D/g, "").slice(0, 9);
     if (d.length <= 2) return d;
-    if (d.length <= 5) return `${d.slice(0,2)}.${d.slice(2)}`;
-    if (d.length <= 8) return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5)}`;
-    return `${d.slice(0,2)}.${d.slice(2,5)}.${d.slice(5,8)}-${d.slice(8)}`;
+    if (d.length <= 5) return `${d.slice(0, 2)}.${d.slice(2)}`;
+    if (d.length <= 8) return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5)}`;
+    return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}-${d.slice(8)}`;
   };
 
   // Mascara BOU: AAAA/NNNNNNN - protege o ano
@@ -85,9 +85,9 @@ export default function CadastroView() {
   const formatarProcesso = (v) => {
     const d = v.replace(/\D/g, "").slice(0, 13);
     if (d.length <= 7) return d;
-    if (d.length <= 9) return `${d.slice(0,7)}-${d.slice(7)}`;
-    if (d.length <= 13) return `${d.slice(0,7)}-${d.slice(7,9)}.${d.slice(9)}`;
-    return `${d.slice(0,7)}-${d.slice(7,9)}.${d.slice(9,13)}`;
+    if (d.length <= 9) return `${d.slice(0, 7)}-${d.slice(7)}`;
+    if (d.length <= 13) return `${d.slice(0, 7)}-${d.slice(7, 9)}.${d.slice(9)}`;
+    return `${d.slice(0, 7)}-${d.slice(7, 9)}.${d.slice(9, 13)}`;
   };
 
   const formatarPesoDisplay = (valor, unidade) => {
@@ -113,7 +113,7 @@ export default function CadastroView() {
     img.src = logoBpm;
     await new Promise((resolve) => { img.onload = resolve; img.onerror = resolve; });
 
-    try { doc.addImage(img, "PNG", centerX - 12, currY, 24, 28); } catch (e) {}
+    try { doc.addImage(img, "PNG", centerX - 12, currY, 24, 28); } catch (e) { }
     currY += 35;
 
     doc.setFont("helvetica", "bold"); doc.setFontSize(11);
@@ -222,7 +222,7 @@ export default function CadastroView() {
           vara: vara || "",
           policial: `${patente} ${policial}`
         };
-        
+
         console.log("Enviando payload:", payload);
         return addApreensao(payload);
       });
@@ -241,12 +241,12 @@ export default function CadastroView() {
       }
 
       alert("Registros inseridos com sucesso e Recibo Gerado!");
-      
+
       // Limpa formulário
       setProcesso("");
       setRg("");
       setMateriais([{ id: Date.now(), reu: "", substancia: "Maconha", peso: "", unidadePeso: "g", lacre: "" }]);
-      
+
     } catch (err) {
       console.error("Erro Geral Salvar:", err);
       alert("Não foi possível finalizar o registro: " + (err.message || "Erro desconhecido"));
@@ -276,12 +276,12 @@ export default function CadastroView() {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr 1fr", gap: "20px" }}>
           <FormGroup label="Unidade">
             <select style={inputStyle} value={unidadeOrigem} onChange={e => setUnidadeOrigem(e.target.value)}>
-              <option>RPA</option><option>ROCAM</option><option>ROTAM</option><option>CHOQUE</option><option>BOPE</option>
+              <option>RPA</option><option>ROCAM</option><option>ROTAM</option><option>CHOQUE</option><option>BOPE</option><option>CAVALARIA</option><option>BPRV</option><option>BPMOA</option><option>GOTRAN</option><option>BPEC</option><option>TRANSITO</option>
             </select>
           </FormGroup>
           <FormGroup label="Graduação">
             <select style={inputStyle} value={patente} onChange={e => setPatente(e.target.value)}>
-              <option>CEL</option><option>MAJ</option><option>CAP</option><option>SGT</option><option>CB</option><option>SD</option>
+              <option>CEL</option><option>MAJ</option><option>CAP</option><option>SGT</option><option>CB</option><option>SD</option><option>TEN</option><option>ASP</option><option>AL</option>
             </select>
           </FormGroup>
           <FormGroup label="Policial Entregador *"><input type="text" style={inputStyle} value={policial} onChange={e => setPolicial(upper(e.target.value))} /></FormGroup>
@@ -307,7 +307,7 @@ export default function CadastroView() {
               <div style={{ display: "flex", gap: "4px" }}>
                 <input type="text" style={{ ...inputStyle, flex: 2 }} value={m.peso} onChange={e => updateMaterial(m.id, "peso", formatarPeso(e.target.value))} />
                 <select style={{ ...inputStyle, flex: 1, padding: "10px 4px" }} value={m.unidadePeso} onChange={e => updateMaterial(m.id, "unidadePeso", e.target.value)}>
-                   <option value="g">g</option><option value="Kg">Kg</option><option value="Unid">Unid</option>
+                  <option value="g">g</option><option value="Kg">Kg</option><option value="Unid">Unid</option>
                 </select>
               </div>
             </FormGroup>
