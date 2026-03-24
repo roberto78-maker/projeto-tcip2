@@ -63,9 +63,12 @@ export default function CofreView() {
 
   return (
     <div className="card">
-      <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
-        <span style={{ fontSize: "24px", marginRight: "10px", color: "#10b981" }}>🗄️</span>
-        <h2 className="card-title" style={{ margin: 0 }}>Itens em Custódia (Cofre)</h2>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <span style={{ fontSize: "24px", marginRight: "10px", color: "#10b981" }}>🗄️</span>
+          <h2 className="card-title" style={{ margin: 0 }}>Itens em Custódia (Cofre)</h2>
+        </div>
+        <span className="badge" style={{ background: "#ef4444", color: "white" }}>{itens.length} ITENS NO COFRE</span>
       </div>
       <p className="card-subtitle">Materiais aguardando autorização judicial para incineração.</p>
 
