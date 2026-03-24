@@ -76,7 +76,7 @@ export default function ProntoQueimaView() {
     // Corpo do Texto
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    const textoPrincipal = `Certifico que, em conformidade com as autorizações judiciais, procedeu-se a incineração dos materiais abaixo:`;
+    const textoPrincipal = "Certifico que, em conformidade com as autorizações judiciais, procedeu-se a incineração dos materiais abaixo:";
     doc.text(textoPrincipal, margin, 45);
 
     doc.setFont("helvetica", "bold");
