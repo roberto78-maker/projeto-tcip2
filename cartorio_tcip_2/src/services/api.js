@@ -4,9 +4,20 @@ const BASE_URL = import.meta.env.VITE_API_URL || "";
 // 🔗 ENDPOINT
 const API_URL = `${BASE_URL}/api/apreensoes/`;
 
+// 🛡️ Helper para Headers com Token
+function getHeaders(isFormData = false) {
+  const user = JSON.parse(localStorage.getItem("usuario_logado") || "{}");
+  const headers = {};
+  if (!isFormData) headers["Content-Type"] = "application/json";
+  if (user.access) headers["Authorization"] = `Bearer ${user.access}`;
+  return headers;
+}
+
 // 🔍 LISTAR
 export async function getApreensoes() {
-  const res = await fetch(API_URL);
+  const res = await fetch(API_URL, {
+    headers: getHeaders()
+  });
 
   if (!res.ok) {
     const erro = await res.text();
@@ -29,6 +40,7 @@ export async function addApreensao(data) {
 
   const res = await fetch(API_URL, {
     method: "POST",
+    headers: getHeaders(true),
     body: formData
   });
 
@@ -53,6 +65,7 @@ export async function updateApreensao(id, data) {
 
   const res = await fetch(`${API_URL}${id}/`, {
     method: "PATCH",
+    headers: getHeaders(true),
     body: formData
   });
 
@@ -67,7 +80,9 @@ export async function updateApreensao(id, data) {
 
 // 📦 LOTES
 export async function getLotes() {
-  const res = await fetch(`${BASE_URL}/api/lotes/`);
+  const res = await fetch(`${BASE_URL}/api/lotes/`, {
+    headers: getHeaders()
+  });
   if (!res.ok) throw new Error("Erro ao buscar lotes");
   return await res.json();
 }
@@ -75,7 +90,8 @@ export async function getLotes() {
 // 🚀 DESTINAR INCINERAÇÃO (Action específica)
 export async function destinarIncineracao(id) {
   const res = await fetch(`${API_URL}${id}/destinar_incineracao/`, {
-    method: "POST"
+    method: "POST",
+    headers: getHeaders()
   });
 
   if (!res.ok) {

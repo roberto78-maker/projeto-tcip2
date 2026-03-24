@@ -6,11 +6,15 @@ export default function LoginView({ onLogin }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  function handleLogin() {
-    const ok = login(username, password);
+  const [loading, setLoading] = useState(false);
+
+  async function handleLogin() {
+    setLoading(true);
+    const ok = await login(username, password);
+    setLoading(false);
 
     if (!ok) {
-      alert("Usuário ou senha inválidos");
+      alert("Usuário ou senha inválidos ou erro de conexão");
       return;
     }
 
@@ -52,17 +56,19 @@ export default function LoginView({ onLogin }) {
 
         <button
           onClick={handleLogin}
+          disabled={loading}
           style={{
             marginTop: "15px",
             width: "100%",
             padding: "10px",
-            background: "#1d4ed8",
+            background: loading ? "#94a3b8" : "#1d4ed8",
             color: "white",
             border: "none",
-            borderRadius: "6px"
+            borderRadius: "6px",
+            cursor: loading ? "not-allowed" : "pointer"
           }}
         >
-          Entrar
+          {loading ? "Entrando..." : "Entrar"}
         </button>
 
       </div>

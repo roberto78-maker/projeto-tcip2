@@ -1,22 +1,28 @@
-const USER_KEY = "usuario_logado";
+const BASE_URL = import.meta.env.VITE_API_URL || "";
 
-// 🔐 base de usuários
-const usuarios = [
-  { username: "admin", password: "1234", role: "admin" },
-  { username: "operador", password: "1234", role: "operador" }
-];
+export async function login(username, password) {
+  try {
+    const res = await fetch(`${BASE_URL}/api/token/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
 
-export function login(username, password) {
-  const user = usuarios.find(
-    u => u.username === username && u.password === password
-  );
+    if (!res.ok) return false;
 
-  if (user) {
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    const data = await res.json();
+    // Armazena tokens e infos (role pode vir do token or outro endpoint se necessário)
+    localStorage.setItem(USER_KEY, JSON.stringify({
+      username,
+      access: data.access,
+      refresh: data.refresh,
+      role: username === "admin" ? "admin" : "operador" // temporário até vir do backend
+    }));
     return true;
+  } catch (err) {
+    console.error("Erro Login:", err);
+    return false;
   }
-
-  return false;
 }
 
 export function logout() {
