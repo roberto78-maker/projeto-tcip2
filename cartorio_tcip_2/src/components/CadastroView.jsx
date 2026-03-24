@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { addApreensao } from "../services/api.js";
+import { addApreensao, getApreensoes } from "../services/api.js";
 import { getUsuario } from "../services/auth.js";
 import logoBpm from "../assets/brasao.png";
 
@@ -33,10 +33,25 @@ export default function CadastroView() {
   const [policial, setPolicial] = useState("");
   const [rg, setRg] = useState("");
 
+  const [totalProcessos, setTotalProcessos] = useState(0);
+
   // Estado para Múltiplas Substâncias / Noticiados
   const [materiais, setMateriais] = useState([
     { id: Date.now(), reu: "", substancia: "Maconha", peso: "", unidadePeso: "g", lacre: "" }
   ]);
+
+  useEffect(() => {
+    carregarContador();
+  }, []);
+
+  async function carregarContador() {
+    try {
+      const data = await getApreensoes();
+      setTotalProcessos(data.length);
+    } catch (e) {
+      console.error("Erro ao carregar contador:", e);
+    }
+  }
 
   const upper = (t) => t.toUpperCase();
 
@@ -230,6 +245,9 @@ export default function CadastroView() {
       await Promise.all(promises);
       console.log("Todos os itens foram salvos no banco de dados.");
 
+      // Atualiza contador local
+      setTotalProcessos(prev => prev + materiais.length);
+
       // 3. Geração do PDF
       try {
         console.log("Iniciando geração do PDF...");
@@ -258,7 +276,10 @@ export default function CadastroView() {
       <div className="card" style={{ padding: "25px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px", borderBottom: "1px solid #e2e8f0", paddingBottom: "15px" }}>
           <h2 style={{ fontSize: "16px", color: "#1e3a8a", margin: 0 }}>🛡️ 1. DADOS DA OCORRÊNCIA</h2>
-          <span className="badge" style={{ background: "#1e293b", color: "white" }}>OPERADOR: {getUsuario()?.username?.toUpperCase()}</span>
+          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+            <span className="badge" style={{ background: "#ef4444", color: "white" }}>{totalProcessos} ITENS REGISTRADOS</span>
+            <span className="badge" style={{ background: "#1e293b", color: "white" }}>OPERADOR: {getUsuario()?.username?.toUpperCase()}</span>
+          </div>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "20px", marginBottom: "20px" }}>
