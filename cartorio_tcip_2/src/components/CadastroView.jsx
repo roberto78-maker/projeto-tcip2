@@ -295,10 +295,3 @@ export default function CadastroView() {
     </div>
   );
 }
-}}>
-        FINALIZAR REGISTRO E GERAR RECIBO
-      </button>
-
-    </div>
-  );
-}
