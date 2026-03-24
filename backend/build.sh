@@ -7,6 +7,7 @@ pip install -r requirements.txt
 
 # Run migrations
 python manage.py migrate
+python manage.py fix_protocols
 
 # Criar superusuário se as variáveis estiverem presentes (Render) - COMENTADO PARA EVITAR TRAVAMENTOS
 # if [[ -n "$DJANGO_SUPERUSER_USERNAME" ]]; then
