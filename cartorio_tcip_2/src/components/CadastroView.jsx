@@ -28,8 +28,8 @@ export default function CadastroView() {
   const [processo, setProcesso] = useState("");
   const [vara, setVara] = useState("");
 
-  const [unidadeOrigem, setUnidadeOrigem] = useState("1ª CIA");
-  const [patente, setPatente] = useState("Soldado");
+  const [unidadeOrigem, setUnidadeOrigem] = useState("RPA");
+  const [patente, setPatente] = useState("SD");
   const [policial, setPolicial] = useState("");
   const [rg, setRg] = useState("");
 
