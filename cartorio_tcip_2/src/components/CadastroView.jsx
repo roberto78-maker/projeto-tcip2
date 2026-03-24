@@ -300,7 +300,7 @@ export default function CadastroView() {
             <FormGroup label="Noticiado"><input type="text" style={inputStyle} value={m.reu} onChange={e => updateMaterial(m.id, "reu", upper(e.target.value))} /></FormGroup>
             <FormGroup label="Substância *">
               <select style={inputStyle} value={m.substancia} onChange={e => updateMaterial(m.id, "substancia", e.target.value)}>
-                <option>Maconha</option><option>Crack</option><option>Cocaína</option><option>Ecstasy</option><option>Haxixe</option><option>Outro</option>
+                <option>Maconha</option><option>Crack</option><option>Cocaína</option><option>Ecstasy</option><option>Haxixe</option><option>LSD</option><option>Pé de Maconha</option>
               </select>
             </FormGroup>
             <FormGroup label="Peso Est. *">
