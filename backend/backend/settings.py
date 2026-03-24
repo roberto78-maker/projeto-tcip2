@@ -109,26 +109,20 @@ STORAGES = {
 }
 
 # 🌐 CORS & CSRF
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "http://127.0.0.1:8000",
-    "http://localhost:8000",
-    "http://127.0.0.1:5173",
-]
+# 🌐 CORS & CSRF
+CORS_ALLOW_ALL_ORIGINS = True  # ✅ Liberado para evitar erros com URLs do Vercel
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:5173",
     "http://127.0.0.1:8000",
     "http://localhost:8000",
-    "http://127.0.0.1:5173",
+    "https://*.vercel.app",  # ✅ Confia em todos os subdomínios do Vercel
 ]
 
-# Adicionar URLs dinâmicas do Vercel/Render do ambiente
+# Adicionar URLs dinâmicas do Render se existir
 FRONTEND_URL = os.environ.get('FRONTEND_URL')
 if FRONTEND_URL:
-    CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
     CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
 
 # 🔌 REST FRAMEWORK
