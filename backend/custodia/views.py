@@ -28,8 +28,8 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
 
         if not ultimo_lote or ultimo_lote.apreensoes.count() >= 20:
             novo_numero = (ultimo_lote.numero + 1) if ultimo_lote else 1
-            # Protocolo: 1*CART6BPM-000001.2026 (numero global continuo, ano do momento)
-            protocolo = f"1*CART6BPM-{str(novo_numero).zfill(6)}.{agora.year}"
+            # Protocolo: 1CART6BPM-000001.2026 (numero global continuo, ano do momento)
+            protocolo = f"1CART6BPM-{str(novo_numero).zfill(6)}.{agora.year}"
             ultimo_lote = LoteIncineracao.objects.create(
                 numero=novo_numero,
                 ano=agora.year,
