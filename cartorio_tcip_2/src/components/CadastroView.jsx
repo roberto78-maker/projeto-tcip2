@@ -189,39 +189,67 @@ export default function CadastroView() {
   };
 
   const salvar = async () => {
-    if (!processo || !bou || !policial || materiais.some(m => !m.peso)) {
-      alert("Preencha todos os campos obrigatórios.");
+    // 1. Validação
+    if (!processo || !bou || !policial) {
+      alert("Preencha todos os campos da ocorrência (BOU, PROJUDI, Policial).");
+      return;
+    }
+
+    // Verifica se todos os materiais têm peso
+    const materialIncompleto = materiais.find(m => !m.peso || m.peso === "0,00");
+    if (materialIncompleto) {
+      alert("Todos os materiais/noticiados devem ter um peso preenchido.");
       return;
     }
 
     try {
-      // Salva cada material como um registro individual no backend
-      const promises = materiais.map(m => {
+      console.log("Iniciando salvamento de", materiais.length, "itens...");
+
+      // 2. Salva cada material como um registro individual no backend
+      const promises = materiais.map(async (m) => {
+        const p = parseFloat(String(m.peso).replace(",", "."));
+        if (isNaN(p)) throw new Error(`Peso inválido para o item ${m.reu}`);
+
         const payload = {
           processo,
           bou,
-          reu: m.reu,
+          reu: m.reu || "NÃO IDENTIFICADO",
           substancia: m.substancia,
-          peso: parseFloat(String(m.peso).replace(",", ".")),
+          peso: p,
           unidade: m.unidadePeso,
           status: "conferencia",
           lacre: m.lacre || "",
           vara: vara || "",
           policial: `${patente} ${policial}`
         };
+        
+        console.log("Enviando payload:", payload);
         return addApreensao(payload);
       });
 
       await Promise.all(promises);
+      console.log("Todos os itens foram salvos no banco de dados.");
 
-      await gerarPDF({ processo, bou, materiais, vara, patente, policial, rg, unidadeOrigem });
+      // 3. Geração do PDF
+      try {
+        console.log("Iniciando geração do PDF...");
+        await gerarPDF({ processo, bou, materiais, vara, patente, policial, rg, unidadeOrigem });
+        console.log("PDF gerado com sucesso.");
+      } catch (pdfErr) {
+        console.error("Erro PDF:", pdfErr);
+        alert("Os dados foram salvos, mas houve um erro ao gerar o PDF: " + pdfErr.message);
+      }
 
       alert("Registros inseridos com sucesso e Recibo Gerado!");
-      setBou(`${new Date().getFullYear()}/`); setProcesso(""); setPolicial(""); setRg("");
+      
+      // Limpa formulário
+      setProcesso("");
+      setRg("");
       setMateriais([{ id: Date.now(), reu: "", substancia: "Maconha", peso: "", unidadePeso: "g", lacre: "" }]);
+      
     } catch (err) {
-      console.error(err);
-      alert("Erro ao salvar ou gerar PDF.");
+      console.error("Erro Geral Salvar:", err);
+      alert("Não foi possível finalizar o registro: " + (err.message || "Erro desconhecido"));
     }
   };
 
