@@ -103,7 +103,7 @@ export default function CofreView() {
             )}
             {itens.map((item) => {
               const hasPDF = !!item.arquivo_pdf;
-              const pdfUrl = item.arquivo_pdf ? (item.arquivo_pdf.startsWith('http') ? item.arquivo_pdf : `${MEDIA_URL}${item.arquivo_pdf}`) : null;
+              const pdfUrl = item.arquivo_pdf ? (item.arquivo_pdf.startsWith('http') ? item.arquivo_pdf : `${MEDIA_URL.endsWith('/') ? MEDIA_URL.slice(0, -1) : MEDIA_URL}${item.arquivo_pdf.startsWith('/') ? '' : '/'}${item.arquivo_pdf}`) : null;
 
               return (
                 <tr key={item.id}>
