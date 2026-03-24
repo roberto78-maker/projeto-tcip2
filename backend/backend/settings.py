@@ -1,5 +1,7 @@
 from pathlib import Path
 import os
+from datetime import timedelta
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -14,7 +16,6 @@ ALLOWED_HOSTS = [
     '.onrender.com',
 ]
 
-# Adiciona host dinâmico do Render se existir
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
@@ -38,12 +39,11 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
 
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # 🔥 STATIC FILES
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
 
-    # ✅ REATIVADO (IMPORTANTE)
     'django.middleware.csrf.CsrfViewMiddleware',
 
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -71,8 +71,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-# 🗄️ BANCO (PRONTO PRA MIGRAR PARA POSTGRES NO RENDER)
-import dj_database_url
+# 🗄️ BANCO
 DATABASES = {
     'default': dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
@@ -94,11 +93,17 @@ TIME_ZONE = 'America/Sao_Paulo'
 USE_I18N = True
 USE_TZ = True
 
-# 📁 STATIC FILES (OBRIGATÓRIO PARA PRODUÇÃO)
+# 📁 STATIC FILES (CORRIGIDO)
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# 🛠️ WHITENOISE STORAGE
+# ⚠️ IMPORTANTE: só usar em desenvolvimento
+if DEBUG:
+    STATICFILES_DIRS = [
+        BASE_DIR.parent / 'cartorio_tcip_2' / 'dist',
+    ]
+
+# 🛠️ WHITENOISE
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
@@ -108,19 +113,14 @@ STORAGES = {
     },
 }
 
-# 🌐 CORS & CSRF
-# 🌐 CORS & CSRF
-CORS_ALLOW_ALL_ORIGINS = True  # ✅ Liberado para evitar erros com URLs do Vercel
+# 🌐 CORS
+CORS_ALLOW_ALL_ORIGINS = True
 
+# 🔐 CSRF (CORRIGIDO)
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "http://127.0.0.1:8000",
-    "http://localhost:8000",
-    "https://*.vercel.app",  # ✅ Confia em todos os subdomínios do Vercel
+    "https://backend-tcip.onrender.com",
 ]
 
-# Adicionar URLs dinâmicas do Render se existir
 FRONTEND_URL = os.environ.get('FRONTEND_URL')
 if FRONTEND_URL:
     CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
@@ -136,8 +136,7 @@ REST_FRAMEWORK = {
     ),
 }
 
-# 🔐 SIMPLE JWT
-from datetime import timedelta
+# 🔐 JWT
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
@@ -151,10 +150,6 @@ SIMPLE_JWT = {
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-STATICFILES_DIRS = [
-    BASE_DIR.parent / 'cartorio_tcip_2' / 'dist',
-]
-
-# 📁 MEDIA FILES (PARA UPLOADS DE PDF)
+# 📁 MEDIA FILES
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
