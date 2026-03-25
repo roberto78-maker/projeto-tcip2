@@ -18,7 +18,10 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     ".onrender.com",
+    "backend-tcip.onrender.com",
 ]
+if DEBUG:
+    ALLOWED_HOSTS.append("*")
 
 RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
 if RENDER_EXTERNAL_HOSTNAME:
@@ -111,6 +114,7 @@ USE_TZ = True
 # 📁 STATIC FILES
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATICFILES_DIRS = []
 
 if DEBUG:
     STATICFILES_DIRS = [
