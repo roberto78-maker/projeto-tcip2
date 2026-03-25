@@ -168,77 +168,77 @@ class RelatorioIncineracaoView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        qs = Apreensao.objects.filter(status="queima_pronta")
+        qs = Apreensao.objects.all()
 
         data_inicio = request.GET.get("data_inicio")
         data_fim = request.GET.get("data_fim")
         vara = request.GET.get("vara")
         substancia = request.GET.get("substancia")
-
-        if data_inicio:
-            qs = qs.filter(data_criacao__gte=data_inicio)
-        if data_fim:
-            qs = qs.filter(data_criacao__lte=data_fim)
-        if vara:
-            qs = qs.filter(vara__icontains=vara)
-        if substancia:
-            qs = qs.filter(substancia__icontains=substancia)
-
-        total_processos = qs.count()
-        peso_total = qs.aggregate(Sum('peso'))['peso__sum'] or 0.0
-
-        por_substancia = list(
-            qs.values("substancia").annotate(peso=Sum("peso"), quantidade=Count("id")).order_by("-peso")
-        )
-        por_substancia_formatado = [
-            {"nome": item["substancia"] or "Não Informado", "peso": item["peso"], "quantidade": item["quantidade"]}
-            for item in por_substancia
-        ]
-
-        por_vara = list(
-            qs.values("vara").annotate(quantidade=Count("id")).order_by("-quantidade")
-        )
-
-        detalhado = list(
-            qs.values("bou", "substancia", "peso", "vara", "data_criacao").order_by("-data_criacao")
-        )
-        detalhado_formatado = [
-            {
-                "bou": item["bou"],
-                "substancia": item["substancia"],
-                "peso": item["peso"],
-                "vara": item["vara"],
-                "data": item["data_criacao"].strftime("%Y-%m-%d") if item["data_criacao"] else None
-            }
-            for item in detalhado
-        ]
-
-        return Response({
-            "total_processos": total_processos,
-            "peso_total": peso_total,
-            "por_substancia": por_substancia_formatado,
-            "por_vara": por_vara,
-            "detalhado": detalhado_formatado
-        })
-
-class RelatorioIncineracaoPDFView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get(self, request):
-        qs = Apreensao.objects.filter(status="queima_pronta")
-
-        data_inicio = request.GET.get("data_inicio")
-        data_fim = request.GET.get("data_fim")
-        vara = request.GET.get("vara")
-        substancia = request.GET.get("substancia")
+        status_filter = request.GET.get("status")
+        bou = request.GET.get("bou")
+        processo = request.GET.get("processo")
+        reu = request.GET.get("reu")
 
         if data_inicio: qs = qs.filter(data_criacao__gte=data_inicio)
         if data_fim: qs = qs.filter(data_criacao__lte=data_fim)
         if vara: qs = qs.filter(vara__icontains=vara)
         if substancia: qs = qs.filter(substancia__icontains=substancia)
+        if status_filter: qs = qs.filter(status=status_filter)
+        if bou: qs = qs.filter(bou__icontains=bou)
+        if processo: qs = qs.filter(processo__icontains=processo)
+        if reu: qs = qs.filter(reu__icontains=reu)
 
-        total_processos = qs.count()
-        peso_total = qs.aggregate(Sum('peso'))['peso__sum'] or 0.0
+        detalhado = qs.values("id", "bou", "substancia", "peso", "vara", "data_criacao", "status", "processo", "reu").order_by("-data_criacao")[:500] # Limite para não explodir
+        
+        status_labels = {
+            "conferencia": "Aguardando Balança",
+            "cofre": "No Cofre",
+            "incineracao": "Lotes (P. Queima)",
+            "queima_pronta": "Incinerado"
+        }
+
+        detalhado_formatado = [
+            {
+                "id": item["id"],
+                "bou": item["bou"],
+                "processo": item["processo"],
+                "reu": item["reu"],
+                "substancia": item["substancia"],
+                "peso": item["peso"],
+                "vara": item["vara"],
+                "status_label": status_labels.get(item["status"], item["status"]),
+                "data": item["data_criacao"].strftime("%Y-%m-%d") if item["data_criacao"] else None
+            }
+            for item in detalhado
+        ]
+
+        return Response({"detalhado": detalhado_formatado})
+
+class RelatorioIncineracaoPDFView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        qs = Apreensao.objects.all()
+
+        data_inicio = request.GET.get("data_inicio")
+        data_fim = request.GET.get("data_fim")
+        vara = request.GET.get("vara")
+        substancia = request.GET.get("substancia")
+        status_filter = request.GET.get("status")
+        bou = request.GET.get("bou")
+        processo = request.GET.get("processo")
+        reu = request.GET.get("reu")
+
+        if data_inicio: qs = qs.filter(data_criacao__gte=data_inicio)
+        if data_fim: qs = qs.filter(data_criacao__lte=data_fim)
+        if vara: qs = qs.filter(vara__icontains=vara)
+        if substancia: qs = qs.filter(substancia__icontains=substancia)
+        if status_filter: qs = qs.filter(status=status_filter)
+        if bou: qs = qs.filter(bou__icontains=bou)
+        if processo: qs = qs.filter(processo__icontains=processo)
+        if reu: qs = qs.filter(reu__icontains=reu)
+
+        qs = qs.order_by('data_criacao')[:1000] # Evitar travamentos
 
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=18)
@@ -247,41 +247,88 @@ class RelatorioIncineracaoPDFView(APIView):
         
         title_style = ParagraphStyle('TitleCenter', parent=styles['Heading1'], alignment=1, spaceAfter=20)
         normal_style = styles['Normal']
+        subtitle_style = ParagraphStyle('SubTitle', parent=styles['Heading2'], spaceAfter=10, spaceBefore=20, textColor=colors.HexColor("#1e3a8a"))
 
         elements.append(Paragraph("POLÍCIA MILITAR DO PARANÁ - 6º BPM", title_style))
-        elements.append(Paragraph("RELATÓRIO DE AUDITORIA DE INCINERAÇÃO", title_style))
+        elements.append(Paragraph("RELATÓRIO DE RADAR E AUDITORIA", title_style))
         
         periodo_texto = f"Período: {data_inicio or 'Início'} a {data_fim or 'Hoje'}"
-        info = f"<b>{periodo_texto}</b><br/><b>Total de Processos:</b> {total_processos} <br/><b>Peso Total:</b> {peso_total:.2f}g"
+        filtros_usados = []
+        if vara: filtros_usados.append(f"Vara: {vara}")
+        if substancia: filtros_usados.append(f"Substância: {substancia}")
+        if status_filter: filtros_usados.append(f"Status: {status_filter}")
+        if bou: filtros_usados.append(f"BOU: {bou}")
+        if processo: filtros_usados.append(f"Processo: {processo}")
+        if reu: filtros_usados.append(f"Réu/Autor: {reu}")
+        
+        filtros_str = " | ".join(filtros_usados) if filtros_usados else "Nenhum"
+
+        info = f"<b>{periodo_texto}</b><br/><b>Filtros Aplicados:</b> {filtros_str}"
         elements.append(Paragraph(info, normal_style))
         elements.append(Spacer(1, 20))
 
-        data = [["BOU", "Substância", "Peso", "Vara", "Data"]]
-        for item in qs.order_by('-data_criacao'):
-            data.append([
-                item.bou or "-", 
-                item.substancia or "-", 
-                f"{item.peso} {item.unidade}", 
-                item.vara or "-", 
-                item.data_criacao.strftime("%d/%m/%Y") if item.data_criacao else "-"
-            ])
+        # Agrupar por mes/ano
+        from collections import defaultdict
+        import locale
+        
+        meses = {
+            1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril", 5: "Maio", 6: "Junho",
+            7: "Julho", 8: "Agosto", 9: "Setembro", 10: "Outubro", 11: "Novembro", 12: "Dezembro"
+        }
 
-        t = Table(data, colWidths=[1.5*inch, 1.5*inch, 1*inch, 1.5*inch, 1.5*inch])
-        t.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#1e3a8a")),
-            ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
-            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0,0), (-1,0), 10),
-            ('BOTTOMPADDING', (0,0), (-1,0), 12),
-            ('BACKGROUND', (0,1), (-1,-1), colors.whitesmoke),
-            ('GRID', (0,0), (-1,-1), 1, colors.black),
-        ]))
-        elements.append(t)
+        agrupado = defaultdict(list)
+        for item in qs:
+            if item.data_criacao:
+                mes_ano = f"{meses[item.data_criacao.month]} de {item.data_criacao.year}"
+            else:
+                mes_ano = "Data Desconhecida"
+            agrupado[mes_ano].append(item)
+
+        status_labels = {
+            "conferencia": "Aguardando Balança",
+            "cofre": "No Cofre",
+            "incineracao": "Lotes",
+            "queima_pronta": "Incinerado"
+        }
+
+        if not agrupado:
+            elements.append(Paragraph("Nenhum registro encontrado para os filtros selecionados.", normal_style))
+        else:
+            for mes_ano, itens in agrupado.items():
+                elements.append(Paragraph(mes_ano, subtitle_style))
+                
+                data = [["BOU/Processo", "Substância", "Volume/Peso", "Local (Status)", "Data"]]
+                for item in itens:
+                    linha1 = item.bou or "-"
+                    if item.processo: linha1 += f"\nProc: {item.processo}"
+                    
+                    data.append([
+                        linha1, 
+                        item.substancia or "-", 
+                        f"{item.peso} {item.unidade}", 
+                        status_labels.get(item.status, item.status), 
+                        item.data_criacao.strftime("%d/%m/%Y") if item.data_criacao else "-"
+                    ])
+
+                t = Table(data, colWidths=[1.8*inch, 1.2*inch, 1.1*inch, 1.5*inch, 1.0*inch])
+                t.setStyle(TableStyle([
+                    ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#1e3a8a")),
+                    ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
+                    ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+                    ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+                    ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0,0), (-1,0), 9),
+                    ('FONTSIZE', (0,1), (-1,-1), 8),
+                    ('BOTTOMPADDING', (0,0), (-1,0), 8),
+                    ('BACKGROUND', (0,1), (-1,-1), colors.whitesmoke),
+                    ('GRID', (0,0), (-1,-1), 1, colors.black),
+                ]))
+                elements.append(t)
+                elements.append(Spacer(1, 10))
 
         doc.build(elements)
         buffer.seek(0)
 
         response = HttpResponse(buffer, content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename="relatorio_auditoria.pdf"'
+        response['Content-Disposition'] = 'attachment; filename="relatorio_radar.pdf"'
         return response

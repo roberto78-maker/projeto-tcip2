@@ -155,6 +155,10 @@ export async function getRelatorioIncineracao(filtros = {}) {
   if (filtros.data_fim) queryParams.append("data_fim", filtros.data_fim);
   if (filtros.vara) queryParams.append("vara", filtros.vara);
   if (filtros.substancia) queryParams.append("substancia", filtros.substancia);
+  if (filtros.status) queryParams.append("status", filtros.status);
+  if (filtros.bou) queryParams.append("bou", filtros.bou);
+  if (filtros.processo) queryParams.append("processo", filtros.processo);
+  if (filtros.reu) queryParams.append("reu", filtros.reu);
 
   const res = await fetch(`${BASE_URL}/api/relatorios/incineracao/?${queryParams.toString()}`, {
     headers: getHeaders()
@@ -169,6 +173,10 @@ export async function downloadRelatorioPdf(filtros = {}) {
   if (filtros.data_fim) queryParams.append("data_fim", filtros.data_fim);
   if (filtros.vara) queryParams.append("vara", filtros.vara);
   if (filtros.substancia) queryParams.append("substancia", filtros.substancia);
+  if (filtros.status) queryParams.append("status", filtros.status);
+  if (filtros.bou) queryParams.append("bou", filtros.bou);
+  if (filtros.processo) queryParams.append("processo", filtros.processo);
+  if (filtros.reu) queryParams.append("reu", filtros.reu);
 
   const res = await fetch(`${BASE_URL}/api/relatorios/incineracao/pdf/?${queryParams.toString()}`, {
     headers: getHeaders()
@@ -179,7 +187,7 @@ export async function downloadRelatorioPdf(filtros = {}) {
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `auditoria_incineracao_${new Date().getTime()}.pdf`;
+  a.download = `relatorio_radar_${new Date().getTime()}.pdf`;
   document.body.appendChild(a);
   a.click();
   a.remove();
