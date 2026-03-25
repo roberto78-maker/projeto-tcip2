@@ -73,11 +73,25 @@ TEMPLATES = [
 WSGI_APPLICATION = "backend.wsgi.application"
 
 # 🗄️ BANCO
-DATABASES = {
-    "default": dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}", conn_max_age=600
-    )
-}
+db_from_dj = dj_database_url.config()
+if db_from_dj.settings.get("NAME"):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": db_from_dj.settings.get("NAME"),
+            "USER": db_from_dj.settings.get("USER"),
+            "PASSWORD": db_from_dj.settings.get("PASSWORD"),
+            "HOST": db_from_dj.settings.get("HOST"),
+            "PORT": db_from_dj.settings.get("PORT"),
+            "OPTIONS": {
+                "sslmode": "require",
+            },
+        }
+    }
+else:
+    DATABASES = {
+        "default": f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+    }
 
 # 🔐 SENHAS
 AUTH_PASSWORD_VALIDATORS = [
