@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# exit on error
+# Build script - executado apenas durante o deploy
 set -o errexit
 
 # Install dependencies
@@ -7,7 +7,6 @@ pip install -r requirements.txt
 
 # Run migrations
 python manage.py migrate
-python manage.py fix_protocols
 
 # Criar superusuário automaticamente se não existir
 python manage.py shell << 'EOF'
