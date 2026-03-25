@@ -23,7 +23,7 @@ class ApreensaoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Apreensao
         fields = "__all__"
-        read_only_fields = ["data_criacao", "arquivo_pdf_url"]
+        read_only_fields = ["data_criacao"]
 
     def create(self, validated_data):
         instance = super().create(validated_data)
@@ -38,12 +38,10 @@ class ApreensaoSerializer(serializers.ModelSerializer):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 
-        instance.save()
-
         if arquivo_pdf_novo:
             instance.arquivo_pdf_url = arquivo_pdf_novo.url
-            instance.save(update_fields=["arquivo_pdf_url"])
 
+        instance.save()
         return instance
 
     def validate(self, data):
