@@ -25,31 +25,6 @@ class ApreensaoSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ["data_criacao"]
 
-    def create(self, validated_data):
-        instance = super().create(validated_data)
-        try:
-            if instance.arquivo_pdf:
-                instance.arquivo_pdf_url = instance.arquivo_pdf.url
-                instance.save(update_fields=["arquivo_pdf_url"])
-        except Exception:
-            pass
-        return instance
-
-    def update(self, instance, validated_data):
-        arquivo_pdf_novo = validated_data.get("arquivo_pdf")
-
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-
-        try:
-            if arquivo_pdf_novo:
-                instance.arquivo_pdf_url = arquivo_pdf_novo.url
-        except Exception:
-            pass
-
-        instance.save()
-        return instance
-
     def validate(self, data):
         instance = self.instance
         novo_status = data.get("status")
