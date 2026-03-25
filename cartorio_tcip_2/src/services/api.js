@@ -147,3 +147,41 @@ export async function finalizarLote(loteId) {
 
   return await res.json();
 }
+
+// 📊 RELATÓRIOS E AUDITORIA
+export async function getRelatorioIncineracao(filtros = {}) {
+  const queryParams = new URLSearchParams();
+  if (filtros.data_inicio) queryParams.append("data_inicio", filtros.data_inicio);
+  if (filtros.data_fim) queryParams.append("data_fim", filtros.data_fim);
+  if (filtros.vara) queryParams.append("vara", filtros.vara);
+  if (filtros.substancia) queryParams.append("substancia", filtros.substancia);
+
+  const res = await fetch(`${BASE_URL}/api/relatorios/incineracao/?${queryParams.toString()}`, {
+    headers: getHeaders()
+  });
+  if (!res.ok) throw new Error("Erro ao buscar relatório de incineração");
+  return await res.json();
+}
+
+export async function downloadRelatorioPdf(filtros = {}) {
+  const queryParams = new URLSearchParams();
+  if (filtros.data_inicio) queryParams.append("data_inicio", filtros.data_inicio);
+  if (filtros.data_fim) queryParams.append("data_fim", filtros.data_fim);
+  if (filtros.vara) queryParams.append("vara", filtros.vara);
+  if (filtros.substancia) queryParams.append("substancia", filtros.substancia);
+
+  const res = await fetch(`${BASE_URL}/api/relatorios/incineracao/pdf/?${queryParams.toString()}`, {
+    headers: getHeaders()
+  });
+  if (!res.ok) throw new Error("Erro ao gerar PDF do relatório");
+  
+  const blob = await res.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `auditoria_incineracao_${new Date().getTime()}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.URL.revokeObjectURL(url);
+}

@@ -5,6 +5,7 @@ import ConferenciaView from "./components/ConferenciaView";
 import CofreView from "./components/CofreView";
 import ProntoQueimaView from "./components/ProntoQueimaView";
 import LotesProntosView from "./components/LotesProntosView";
+import AuditoriaView from "./components/AuditoriaView";
 import LoginView from "./components/LoginView";
 
 import brasao from "./assets/brasao.png";
@@ -50,6 +51,9 @@ export default function App() {
 
       case "lotes_prontos":
         return <LotesProntosView />;
+
+      case "auditoria":
+        return <AuditoriaView />;
 
       default:
         return <h1>Erro de navegação</h1>;
@@ -118,6 +122,15 @@ export default function App() {
           onClick={() => setView("lotes_prontos")}
         >
           <span style={{ fontSize: "16px" }}>🔥</span> Incinerados
+        </button>
+
+        <div className="sidebar-section">RELATÓRIOS</div>
+
+        <button
+          className={`sidebar-btn ${view === 'auditoria' ? 'active' : ''}`}
+          onClick={() => setView("auditoria")}
+        >
+          <span style={{ fontSize: "16px" }}>📊</span> Auditoria
         </button>
 
         <div style={{ flex: 1 }}></div>

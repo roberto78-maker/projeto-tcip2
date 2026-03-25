@@ -2,11 +2,21 @@ import logging
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework import filters
+from rest_framework.views import APIView
+from rest_framework import filters, permissions
+from django.db.models import Sum, Count
+from django.http import HttpResponse
 from django_filters import rest_framework as django_filters
 from django.utils import timezone
 from .models import Apreensao, LoteIncineracao
 from .serializers import ApreensaoSerializer, LoteIncineracaoSerializer
+
+import io
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
 
 logger = logging.getLogger(__name__)
 
@@ -153,3 +163,125 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
                 "itens_finalizados": count,
             }
         )
+
+class RelatorioIncineracaoView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        qs = Apreensao.objects.filter(status="queima_pronta")
+
+        data_inicio = request.GET.get("data_inicio")
+        data_fim = request.GET.get("data_fim")
+        vara = request.GET.get("vara")
+        substancia = request.GET.get("substancia")
+
+        if data_inicio:
+            qs = qs.filter(data_criacao__gte=data_inicio)
+        if data_fim:
+            qs = qs.filter(data_criacao__lte=data_fim)
+        if vara:
+            qs = qs.filter(vara__icontains=vara)
+        if substancia:
+            qs = qs.filter(substancia__icontains=substancia)
+
+        total_processos = qs.count()
+        peso_total = qs.aggregate(Sum('peso'))['peso__sum'] or 0.0
+
+        por_substancia = list(
+            qs.values("substancia").annotate(peso=Sum("peso"), quantidade=Count("id")).order_by("-peso")
+        )
+        por_substancia_formatado = [
+            {"nome": item["substancia"] or "Não Informado", "peso": item["peso"], "quantidade": item["quantidade"]}
+            for item in por_substancia
+        ]
+
+        por_vara = list(
+            qs.values("vara").annotate(quantidade=Count("id")).order_by("-quantidade")
+        )
+
+        detalhado = list(
+            qs.values("bou", "substancia", "peso", "vara", "data_criacao").order_by("-data_criacao")
+        )
+        detalhado_formatado = [
+            {
+                "bou": item["bou"],
+                "substancia": item["substancia"],
+                "peso": item["peso"],
+                "vara": item["vara"],
+                "data": item["data_criacao"].strftime("%Y-%m-%d") if item["data_criacao"] else None
+            }
+            for item in detalhado
+        ]
+
+        return Response({
+            "total_processos": total_processos,
+            "peso_total": peso_total,
+            "por_substancia": por_substancia_formatado,
+            "por_vara": por_vara,
+            "detalhado": detalhado_formatado
+        })
+
+class RelatorioIncineracaoPDFView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        qs = Apreensao.objects.filter(status="queima_pronta")
+
+        data_inicio = request.GET.get("data_inicio")
+        data_fim = request.GET.get("data_fim")
+        vara = request.GET.get("vara")
+        substancia = request.GET.get("substancia")
+
+        if data_inicio: qs = qs.filter(data_criacao__gte=data_inicio)
+        if data_fim: qs = qs.filter(data_criacao__lte=data_fim)
+        if vara: qs = qs.filter(vara__icontains=vara)
+        if substancia: qs = qs.filter(substancia__icontains=substancia)
+
+        total_processos = qs.count()
+        peso_total = qs.aggregate(Sum('peso'))['peso__sum'] or 0.0
+
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=18)
+        elements = []
+        styles = getSampleStyleSheet()
+        
+        title_style = ParagraphStyle('TitleCenter', parent=styles['Heading1'], alignment=1, spaceAfter=20)
+        normal_style = styles['Normal']
+
+        elements.append(Paragraph("POLÍCIA MILITAR DO PARANÁ - 6º BPM", title_style))
+        elements.append(Paragraph("RELATÓRIO DE AUDITORIA DE INCINERAÇÃO", title_style))
+        
+        periodo_texto = f"Período: {data_inicio or 'Início'} a {data_fim or 'Hoje'}"
+        info = f"<b>{periodo_texto}</b><br/><b>Total de Processos:</b> {total_processos} <br/><b>Peso Total:</b> {peso_total:.2f}g"
+        elements.append(Paragraph(info, normal_style))
+        elements.append(Spacer(1, 20))
+
+        data = [["BOU", "Substância", "Peso", "Vara", "Data"]]
+        for item in qs.order_by('-data_criacao'):
+            data.append([
+                item.bou or "-", 
+                item.substancia or "-", 
+                f"{item.peso} {item.unidade}", 
+                item.vara or "-", 
+                item.data_criacao.strftime("%d/%m/%Y") if item.data_criacao else "-"
+            ])
+
+        t = Table(data, colWidths=[1.5*inch, 1.5*inch, 1*inch, 1.5*inch, 1.5*inch])
+        t.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#1e3a8a")),
+            ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
+            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0,0), (-1,0), 10),
+            ('BOTTOMPADDING', (0,0), (-1,0), 12),
+            ('BACKGROUND', (0,1), (-1,-1), colors.whitesmoke),
+            ('GRID', (0,0), (-1,-1), 1, colors.black),
+        ]))
+        elements.append(t)
+
+        doc.build(elements)
+        buffer.seek(0)
+
+        response = HttpResponse(buffer, content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="relatorio_auditoria.pdf"'
+        return response

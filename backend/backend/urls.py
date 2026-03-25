@@ -5,7 +5,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 from rest_framework import permissions
-from custodia.views import ApreensaoViewSet, LoteIncineracaoViewSet
+from custodia.views import ApreensaoViewSet, LoteIncineracaoViewSet, RelatorioIncineracaoView, RelatorioIncineracaoPDFView
 
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -36,6 +36,11 @@ urlpatterns = [
     path("api/", include(router.urls)),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    
+    # 📊 Relatórios de Auditoria
+    path("api/relatorios/incineracao/", RelatorioIncineracaoView.as_view(), name="relatorio_incineracao"),
+    path("api/relatorios/incineracao/pdf/", RelatorioIncineracaoPDFView.as_view(), name="relatorio_incineracao_pdf"),
+
     # 📚 Swagger / OpenAPI
     path(
         "swagger/",
