@@ -13,7 +13,7 @@ function getHeaders(isFormData = false) {
   return headers;
 }
 
-// 🔍 LISTAR
+// 🔍 LISTAR (suporta paginação)
 export async function getApreensoes() {
   const res = await fetch(API_URL, {
     headers: getHeaders()
@@ -25,7 +25,9 @@ export async function getApreensoes() {
     throw new Error("Erro ao buscar apreensões");
   }
 
-  return await res.json();
+  const data = await res.json();
+  // Se for objeto paginado, retorna results; senão retorna array direto
+  return data.results || data;
 }
 
 // ➕ CRIAR (FormData)
@@ -78,13 +80,14 @@ export async function updateApreensao(id, data) {
   return await res.json();
 }
 
-// 📦 LOTES
+// 📦 LOTES (suporta paginação)
 export async function getLotes() {
   const res = await fetch(`${BASE_URL}/api/lotes/`, {
     headers: getHeaders()
   });
   if (!res.ok) throw new Error("Erro ao buscar lotes");
-  return await res.json();
+  const data = await res.json();
+  return data.results || data;
 }
 
 // 🚀 DESTINAR INCINERAÇÃO (Action específica)
