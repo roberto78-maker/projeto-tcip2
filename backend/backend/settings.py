@@ -105,14 +105,7 @@ if DEBUG:
     ]
 
 # 🛠️ WHITENOISE
-STORAGES = {
-    "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
+# STORAGES configurado abaixo após verificar Cloudinary
 
 # 🔥 CLOUDINARY CONFIG
 CLOUDINARY_STORAGE = {
@@ -120,6 +113,33 @@ CLOUDINARY_STORAGE = {
     "API_KEY": os.environ.get("API_KEY"),
     "API_SECRET": os.environ.get("API_SECRET"),
 }
+
+USE_CLOUDINARY = all(
+    [
+        os.environ.get("CLOUD_NAME"),
+        os.environ.get("API_KEY"),
+        os.environ.get("API_SECRET"),
+    ]
+)
+
+if USE_CLOUDINARY:
+    STORAGES = {
+        "default": {
+            "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
+else:
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
 
 # 🌐 CORS
 CORS_ALLOW_ALL_ORIGINS = True
