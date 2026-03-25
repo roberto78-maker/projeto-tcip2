@@ -66,14 +66,14 @@ export default function DashboardView() {
   const statusCount = {
     conferencia: dadosFiltrados.filter(i => i.status === "conferencia").length,
     cofre: dadosFiltrados.filter(i => i.status === "cofre").length,
-    queima: dadosFiltrados.filter(i => i.status === "queima").length,
-    incinerado: dadosFiltrados.filter(i => i.status === "incinerado").length,
+    queima: dadosFiltrados.filter(i => i.status === "incineracao").length,
+    incinerado: dadosFiltrados.filter(i => i.status === "queima_pronta").length,
   };
 
   const pesoCount = {
     cofre: dadosFiltrados.filter(i => i.status === "cofre").reduce((acc, item) => acc + Number(item.peso || 0), 0),
-    queima: dadosFiltrados.filter(i => i.status === "queima").reduce((acc, item) => acc + Number(item.peso || 0), 0),
-    incinerado: dadosFiltrados.filter(i => i.status === "incinerado").reduce((acc, item) => acc + Number(item.peso || 0), 0),
+    queima: dadosFiltrados.filter(i => i.status === "incineracao").reduce((acc, item) => acc + Number(item.peso || 0), 0),
+    incinerado: dadosFiltrados.filter(i => i.status === "queima_pronta").reduce((acc, item) => acc + Number(item.peso || 0), 0),
   };
 
   // 🔥 GRÁFICO 1: Distribuição por Substância (Peso)
