@@ -15,7 +15,11 @@ class LoteIncineracaoViewSet(viewsets.ModelViewSet):
 
 
 class ApreensaoViewSet(viewsets.ModelViewSet):
-    queryset = Apreensao.objects.all().order_by("-data_criacao")
+    queryset = (
+        Apreensao.objects.select_related("lote_incineracao")
+        .prefetch_related("historico")
+        .order_by("-data_criacao")
+    )
     serializer_class = ApreensaoSerializer
 
     def update(self, request, *args, **kwargs):

@@ -32,7 +32,7 @@ class Apreensao(models.Model):
     vara = models.CharField(max_length=200, blank=True, null=True)
     descricao = models.TextField(blank=True, null=True)
 
-    status = models.CharField(max_length=50, default="conferencia")
+    status = models.CharField(max_length=50, default="conferencia", db_index=True)
     autorizacao = models.TextField(blank=True, null=True)
 
     # Novos campos para o fluxo de incineração
@@ -47,7 +47,7 @@ class Apreensao(models.Model):
         related_name="apreensoes",
     )
 
-    data_criacao = models.DateTimeField(auto_now_add=True)
+    data_criacao = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def __str__(self):
         return f"{self.bou} - {self.substancia}"
@@ -59,7 +59,7 @@ class Historico(models.Model):
     )
 
     acao = models.CharField(max_length=200)
-    data = models.DateTimeField(auto_now_add=True)
+    data = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def __str__(self):
         return f"{self.apreensao.bou} - {self.acao}"
