@@ -110,7 +110,7 @@ export default function App() {
           className={`sidebar-btn ${view === 'incineracao' ? 'active' : ''}`}
           onClick={() => setView("incineracao")}
         >
-          <span style={{ fontSize: "16px" }}>📦</span> Montar Lotes
+          <span style={{ fontSize: "16px" }}>📦</span> Lotes
         </button>
 
         <button

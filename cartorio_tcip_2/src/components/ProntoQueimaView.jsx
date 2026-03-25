@@ -152,7 +152,7 @@ export default function ProntoQueimaView() {
     <div style={{ display: "flex", flexDirection: "column", gap: "25px" }}>
       
       <div className="card">
-        <h2 className="card-title">Pronto para Incineração (Lotes Formados)</h2>
+        <h2 className="card-title">Lotes</h2>
         <p className="card-subtitle">Listagem de materiais agrupados em lotes de 20 para destruição oficial.</p>
       </div>
 
