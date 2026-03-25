@@ -76,6 +76,14 @@ export default function DashboardView() {
     incinerado: dadosFiltrados.filter(i => i.status === "queima_pronta").reduce((acc, item) => acc + Number(item.peso || 0), 0),
   };
 
+  const lotesEmFormacao = new Set(
+    dadosFiltrados.filter(i => i.status === "incineracao" && i.lote_incineracao).map(i => i.lote_incineracao)
+  ).size;
+
+  const lotesIncinerados = new Set(
+    dadosFiltrados.filter(i => i.status === "queima_pronta" && i.lote_incineracao).map(i => i.lote_incineracao)
+  ).size;
+
   // 🔥 GRÁFICO 1: Distribuição por Substância (Peso)
   const substancias = [...new Set(dadosFiltrados.map(d => d.substancia))];
   const chartSubstancia = {
@@ -90,7 +98,7 @@ export default function DashboardView() {
 
   // 📊 GRÁFICO 2: Estatística Geral do Sistema (Itens por Status)
   const chartGeral = {
-    labels: ["Conferência", "Cofre", "P. Queima", "Incinerado"],
+    labels: ["Conferência", "Cofre", "Lotes", "Incinerados"],
     datasets: [{
       label: 'Quantidade de Itens',
       data: [statusCount.conferencia, statusCount.cofre, statusCount.queima, statusCount.incinerado],
@@ -129,9 +137,9 @@ export default function DashboardView() {
   return (
     <div style={{ padding: "10px" }}>
       <div style={{ display: "flex", gap: "20px", marginBottom: "30px" }}>
-        <TopCard title="EM CUSTÓDIA (COFRE)" value={formatarPesoDisplay(pesoCount.cofre)} subtitle={`${statusCount.cofre} itens no cofre`} bg="#007bff" icon="🔒" />
-        <TopCard title="PRONTO PARA QUEIMA" value={formatarPesoDisplay(pesoCount.queima)} subtitle={`${statusCount.queima} itens autorizados`} bg="#ffb000" icon="✓" />
-        <TopCard title={`INCINERADO NO PERÍODO`} value={formatarPesoDisplay(pesoCount.incinerado)} subtitle={`${statusCount.incinerado} itens destruídos`} bg="#28a745" icon="🔥" />
+        <TopCard title="EM CUSTÓDIA (COFRE)" value={formatarPesoDisplay(pesoCount.cofre)} subtitle={`${statusCount.cofre} processos no cofre`} bg="#007bff" icon="🔒" />
+        <TopCard title="LOTES EM FORMAÇÃO" value={`${lotesEmFormacao} Lotes`} subtitle={`${statusCount.queima} processos (${formatarPesoDisplay(pesoCount.queima)})`} bg="#ffb000" icon="📦" />
+        <TopCard title="INCINERADOS NO PERÍODO" value={`${lotesIncinerados} Lotes`} subtitle={`${statusCount.incinerado} processos (${formatarPesoDisplay(pesoCount.incinerado)})`} bg="#28a745" icon="🔥" />
       </div>
 
       <div style={{ display: "flex", alignItems: "center", marginBottom: "20px" }}>
