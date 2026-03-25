@@ -73,26 +73,25 @@ TEMPLATES = [
 WSGI_APPLICATION = "backend.wsgi.application"
 
 # 🗄️ BANCO
-db_from_dj = dj_database_url.config()
-if db_from_dj.settings.get("NAME"):
+import urllib.parse
+
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if DATABASE_URL:
+    # Parseia a URL do PostgreSQL
+    parsed = urllib.parse.urlparse(DATABASE_URL)
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
-            "NAME": db_from_dj.settings.get("NAME"),
-            "USER": db_from_dj.settings.get("USER"),
-            "PASSWORD": db_from_dj.settings.get("PASSWORD"),
-            "HOST": db_from_dj.settings.get("HOST"),
-            "PORT": db_from_dj.settings.get("PORT"),
+            "NAME": parsed.path[1:],  # Remove a barra inicial
+            "USER": parsed.username,
+            "PASSWORD": parsed.password,
+            "HOST": parsed.hostname,
+            "PORT": parsed.port or 5432,
             "OPTIONS": {
                 "sslmode": "require",
             },
         }
     }
-else:
-    DATABASES = {
-        "default": f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-    }
-
 # 🔐 SENHAS
 AUTH_PASSWORD_VALIDATORS = [
     {
