@@ -112,3 +112,44 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
         )
 
         return Response(ApreensaoSerializer(apreensao).data)
+
+    @action(detail=False, methods=["post"])
+    def finalizar_lote(self, request):
+        """
+        Finaliza lote: recebe lote_id e altera status das apreensões para 'queima_pronta'
+        """
+        lote_id = request.data.get("lote_id")
+
+        if not lote_id:
+            return Response(
+                {"error": "lote_id é obrigatório"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            lote = LoteIncineracao.objects.get(id=lote_id)
+        except LoteIncineracao.DoesNotExist:
+            return Response(
+                {"error": "Lote não encontrado"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        apreensoes = Apreensao.objects.filter(
+            lote_incineracao=lote, status="incineracao"
+        )
+
+        if apreensoes.count() < 20:
+            return Response(
+                {"error": f"Lote precisa de 20 itens. Atual: {apreensoes.count()}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        count = apreensoes.count()
+        apreensoes.update(status="queima_pronta")
+
+        logger.info(f"Lote {lote.protocolo} finalizado com {count} apreensões")
+
+        return Response(
+            {
+                "message": f"Lote {lote.protocolo} finalizada com sucesso",
+                "itens_finalizados": count,
+            }
+        )

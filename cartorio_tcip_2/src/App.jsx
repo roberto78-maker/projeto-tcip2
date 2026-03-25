@@ -4,7 +4,7 @@ import CadastroView from "./components/CadastroView";
 import ConferenciaView from "./components/ConferenciaView";
 import CofreView from "./components/CofreView";
 import ProntoQueimaView from "./components/ProntoQueimaView";
-import HistoricoView from "./components/HistoricoView";
+import LotesProntosView from "./components/LotesProntosView";
 import LoginView from "./components/LoginView";
 
 import brasao from "./assets/brasao.png";
@@ -48,8 +48,8 @@ export default function App() {
       case "incineracao":
         return <ProntoQueimaView />;
 
-      case "historico":
-        return <HistoricoView />;
+      case "lotes_prontos":
+        return <LotesProntosView />;
 
       default:
         return <h1>Erro de navegação</h1>;
@@ -113,14 +113,12 @@ export default function App() {
           <span style={{ fontSize: "16px" }}>📦</span> Montar Lotes
         </button>
 
-        {usuario?.role === "admin" && (
-          <button
-            className={`sidebar-btn ${view === 'historico' ? 'active' : ''}`}
-            onClick={() => setView("historico")}
-          >
-            <span style={{ fontSize: "16px" }}>🔥</span> Lotes Prontos / Baixa
-          </button>
-        )}
+        <button
+          className={`sidebar-btn ${view === 'lotes_prontos' ? 'active' : ''}`}
+          onClick={() => setView("lotes_prontos")}
+        >
+          <span style={{ fontSize: "16px" }}>🔥</span> Lotes Prontos
+        </button>
 
         <div style={{ flex: 1 }}></div>
 

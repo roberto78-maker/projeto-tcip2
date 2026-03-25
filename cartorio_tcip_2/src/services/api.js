@@ -91,7 +91,7 @@ export async function getLotes() {
 }
 
 // 🚀 DESTINAR INCINERAÇÃO (Action específica)
-export async function destinarIncineracao(id) {
+export async function destinarrIncineracao(id) {
   const res = await fetch(`${API_URL}${id}/destinar_incineracao/`, {
     method: "POST",
     headers: getHeaders()
@@ -100,6 +100,22 @@ export async function destinarIncineracao(id) {
   if (!res.ok) {
     const erro = await res.json();
     throw new Error(erro.error || "Erro ao destinar para incineração");
+  }
+
+  return await res.json();
+}
+
+// ✅ FINALIZAR LOTE (Action específica)
+export async function finalizarLote(loteId) {
+  const res = await fetch(`${API_URL}finalizar_lote/`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify({ lote_id: loteId })
+  });
+
+  if (!res.ok) {
+    const erro = await res.json();
+    throw new Error(erro.error || "Erro ao finalizar lote");
   }
 
   return await res.json();

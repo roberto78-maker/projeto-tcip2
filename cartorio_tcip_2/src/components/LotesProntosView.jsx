@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { getApreensoes, getLotes, finalizarLote } from "../services/api.js";
+import { getApreensoes, getLotes } from "../services/api.js";
 import brasao from "../assets/brasao.png";
 
-// Formata peso com unidade inteligente
 const formatarPesoDisplay = (valor, unidade) => {
   const num = parseFloat(String(valor).replace(",", ".")) || 0;
   if (["Kg", "kg"].includes(unidade)) return `${num.toFixed(3).replace(".", ",")} Kg`;
@@ -16,7 +15,7 @@ const formatarPesoDisplay = (valor, unidade) => {
   return `${num} ${unidade}`;
 };
 
-export default function ProntoQueimaView() {
+export default function LotesProntosView() {
   const [apreensoes, setApreensoes] = useState([]);
   const [lotes, setLotes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -41,13 +40,13 @@ export default function ProntoQueimaView() {
     }
   }
 
-  // Filtrar apenas o que já está em status incineracao
-  const itensParaIncinerar = apreensoes.filter(a => a.status === "incineracao");
+  // Filtrar apenas status "queima_pronta"
+  const itensProntos = apreensoes.filter(a => a.status === "queima_pronta");
 
-  // Agrupar itens por lote_incineracao (ID)
+  // Agrupar por lote
   const lotesAgrupados = lotes.map(lote => ({
     ...lote,
-    itens: itensParaIncinerar.filter(a => a.lote_incineracao === lote.id)
+    itens: itensProntos.filter(a => a.lote_incineracao === lote.id)
   })).filter(lote => lote.itens.length > 0);
 
   const gerarCertidaoPDF = async (lote) => {
@@ -55,7 +54,6 @@ export default function ProntoQueimaView() {
     const margin = 15;
     const pageWidth = doc.internal.pageSize.getWidth();
     
-    // Header com Logo
     try {
       const img = new Image();
       img.src = brasao;
@@ -70,20 +68,18 @@ export default function ProntoQueimaView() {
     doc.text("PRIMEIRO CARTÓRIO - CASCAVEL", pageWidth / 2, 23, { align: "center" });
     
     doc.setFontSize(12);
-    doc.text("CERTIDÃO DE INCINERAÇÃO DE ENTORPECENTES", pageWidth / 2, 32, { align: "center" });
+    doc.text("CERTIDÃO DE QUEIMA DE ENTORPECENTES", pageWidth / 2, 32, { align: "center" });
     doc.line(margin, 35, pageWidth - margin, 35);
 
-    // Corpo do Texto
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    const textoPrincipal = "Certifico que, em conformidade com as autorizações judiciais, procedeu-se a incineração dos materiais abaixo:";
+    const textoPrincipal = "Certifico que, em conformidade com as autorizações judiciais, procedeu-se a QUEIMA dos materiais abaixo relacionados:";
     doc.text(textoPrincipal, margin, 45);
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.text(`LOTE ${lote.numero} - PROTOCOLO: ${lote.protocolo}`, margin, 52);
 
-    // Tabela de itens (máximo 20)
     const tableData = lote.itens.map(item => [
       item.bou,
       item.processo,
@@ -98,13 +94,12 @@ export default function ProntoQueimaView() {
       body: tableData,
       theme: "grid",
       styles: { fontSize: 8, font: "helvetica", cellPadding: 2 },
-      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], lineWidth: 0.1, fontStyle: "bold" },
+      headStyles: { fillColor: [220, 38, 38], textColor: [255, 255, 255], lineWidth: 0.1, fontStyle: "bold" },
       margin: { left: margin, right: margin },
     });
 
     let finalY = doc.lastAutoTable.finalY + 30;
 
-    // Assinaturas
     const colWidth = (pageWidth - (margin * 2)) / 2;
     doc.line(margin, finalY, margin + colWidth - 10, finalY);
     doc.text("RESPONSÁVEL", margin + (colWidth / 2) - 5, finalY + 5, { align: "center" });
@@ -115,69 +110,48 @@ export default function ProntoQueimaView() {
     finalY += 30;
     doc.line(margin, finalY, margin + colWidth - 10, finalY);
     doc.text("TESTEMUNHA 02", margin + (colWidth / 2) - 5, finalY + 5, { align: "center" });
-
     doc.text("_______/_______/_______", pageWidth - margin - 40, finalY + 5);
 
-    // Numero do Lote grande no canto
-    doc.setDrawColor(0);
+    doc.setDrawColor(220, 38, 38);
     doc.roundedRect(pageWidth - 50, 8, 35, 15, 3, 3);
     doc.setFontSize(16);
     doc.text(`LOTE ${lote.numero.toString().padStart(2, '0')}`, pageWidth - 32.5, 18, { align: "center" });
 
-    doc.save(`CERTIDAO_LOTE_${lote.numero}.pdf`);
+    doc.save(`QUEIMA_LOTE_${lote.numero}.pdf`);
   };
 
-  const handleFinalizarLote = async (lote) => {
-    if (lote.itens.length < 20) {
-      alert(`Lote precisa de 20 itens. Atual: ${lote.itens.length}`);
-      return;
-    }
-    
-    if (!confirm(`Finalizar lote ${lote.numero} com ${lote.itens.length} itens?`)) {
-      return;
-    }
-
-    try {
-      await finalizarLote(lote.id);
-      alert("Lote finalizada com sucesso!");
-      carregar();
-    } catch (e) {
-      alert(e.message);
-    }
-  };
-
-  if (loading) return <div style={{ padding: "40px", textAlign: "center" }}>Carregando lotes...</div>;
+  if (loading) return <div style={{ padding: "40px", textAlign: "center" }}>Carregando...</div>;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "25px" }}>
       
       <div className="card">
-        <h2 className="card-title">Pronto para Incineração (Lotes Formados)</h2>
-        <p className="card-subtitle">Listagem de materiais agrupados em lotes de 20 para destruição oficial.</p>
+        <h2 className="card-title">Lotes Prontos para Queima</h2>
+        <p className="card-subtitle">Listagem de lotes finalizados aguardando destruição oficial.</p>
       </div>
 
       {lotesAgrupados.length === 0 && (
         <div className="card" style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
-          Nenhum lote formado no momento. Envie itens do cofre para incineração para iniciar um lote.
+          Nenhum lote pronto para queima no momento.
         </div>
       )}
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(400px, 1fr))", gap: "20px" }}>
         {lotesAgrupados.map(lote => (
-          <div key={lote.id} className="card" style={{ borderLeft: "5px solid #143a2b" }}>
+          <div key={lote.id} className="card" style={{ borderLeft: "5px solid #dc2626" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "15px" }}>
               <div>
-                <h3 style={{ color: "#143a2b", margin: 0 }}>LOTE {lote.numero.toString().padStart(2, '0')}</h3>
+                <h3 style={{ color: "#dc2626", margin: 0 }}>LOTE {lote.numero.toString().padStart(2, '0')}</h3>
                 <span style={{ fontSize: "12px", color: "#64748b" }}>Protocolo: {lote.protocolo}</span>
               </div>
-              <span className="badge" style={{ background: "#f1f5f9", color: "#1e293b" }}>
-                {lote.itens.length} / 20 PROCESSOS
+              <span className="badge" style={{ background: "#dc2626", color: "white" }}>
+                {lote.itens.length} ITENS
               </span>
             </div>
 
             <div style={{ maxHeight: "250px", overflowY: "auto", marginBottom: "15px", fontSize: "12px", border: "1px solid #f1f5f9", borderRadius: "6px" }}>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead style={{ background: "#f8fafc", position: "sticky", top: 0 }}>
+                <thead style={{ background: "#fef2f2", position: "sticky", top: 0 }}>
                   <tr>
                     <th style={{ textAlign: "left", padding: "8px" }}>BOU</th>
                     <th style={{ textAlign: "left", padding: "8px" }}>NOTICIADO</th>
@@ -196,31 +170,22 @@ export default function ProntoQueimaView() {
               </table>
             </div>
 
-            <div style={{ display: "flex", gap: "10px" }}>
-              <button 
-                className="btn-green" 
-                style={{ flex: 1, justifyContent: "center" }}
-                onClick={() => gerarCertidaoPDF(lote)}
-              >
-                📄 IMPRIMIR
-              </button>
-              <button 
-                style={{ 
-                  flex: 1, 
-                  background: lote.itens.length >= 20 ? "#dc2626" : "#94a3b8",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "6px",
-                  padding: "10px",
-                  cursor: lote.itens.length >= 20 ? "pointer" : "not-allowed",
-                  fontWeight: "600"
-                }}
-                onClick={() => handleFinalizarLote(lote)}
-                disabled={lote.itens.length < 20}
-              >
-                ✅ FINALIZAR
-              </button>
-            </div>
+            <button 
+              style={{ 
+                width: "100%", 
+                background: "#dc2626",
+                color: "white",
+                border: "none",
+                borderRadius: "6px",
+                padding: "12px",
+                cursor: "pointer",
+                fontWeight: "600",
+                fontSize: "14px"
+              }}
+              onClick={() => gerarCertidaoPDF(lote)}
+            >
+              🔥 IMPRIMIR CERTIDÃO DE QUEIMA
+            </button>
           </div>
         ))}
       </div>
