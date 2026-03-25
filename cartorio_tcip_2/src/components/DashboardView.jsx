@@ -138,8 +138,8 @@ export default function DashboardView() {
     <div style={{ padding: "10px" }}>
       <div style={{ display: "flex", gap: "20px", marginBottom: "30px" }}>
         <TopCard title="EM CUSTÓDIA (COFRE)" value={formatarPesoDisplay(pesoCount.cofre)} subtitle={`${statusCount.cofre} processos no cofre`} bg="#007bff" icon="🔒" />
-        <TopCard title="LOTES EM FORMAÇÃO" value={`${lotesEmFormacao} Lotes`} subtitle={`${statusCount.queima} processos (${formatarPesoDisplay(pesoCount.queima)})`} bg="#ffb000" icon="📦" />
-        <TopCard title="INCINERADOS NO PERÍODO" value={`${lotesIncinerados} Lotes`} subtitle={`${statusCount.incinerado} processos (${formatarPesoDisplay(pesoCount.incinerado)})`} bg="#28a745" icon="🔥" />
+        <TopCard title="LOTES EM FORMAÇÃO" value={formatarPesoDisplay(pesoCount.queima)} subtitle={`${lotesEmFormacao} lotes (${statusCount.queima} processos)`} bg="#ffb000" icon="📦" />
+        <TopCard title="INCINERADOS NO PERÍODO" value={formatarPesoDisplay(pesoCount.incinerado)} subtitle={`${lotesIncinerados} lotes (${statusCount.incinerado} processos)`} bg="#28a745" icon="🔥" />
       </div>
 
       <div style={{ display: "flex", alignItems: "center", marginBottom: "20px" }}>
