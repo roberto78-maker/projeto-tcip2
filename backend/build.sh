@@ -9,11 +9,16 @@ pip install -r requirements.txt
 python manage.py migrate
 python manage.py fix_protocols
 
-# Criar superusuário se as variáveis estiverem presentes (Render) - COMENTADO PARA EVITAR TRAVAMENTOS
-# if [[ -n "$DJANGO_SUPERUSER_USERNAME" ]]; then
-#     echo "Verificando/Criando superusuário..."
-#     python manage.py createsuperuser --no-input || echo "Superusuário já existe ou erro na criação."
-# fi
+# Criar superusuário automaticamente se não existir
+python manage.py shell << 'EOF'
+from django.contrib.auth import get_user_model
+User = get_user_model()
+if not User.objects.filter(is_superuser=True).exists():
+    User.objects.create_superuser('admin', 'admin@tcip.com', 'admin123')
+    print('Superusuário criado: admin / admin123')
+else:
+    print('Superusuário já existe')
+EOF
 
 # Collect static files
 python manage.py collectstatic --no-input
