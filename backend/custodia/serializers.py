@@ -27,9 +27,12 @@ class ApreensaoSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         instance = super().create(validated_data)
-        if instance.arquivo_pdf:
-            instance.arquivo_pdf_url = instance.arquivo_pdf.url
-            instance.save(update_fields=["arquivo_pdf_url"])
+        try:
+            if instance.arquivo_pdf:
+                instance.arquivo_pdf_url = instance.arquivo_pdf.url
+                instance.save(update_fields=["arquivo_pdf_url"])
+        except Exception:
+            pass
         return instance
 
     def update(self, instance, validated_data):
@@ -38,8 +41,11 @@ class ApreensaoSerializer(serializers.ModelSerializer):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 
-        if arquivo_pdf_novo:
-            instance.arquivo_pdf_url = arquivo_pdf_novo.url
+        try:
+            if arquivo_pdf_novo:
+                instance.arquivo_pdf_url = arquivo_pdf_novo.url
+        except Exception:
+            pass
 
         instance.save()
         return instance

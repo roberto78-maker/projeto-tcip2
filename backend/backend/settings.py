@@ -109,9 +109,9 @@ if DEBUG:
 
 # 🔥 CLOUDINARY CONFIG
 CLOUDINARY_STORAGE = {
-    "CLOUD_NAME": os.environ.get("CLOUD_NAME"),
-    "API_KEY": os.environ.get("API_KEY"),
-    "API_SECRET": os.environ.get("API_SECRET"),
+    "CLOUD_NAME": os.environ.get("CLOUD_NAME", ""),
+    "API_KEY": os.environ.get("API_KEY", ""),
+    "API_SECRET": os.environ.get("API_SECRET", ""),
 }
 
 USE_CLOUDINARY = all(
@@ -140,6 +140,7 @@ else:
             "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
         },
     }
+    DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 
 # 🌐 CORS
 CORS_ALLOW_ALL_ORIGINS = True
