@@ -188,7 +188,10 @@ class RelatorioIncineracaoView(APIView):
         if processo: qs = qs.filter(processo__icontains=processo)
         if reu: qs = qs.filter(reu__icontains=reu)
 
-        detalhado = qs.values("id", "bou", "substancia", "peso", "vara", "data_criacao", "status", "processo", "reu").order_by("-data_criacao")[:500] # Limite para não explodir
+        detalhado = qs.values(
+            "id", "bou", "substancia", "peso", "vara", "data_criacao", "status", "processo", "reu", 
+            "lote_incineracao__numero", "lote_incineracao__data_criacao"
+        ).order_by("-data_criacao")[:500] 
         
         status_labels = {
             "conferencia": "Aguardando Balança",
@@ -197,8 +200,17 @@ class RelatorioIncineracaoView(APIView):
             "queima_pronta": "Incinerado"
         }
 
-        detalhado_formatado = [
-            {
+        detalhado_formatado = []
+        for item in detalhado:
+            status_desc = status_labels.get(item["status"], item["status"])
+            
+            # Se já está associado a um lote (seja Incinerado ou em Montagem)
+            if item.get("lote_incineracao__numero"):
+                lote_num = str(item["lote_incineracao__numero"]).zfill(2)
+                lote_data = item["lote_incineracao__data_criacao"].strftime("%d/%m/%y") if item.get("lote_incineracao__data_criacao") else "S/D"
+                status_desc = f"{status_desc} (Lote {lote_num} - {lote_data})"
+
+            detalhado_formatado.append({
                 "id": item["id"],
                 "bou": item["bou"],
                 "processo": item["processo"],
@@ -206,11 +218,9 @@ class RelatorioIncineracaoView(APIView):
                 "substancia": item["substancia"],
                 "peso": item["peso"],
                 "vara": item["vara"],
-                "status_label": status_labels.get(item["status"], item["status"]),
+                "status_label": status_desc,
                 "data": item["data_criacao"].strftime("%Y-%m-%d") if item["data_criacao"] else None
-            }
-            for item in detalhado
-        ]
+            })
 
         return Response({"detalhado": detalhado_formatado})
 
@@ -218,7 +228,7 @@ class RelatorioIncineracaoPDFView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        qs = Apreensao.objects.all()
+        qs = Apreensao.objects.select_related('lote_incineracao').all()
 
         data_inicio = request.GET.get("data_inicio")
         data_fim = request.GET.get("data_fim")
@@ -245,12 +255,17 @@ class RelatorioIncineracaoPDFView(APIView):
         elements = []
         styles = getSampleStyleSheet()
         
-        title_style = ParagraphStyle('TitleCenter', parent=styles['Heading1'], alignment=1, spaceAfter=20)
+        title_style = ParagraphStyle('TitleCenter', parent=styles['Heading1'], fontName='Helvetica-Bold', fontSize=11, alignment=1, spaceAfter=5)
+        subtitle_title_style = ParagraphStyle('TitleCenterSub', parent=styles['Normal'], fontName='Helvetica', fontSize=9, alignment=1, spaceAfter=15)
+        
         normal_style = styles['Normal']
         subtitle_style = ParagraphStyle('SubTitle', parent=styles['Heading2'], spaceAfter=10, spaceBefore=20, textColor=colors.HexColor("#1e3a8a"))
 
+        # Cabeçalho como Certidão de Queima
         elements.append(Paragraph("POLÍCIA MILITAR DO PARANÁ - 6º BPM", title_style))
-        elements.append(Paragraph("RELATÓRIO DE RADAR E AUDITORIA", title_style))
+        elements.append(Paragraph("PRIMEIRO CARTÓRIO - CASCAVEL", subtitle_title_style))
+        
+        elements.append(Paragraph("RELATÓRIO DE AUDITORIA E RASTREIO", ParagraphStyle('DocTitle', parent=styles['Heading2'], fontName='Helvetica-Bold', fontSize=12, alignment=1, spaceAfter=10)))
         
         periodo_texto = f"Período: {data_inicio or 'Início'} a {data_fim or 'Hoje'}"
         filtros_usados = []
@@ -265,11 +280,10 @@ class RelatorioIncineracaoPDFView(APIView):
 
         info = f"<b>{periodo_texto}</b><br/><b>Filtros Aplicados:</b> {filtros_str}"
         elements.append(Paragraph(info, normal_style))
-        elements.append(Spacer(1, 20))
+        elements.append(Spacer(1, 15))
 
         # Agrupar por mes/ano
         from collections import defaultdict
-        import locale
         
         meses = {
             1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril", 5: "Maio", 6: "Junho",
@@ -302,17 +316,23 @@ class RelatorioIncineracaoPDFView(APIView):
                     linha1 = item.bou or "-"
                     if item.processo: linha1 += f"\nProc: {item.processo}"
                     
+                    status_desc = status_labels.get(item.status, item.status)
+                    if hasattr(item, 'lote_incineracao') and item.lote_incineracao:
+                        lote_num = str(item.lote_incineracao.numero).zfill(2)
+                        lote_data = item.lote_incineracao.data_criacao.strftime("%d/%m/%y") if item.lote_incineracao.data_criacao else "S/D"
+                        status_desc = f"{status_desc}\n(Lote {lote_num} - {lote_data})"
+                    
                     data.append([
                         linha1, 
                         item.substancia or "-", 
                         f"{item.peso} {item.unidade}", 
-                        status_labels.get(item.status, item.status), 
+                        status_desc, 
                         item.data_criacao.strftime("%d/%m/%Y") if item.data_criacao else "-"
                     ])
 
-                t = Table(data, colWidths=[1.8*inch, 1.2*inch, 1.1*inch, 1.5*inch, 1.0*inch])
+                t = Table(data, colWidths=[1.7*inch, 1.2*inch, 1.1*inch, 1.6*inch, 1.0*inch])
                 t.setStyle(TableStyle([
-                    ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#1e3a8a")),
+                    ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#dc2626")),
                     ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
                     ('ALIGN', (0,0), (-1,-1), 'CENTER'),
                     ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
@@ -321,7 +341,7 @@ class RelatorioIncineracaoPDFView(APIView):
                     ('FONTSIZE', (0,1), (-1,-1), 8),
                     ('BOTTOMPADDING', (0,0), (-1,0), 8),
                     ('BACKGROUND', (0,1), (-1,-1), colors.whitesmoke),
-                    ('GRID', (0,0), (-1,-1), 1, colors.black),
+                    ('GRID', (0,0), (-1,-1), 0.5, colors.black),
                 ]))
                 elements.append(t)
                 elements.append(Spacer(1, 10))

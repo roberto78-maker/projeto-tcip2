@@ -102,7 +102,12 @@ export default function AuditoriaView() {
 
           <div>
             <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>Vara Judicial:</label>
-            <input type="text" name="vara" placeholder="Ex: 1ª Vara (Deixe vazio para Todas)" value={filtros.vara} onChange={handleFiltroChange} className="input-tcip" />
+            <select name="vara" value={filtros.vara} onChange={handleFiltroChange} className="input-tcip">
+              <option value="">Todas as Varas</option>
+              <option value="1ª VARA ESPECIAL CRIMINAL">1ª VARA ESPECIAL CRIMINAL</option>
+              <option value="2ª VARA ESPECIAL CRIMINAL">2ª VARA ESPECIAL CRIMINAL</option>
+              <option value="3ª VARA ESPECIAL CRIMINAL">3ª VARA ESPECIAL CRIMINAL</option>
+            </select>
           </div>
 
           <div>
