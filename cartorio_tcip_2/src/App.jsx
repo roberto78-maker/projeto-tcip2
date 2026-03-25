@@ -117,7 +117,7 @@ export default function App() {
           className={`sidebar-btn ${view === 'lotes_prontos' ? 'active' : ''}`}
           onClick={() => setView("lotes_prontos")}
         >
-          <span style={{ fontSize: "16px" }}>🔥</span> Lotes Prontos
+          <span style={{ fontSize: "16px" }}>🔥</span> Incinerados
         </button>
 
         <div style={{ flex: 1 }}></div>

@@ -53,20 +53,20 @@ export default function LotesProntosView() {
     const doc = new jsPDF();
     const margin = 15;
     const pageWidth = doc.internal.pageSize.getWidth();
-    
+
     try {
       const img = new Image();
       img.src = brasao;
       await new Promise(r => img.onload = r);
       doc.addImage(img, 'PNG', margin, 10, 20, 20);
-    } catch(e) {}
+    } catch (e) { }
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
     doc.text("POLÍCIA MILITAR DO PARANÁ - 6º BPM", pageWidth / 2, 18, { align: "center" });
     doc.setFontSize(9);
     doc.text("PRIMEIRO CARTÓRIO - CASCAVEL", pageWidth / 2, 23, { align: "center" });
-    
+
     doc.setFontSize(12);
     doc.text("CERTIDÃO DE QUEIMA DE ENTORPECENTES", pageWidth / 2, 32, { align: "center" });
     doc.line(margin, 35, pageWidth - margin, 35);
@@ -124,9 +124,9 @@ export default function LotesProntosView() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "25px" }}>
-      
+
       <div className="card">
-        <h2 className="card-title">Lotes Prontos para Queima</h2>
+        <h2 className="card-title">Incinerados</h2>
         <p className="card-subtitle">Listagem de lotes finalizados aguardando destruição oficial.</p>
       </div>
 
@@ -170,9 +170,9 @@ export default function LotesProntosView() {
               </table>
             </div>
 
-            <button 
-              style={{ 
-                width: "100%", 
+            <button
+              style={{
+                width: "100%",
                 background: "#dc2626",
                 color: "white",
                 border: "none",
