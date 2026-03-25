@@ -91,7 +91,7 @@ export async function getLotes() {
 }
 
 // 🚀 DESTINAR INCINERAÇÃO (Action específica)
-export async function destinarrIncineracao(id) {
+export async function destinarIncineracao(id) {
   const res = await fetch(`${API_URL}${id}/destinar_incineracao/`, {
     method: "POST",
     headers: getHeaders()
