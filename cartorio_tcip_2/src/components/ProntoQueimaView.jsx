@@ -29,7 +29,7 @@ export default function ProntoQueimaView() {
     setLoading(true);
     try {
       const [dataApreensoes, dataLotes] = await Promise.all([
-        getApreensoes(),
+        getApreensoes({ status: "incineracao", fetchAll: true }),
         getLotes()
       ]);
       setApreensoes(dataApreensoes);

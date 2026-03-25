@@ -26,7 +26,7 @@ export default function CofreView() {
 
   async function carregar() {
     try {
-      const data = await getApreensoes();
+      const data = await getApreensoes({ status: "cofre", fetchAll: true });
       setApreensoes(data);
     } catch (e) {
       console.error(e);

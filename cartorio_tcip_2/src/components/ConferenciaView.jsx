@@ -64,7 +64,7 @@ export default function ConferenciaView() {
 
   async function carregar() {
     try {
-      const data = await getApreensoes();
+      const data = await getApreensoes({ status: "conferencia", fetchAll: true });
       setApreensoes(data);
     } catch (e) {
       console.error(e);

@@ -24,7 +24,7 @@ export default function DashboardView() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await getApreensoes();
+        const res = await getApreensoes({ fetchAll: true });
         setDados(res);
       } catch (e) {
         console.error("Erro dashboard:", e);

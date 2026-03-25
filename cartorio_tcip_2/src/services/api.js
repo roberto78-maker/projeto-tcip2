@@ -14,20 +14,47 @@ function getHeaders(isFormData = false) {
 }
 
 // 🔍 LISTAR (suporta paginação)
-export async function getApreensoes() {
-  const res = await fetch(API_URL, {
-    headers: getHeaders()
-  });
-
-  if (!res.ok) {
-    const erro = await res.text();
-    console.error("Erro GET:", erro);
-    throw new Error("Erro ao buscar apreensões");
+export async function getApreensoes(options = {}) {
+  const { status, fetchAll = false } = options;
+  let url = API_URL;
+  
+  if (status) {
+    url += `?status=${status}`;
   }
 
-  const data = await res.json();
-  // Se for objeto paginado, retorna results; senão retorna array direto
-  return data.results || data;
+  if (!fetchAll) {
+    const res = await fetch(url, { headers: getHeaders() });
+    if (!res.ok) {
+      const erro = await res.text();
+      console.error("Erro GET:", erro);
+      throw new Error("Erro ao buscar apreensões");
+    }
+    const data = await res.json();
+    return data.results || data;
+  }
+
+  let allResults = [];
+  let nextUrl = url;
+
+  while (nextUrl) {
+    const res = await fetch(nextUrl, { headers: getHeaders() });
+    if (!res.ok) {
+      const erro = await res.text();
+      console.error("Erro GET multipágina:", erro);
+      throw new Error("Erro ao buscar apreensões multipágina");
+    }
+    const data = await res.json();
+    
+    if (data.results) {
+      allResults = [...allResults, ...data.results];
+      nextUrl = data.next; // DRF returns null when it's the last page
+    } else {
+      allResults = data;
+      break;
+    }
+  }
+
+  return allResults;
 }
 
 // ➕ CRIAR (FormData)
