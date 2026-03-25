@@ -34,16 +34,17 @@ class Apreensao(models.Model):
 
     status = models.CharField(max_length=50, default="conferencia")
     autorizacao = models.TextField(blank=True, null=True)
-    
+
     # Novos campos para o fluxo de incineração
     observacao_cofre = models.TextField(blank=True, null=True)
-    arquivo_pdf = models.FileField(upload_to='laudos_pdf/', blank=True, null=True)
+    arquivo_pdf = models.FileField(upload_to="laudos_pdf/", blank=True, null=True)
+    arquivo_pdf_url = models.URLField(max_length=500, blank=True, null=True)
     lote_incineracao = models.ForeignKey(
-        LoteIncineracao, 
-        on_delete=models.SET_NULL, 
-        null=True, 
+        LoteIncineracao,
+        on_delete=models.SET_NULL,
+        null=True,
         blank=True,
-        related_name="apreensoes"
+        related_name="apreensoes",
     )
 
     data_criacao = models.DateTimeField(auto_now_add=True)
@@ -54,9 +55,7 @@ class Apreensao(models.Model):
 
 class Historico(models.Model):
     apreensao = models.ForeignKey(
-        Apreensao,
-        on_delete=models.CASCADE,
-        related_name="historico"
+        Apreensao, on_delete=models.CASCADE, related_name="historico"
     )
 
     acao = models.CharField(max_length=200)

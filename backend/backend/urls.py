@@ -12,11 +12,14 @@ router = DefaultRouter()
 router.register(r'apreensoes', ApreensaoViewSet)
 router.register(r'lotes', LoteIncineracaoViewSet)
 
+from django.views.static import serve
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
     re_path(r'^(?!api/|admin/|static/|media/).*', TemplateView.as_view(template_name='index.html')),
 ]
 
