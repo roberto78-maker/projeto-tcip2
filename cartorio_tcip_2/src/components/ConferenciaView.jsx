@@ -149,7 +149,7 @@ export default function ConferenciaView() {
                     {item.substancia || "Desconhecida"}
                   </span>
                 </td>
-                <td style={{ color: "#dc2626", fontWeight: "600" }}>{item.peso} {item.unidade}</td>
+                <td style={{ color: "#dc2626", fontWeight: "600" }}>{formatarPesoDisplay(item.peso, item.unidade)}</td>
                 <td style={{ textAlign: "right" }}>
                   <button className="btn-green" onClick={() => setItemSelecionado(item)}>
                     📦 CONFERIR

@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { getRelatorioIncineracao, downloadRelatorioPdf } from "../services/api";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { getRelatorioIncineracao } from "../services/api";
+import logoBpm from "../assets/brasao.png";
+import { VARAS, SUBSTANCIAS } from "../constants/options.js";
 
 export default function AuditoriaView() {
   const [data, setData] = useState(null);
@@ -33,12 +37,92 @@ export default function AuditoriaView() {
     // eslint-disable-next-line
   }, []);
 
+  const formatarPesoDisplay = (gramas) => {
+    if (!gramas) return "-";
+    if (gramas >= 1000) return `${(gramas / 1000).toFixed(3).replace(".", ",")} Kg`;
+    return `${gramas.toFixed(2).replace(".", ",")} g`;
+  };
+
   const handleDownload = async () => {
-    try {
-      await downloadRelatorioPdf(filtros);
-    } catch (e) {
-      alert("Erro ao baixar PDF oficial do radar.");
-    }
+    if (!data || !data.detalhado) return;
+
+    const doc = new jsPDF();
+    const marginX = 15;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const centerX = pageWidth / 2;
+    let currY = 15;
+
+    // Logo
+    const img = new Image();
+    img.src = logoBpm;
+    await new Promise((resolve) => { img.onload = resolve; img.onerror = resolve; });
+    try { doc.addImage(img, "PNG", marginX, currY, 20, 24); } catch (e) { }
+
+    // Header Text
+    doc.setFont("helvetica", "bold"); doc.setFontSize(14);
+    doc.text("POLÍCIA MILITAR DO PARANÁ - 6º BPM", centerX + 10, currY + 8, { align: "center" });
+    
+    doc.setFontSize(10); doc.setFont("helvetica", "normal");
+    doc.text("PRIMEIRO CARTÓRIO - CASCAVEL", centerX + 10, currY + 14, { align: "center" });
+
+    doc.setFontSize(11); doc.setFont("helvetica", "bold");
+    doc.text("RASTREAMENTO DE DADOS DO CARTÓRIO", centerX + 10, currY + 22, { align: "center" });
+
+    currY += 38;
+
+    // Período
+    const dtInicio = filtros.data_inicio ? filtros.data_inicio.split("-").reverse().join("/") : "Início";
+    const dtFim = filtros.data_fim ? filtros.data_fim.split("-").reverse().join("/") : new Date().toLocaleDateString("pt-BR");
+    
+    doc.setFontSize(11); doc.setFont("helvetica", "bold");
+    doc.text("PERÍODO: ", marginX, currY);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${dtInicio} à ${dtFim}`, marginX + 22, currY);
+    
+    currY += 10;
+
+    // Tabela
+    const bodyTable = data.detalhado.map(item => [
+      item.bou || "S/N",
+      item.processo || "S/N",
+      item.substancia || "-",
+      formatarPesoDisplay(item.peso),
+      item.status_label || item.status
+    ]);
+
+    autoTable(doc, {
+      startY: currY,
+      head: [["BOU", "PROCESSO", "SUBSTÂNCIA", "VOLUME/PESO", "LOCAL/STATUS"]],
+      body: bodyTable,
+      theme: "grid",
+      headStyles: {
+        fillColor: [198, 40, 40], // Vermelho similar ao modelo (#C62828)
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+        halign: "center"
+      },
+      styles: {
+        fontSize: 9,
+        cellPadding: 3,
+        lineColor: [0, 0, 0],
+        lineWidth: 0.1,
+        valign: "middle"
+      },
+      columnStyles: {
+        0: { halign: "center" },
+        1: { halign: "center" },
+        2: { halign: "center" },
+        3: { halign: "center" },
+        4: { halign: "center" }
+      },
+      margin: { left: marginX, right: marginX }
+    });
+
+    const dataHora = new Date().toLocaleString("pt-BR").replace(',', ' -');
+    doc.setFontSize(8); doc.setFont("helvetica", "italic");
+    doc.text(`Gerado em: ${dataHora}`, pageWidth - marginX, 285, { align: "right" });
+
+    doc.save(`Relatorio_Radar_${new Date().getTime()}.pdf`);
   };
 
   const handleFiltroChange = (e) => {
@@ -50,12 +134,6 @@ export default function AuditoriaView() {
       data_inicio: "", data_fim: "", vara: "", substancia: "",
       status: "", bou: "", processo: "", reu: ""
     });
-  };
-
-  const formatarPesoDisplay = (gramas) => {
-    if (!gramas) return "-";
-    if (gramas >= 1000) return `${(gramas / 1000).toFixed(3).replace(".", ",")} Kg`;
-    return `${gramas.toFixed(2).replace(".", ",")} g`;
   };
 
   return (
@@ -79,13 +157,7 @@ export default function AuditoriaView() {
             <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>Droga / Substância:</label>
             <select name="substancia" value={filtros.substancia} onChange={handleFiltroChange} className="input-tcip">
               <option value="">Todas as Drogas</option>
-              <option value="Maconha">Maconha</option>
-              <option value="Cocaína">Cocaína</option>
-              <option value="Crack">Crack</option>
-              <option value="Haxixe">Haxixe</option>
-              <option value="MDMA">MDMA</option>
-              <option value="Ecstasy">Ecstasy</option>
-              <option value="LSD">LSD</option>
+              {SUBSTANCIAS.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
 
@@ -104,9 +176,7 @@ export default function AuditoriaView() {
             <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>Vara Judicial:</label>
             <select name="vara" value={filtros.vara} onChange={handleFiltroChange} className="input-tcip">
               <option value="">Todas as Varas</option>
-              <option value="1ª VARA ESPECIAL CRIMINAL">1ª VARA ESPECIAL CRIMINAL</option>
-              <option value="2ª VARA ESPECIAL CRIMINAL">2ª VARA ESPECIAL CRIMINAL</option>
-              <option value="3ª VARA ESPECIAL CRIMINAL">3ª VARA ESPECIAL CRIMINAL</option>
+              {VARAS.map(v => <option key={v} value={v}>{v}</option>)}
             </select>
           </div>
 
