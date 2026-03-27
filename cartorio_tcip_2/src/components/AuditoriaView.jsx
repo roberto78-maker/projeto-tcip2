@@ -118,6 +118,31 @@ export default function AuditoriaView() {
       margin: { left: marginX, right: marginX }
     });
 
+    // FOOTER DE TOTAIS (Conforme modelo)
+    const totalItens = data.detalhado.length;
+    const pesoTotal = data.detalhado.reduce((acc, item) => acc + Number(item.weight || item.peso || 0), 0);
+
+    autoTable(doc, {
+      startY: doc.lastAutoTable.finalY,
+      body: [[
+        `TOTAL ITENS: ${String(totalItens).padStart(2, '0')}`,
+        `PESO TOTAL: ${formatarPesoDisplay(pesoTotal)}`
+      ]],
+      theme: "grid",
+      styles: {
+        fontSize: 10,
+        fontStyle: "bold",
+        cellPadding: 5,
+        lineColor: [0, 0, 0],
+        lineWidth: 0.1,
+        halign: "center",
+        valign: "middle",
+        fillColor: [255, 255, 255],
+        textColor: [0, 0, 0]
+      },
+      margin: { left: marginX, right: marginX }
+    });
+
     const dataHora = new Date().toLocaleString("pt-BR").replace(',', ' -');
     doc.setFontSize(8); doc.setFont("helvetica", "italic");
     doc.text(`Gerado em: ${dataHora}`, pageWidth - marginX, 285, { align: "right" });
@@ -283,6 +308,19 @@ export default function AuditoriaView() {
                   ))
                 )}
               </tbody>
+              {data && data.detalhado.length > 0 && (
+                <tfoot style={{ background: "#f1f5f9", fontWeight: "bold" }}>
+                  <tr>
+                    <td colSpan="2" style={{ padding: "15px", textAlign: "left", fontSize: "14px", color: "#1e293b" }}>
+                      TOTAL DE PROCESSOS: {String(data.detalhado.length).padStart(2, '0')}
+                    </td>
+                    <td colSpan="2" style={{ padding: "15px", textAlign: "left", fontSize: "14px", color: "#1e293b" }}>
+                      PESO TOTAL: {formatarPesoDisplay(data.detalhado.reduce((acc, item) => acc + Number(item.peso || 0), 0))}
+                    </td>
+                    <td colSpan="2"></td>
+                  </tr>
+                </tfoot>
+              )}
             </table>
           </div>
         )}
