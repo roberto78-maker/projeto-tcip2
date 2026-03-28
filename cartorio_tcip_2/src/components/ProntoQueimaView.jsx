@@ -141,73 +141,75 @@ export default function ProntoQueimaView() {
       margin: { left: margin, right: margin },
     });
 
-    let finalY = doc.lastAutoTable.finalY;
+    // Final Y da tabela
+    finalY = doc.lastAutoTable.finalY + 2;
 
-    // Linha de Totais após a tabela
+    // Linha de Totais após a tabela (estilo simplificado sem bordas pesadas)
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
-    doc.setLineWidth(0.2);
-    doc.rect(margin, finalY, pageWidth - (margin * 2), 10);
-    doc.text(`TOTAL: ${totalProcessos} PROCESSOS`, margin + 3, finalY + 7);
+    doc.text(`TOTAL: ${totalProcessos} PROCESSOS`, margin, finalY + 6);
     
     let textoPesoTotal = "";
     if (totalGramas > 0) {
-      if (totalGramas >= 1000) textoPesoTotal += `${(totalGramas/1000).toFixed(3).replace(".",",")} Kg`;
-      else textoPesoTotal += `${totalGramas.toFixed(2).replace(".",",")} g`;
+      if (totalGramas >= 1000) textoPesoTotal += `${(totalGramas / 1000).toFixed(3).replace(".", ",")} Kg`;
+      else textoPesoTotal += `${totalGramas.toFixed(2).replace(".", ",")} g`;
     }
     if (totalUnidades > 0) {
       if (textoPesoTotal) textoPesoTotal += " | ";
       textoPesoTotal += `${totalUnidades} unidades`;
     }
-    doc.text(`TOTAL: ${textoPesoTotal || '0'}`, pageWidth - margin - 3, finalY + 7, { align: "right" });
+    doc.text(`TOTAL: ${textoPesoTotal || '0'}`, pageWidth - margin, finalY + 6, { align: "right" });
 
-    // Posicionamento Dinâmico das Assinaturas para aproveitar a página
-    finalY = pageHeight - 65; 
+    // --- POSICIONAMENTO DAS ASSINATURAS E RODAPÉ ---
+    // Calculamos se precisamos de nova página (Assinaturas precisam de ~50mm)
+    finalY += 15;
+    if (finalY > pageHeight - 65) {
+      doc.addPage();
+      finalY = 30; 
+    } else {
+      // Se couber, empurramos para o final da página para manter o padrão do modelo
+      finalY = pageHeight - 65;
+    }
 
-    const lineW = 65;
+    const lineW = 75;
+    const col2X = pageWidth - margin - lineW;
     
-    // Linha Superior: RESPONSÁVEL (Esquerda) e TESTEMUNHA 01 (Direita)
+    // Linha 1: RESPONSÁVEL (Esquerda) e TESTEMUNHA 01 (Direita)
     doc.setLineWidth(0.1);
     doc.line(margin, finalY, margin + lineW, finalY);
-    doc.setFontSize(10);
-    doc.text("RESPONSÁVEL", margin + (lineW/2), finalY + 5, { align: "center" });
+    doc.text("RESPONSÁVEL", margin + (lineW / 2), finalY + 5, { align: "center" });
 
-    doc.line(pageWidth - margin - lineW, finalY, pageWidth - margin, finalY);
-    doc.text("TESTEMUNHA 01", pageWidth - margin - (lineW/2), finalY + 5, { align: "center" });
+    doc.line(col2X, finalY, pageWidth - margin, finalY);
+    doc.text("TESTEMUNHA 01", col2X + (lineW / 2), finalY + 5, { align: "center" });
 
-    finalY += 30;
+    finalY += 28;
     
-    // Linha Inferior: TESTEMUNHA 02 (Esquerda)
+    // Linha 2: TESTEMUNHA 02 (Esquerda) e Bloco de Protocolo (Direita)
     doc.line(margin, finalY, margin + lineW, finalY);
-    doc.text("TESTEMUNHA 02", margin + (lineW/2), finalY + 5, { align: "center" });
+    doc.text("TESTEMUNHA 02", margin + (lineW / 2), finalY + 5, { align: "center" });
 
-    // Bloco do Protocolo no Rodapé (Maior e Arredondado)
+    // Bloco do Protocolo no Rodapé (Alinhado à TESTEMUNHA 02)
     const footerW = 95;
     const footerH = 22;
     const footerX = pageWidth - margin - footerW;
-    const footerY = pageHeight - margin - footerH;
+    const footerY = finalY - 12; // Alinhado visualmente com a linha da TESTEMUNHA 02
 
     doc.setLineWidth(0.3);
-    doc.roundedRect(footerX, footerY, footerW, footerH, 3, 3);
+    doc.roundedRect(footerX, footerY, footerW, footerH, 2, 2);
     
     doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
-    doc.text(`LOTE ${lote.numero} - PROTOCOLO: ${lote.protocolo}`, footerX + (footerW/2), footerY + 6, { align: "center" });
+    doc.text(`LOTE ${String(lote.numero).padStart(2, '0')} - PROTOCOLO: ${lote.protocolo}`, footerX + (footerW / 2), footerY + 6, { align: "center" });
     
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
-    doc.text("Certidão emitida via Sistema Eletrônico pelo", footerX + (footerW/2), footerY + 12, { align: "center" });
+    doc.text("Certidão emitida via Sistema Eletrônico pelo", footerX + (footerW / 2), footerY + 12, { align: "center" });
     
-    doc.setFontSize(8);
     doc.setFont("helvetica", "bold");
-    doc.text(`Agente: ${usuario?.username || 'Sistema'}`, footerX + (footerW/2), footerY + 17, { align: "center" });
-    doc.setFont("helvetica", "normal");
-    doc.text(` em ${dataFormatada} às ${horaFormatada}`, footerX + (footerW/2) + (doc.getTextWidth(`Agente: ${usuario?.username || 'Sistema'}`) / 2) + 12, footerY + 17, { align: "center" });
-    
-    // Reajustando a linha do Agente para ficar centralizada e bonita
-    doc.text(`Agente: ${usuario?.username || 'Sistema'} em ${dataFormatada} às ${horaFormatada}`, footerX + (footerW/2), footerY + 17, { align: "center" });
+    const txtAgente = `Agente: ${usuario?.username || 'Sistema'} em ${dataFormatada} às ${horaFormatada}`;
+    doc.text(txtAgente, footerX + (footerW / 2), footerY + 17, { align: "center" });
 
-    // Numero do Lote grande no canto Top Right
+    // Numero do Lote grande no canto Top Right (Header)
     doc.setLineWidth(0.5);
     doc.roundedRect(pageWidth - 48, 12, 33, 15, 3, 3);
     doc.setFontSize(16);

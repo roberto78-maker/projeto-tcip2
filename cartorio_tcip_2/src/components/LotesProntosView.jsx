@@ -98,24 +98,67 @@ export default function LotesProntosView() {
       margin: { left: margin, right: margin },
     });
 
-    let finalY = doc.lastAutoTable.finalY + 30;
+    // Final Y da tabela
+    let finalY = doc.lastAutoTable.finalY + 5;
 
-    const colWidth = (pageWidth - (margin * 2)) / 2;
-    doc.line(margin, finalY, margin + colWidth - 10, finalY);
-    doc.text("RESPONSÁVEL", margin + (colWidth / 2) - 5, finalY + 5, { align: "center" });
+    // Linha de Totais (Simplificada)
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text(`TOTAL: ${lote.itens.length} ITENS`, margin, finalY + 5);
+    doc.text(`PROTOCOLO: ${lote.protocolo}`, pageWidth - margin, finalY + 5, { align: "right" });
 
-    doc.line(margin + colWidth + 10, finalY, pageWidth - margin, finalY);
-    doc.text("TESTEMUNHA 01", margin + colWidth + 10 + (colWidth / 2) - 5, finalY + 5, { align: "center" });
+    // --- POSICIONAMENTO DAS ASSINATURAS E RODAPÉ ---
+    finalY += 20;
+    const pageHeight = doc.internal.pageSize.getHeight();
+    if (finalY > pageHeight - 65) {
+      doc.addPage();
+      finalY = 30;
+    } else {
+      finalY = pageHeight - 65;
+    }
 
-    finalY += 30;
-    doc.line(margin, finalY, margin + colWidth - 10, finalY);
-    doc.text("TESTEMUNHA 02", margin + (colWidth / 2) - 5, finalY + 5, { align: "center" });
-    doc.text("_______/_______/_______", pageWidth - margin - 40, finalY + 5);
+    const lineW = 75;
+    const col2X = pageWidth - margin - lineW;
 
+    // Linha 1
+    doc.setLineWidth(0.1);
+    doc.setDrawColor(0, 0, 0); // Reset color to black for signatures
+    doc.setTextColor(0, 0, 0);
+    doc.line(margin, finalY, margin + lineW, finalY);
+    doc.text("RESPONSÁVEL", margin + (lineW / 2), finalY + 5, { align: "center" });
+
+    doc.line(col2X, finalY, pageWidth - margin, finalY);
+    doc.text("TESTEMUNHA 01", col2X + (lineW / 2), finalY + 5, { align: "center" });
+
+    finalY += 28;
+
+    // Linha 2
+    doc.line(margin, finalY, margin + lineW, finalY);
+    doc.text("TESTEMUNHA 02", margin + (lineW / 2), finalY + 5, { align: "center" });
+
+    // Data/Protocolo Box (Bottom Right)
+    const footerW = 95;
+    const footerH = 20;
+    const footerX = pageWidth - margin - footerW;
+    const footerY = finalY - 12;
+
+    doc.setLineWidth(0.3);
+    doc.roundedRect(footerX, footerY, footerW, footerH, 2, 2);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.text(`LOTE ${lote.numero.toString().padStart(2, '0')}`, footerX + (footerW / 2), footerY + 6, { align: "center" });
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Protocolo: ${lote.protocolo}`, footerX + (footerW / 2), footerY + 12, { align: "center" });
+    doc.text(`Incineração realizada em ____/____/____`, footerX + (footerW / 2), footerY + 17, { align: "center" });
+
+    // LOTE box no topo (Header)
     doc.setDrawColor(220, 38, 38);
-    doc.roundedRect(pageWidth - 50, 8, 35, 15, 3, 3);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(pageWidth - 48, 12, 33, 15, 3, 3);
     doc.setFontSize(16);
-    doc.text(`LOTE ${lote.numero.toString().padStart(2, '0')}`, pageWidth - 32.5, 18, { align: "center" });
+    doc.setFont("helvetica", "bold");
+    doc.text(`LOTE ${lote.numero.toString().padStart(2, '0')}`, pageWidth - 31.5, 22, { align: "center" });
 
     doc.save(`QUEIMA_LOTE_${lote.numero}.pdf`);
   };
