@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DashboardView from "./components/DashboardView";
 import CadastroView from "./components/CadastroView";
 import ConferenciaView from "./components/ConferenciaView";
