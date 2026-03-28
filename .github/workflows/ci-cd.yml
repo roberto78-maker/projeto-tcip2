@@ -44,10 +44,10 @@ jobs:
           pip install black
           black --check .
 
-      - name: Run migrations
+      - name: Check for missing migrations
         run: |
           cd backend
-          python manage.py migrate --check
+          python manage.py makemigrations --check
 
       - name: Run tests
         run: |
