@@ -89,32 +89,34 @@ export default function LotesProntosView() {
     ]);
 
     autoTable(doc, {
-      startY: 58,
+      startY: 59,
       head: [["BOU", "PROCESSO", "NOTICIADO", "DROGAS", "PESO"]],
       body: tableData,
       theme: "grid",
-      styles: { fontSize: 8, font: "helvetica", cellPadding: 2 },
-      headStyles: { fillColor: [220, 38, 38], textColor: [255, 255, 255], lineWidth: 0.1, fontStyle: "bold" },
+      styles: { fontSize: 8.5, font: "helvetica", cellPadding: 2, textColor: [0, 0, 0], lineColor: [0, 0, 0] },
+      headStyles: { fillColor: [220, 38, 38], textColor: [255, 255, 255], lineWidth: 0.1, fontStyle: "bold", fontSize: 9.5 },
       margin: { left: margin, right: margin },
     });
 
     // Final Y da tabela
-    let finalY = doc.lastAutoTable.finalY + 5;
+    let finalY = doc.lastAutoTable.finalY + 1;
 
     // Linha de Totais (Simplificada)
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
     doc.text(`TOTAL: ${lote.itens.length} ITENS`, margin, finalY + 5);
     doc.text(`PROTOCOLO: ${lote.protocolo}`, pageWidth - margin, finalY + 5, { align: "right" });
 
     // --- POSICIONAMENTO DAS ASSINATURAS E RODAPÉ ---
-    finalY += 20;
+    // Tentamos manter na mesma página se houver pelo menos 45mm de espaço
+    finalY += 12;
     const pageHeight = doc.internal.pageSize.getHeight();
-    if (finalY > pageHeight - 65) {
+    if (finalY > pageHeight - 50) {
       doc.addPage();
       finalY = 30;
     } else {
-      finalY = pageHeight - 65;
+      // Posição fixa no rodapé da página para manter padrão
+      finalY = pageHeight - 55;
     }
 
     const lineW = 75;
@@ -125,40 +127,41 @@ export default function LotesProntosView() {
     doc.setDrawColor(0, 0, 0); // Reset color to black for signatures
     doc.setTextColor(0, 0, 0);
     doc.line(margin, finalY, margin + lineW, finalY);
-    doc.text("RESPONSÁVEL", margin + (lineW / 2), finalY + 5, { align: "center" });
+    doc.setFontSize(9);
+    doc.text("RESPONSÁVEL", margin + (lineW / 2), finalY + 4, { align: "center" });
 
     doc.line(col2X, finalY, pageWidth - margin, finalY);
-    doc.text("TESTEMUNHA 01", col2X + (lineW / 2), finalY + 5, { align: "center" });
+    doc.text("TESTEMUNHA 01", col2X + (lineW / 2), finalY + 4, { align: "center" });
 
-    finalY += 28;
+    finalY += 23;
 
     // Linha 2
     doc.line(margin, finalY, margin + lineW, finalY);
-    doc.text("TESTEMUNHA 02", margin + (lineW / 2), finalY + 5, { align: "center" });
+    doc.text("TESTEMUNHA 02", margin + (lineW / 2), finalY + 4, { align: "center" });
 
-    // Data/Protocolo Box (Bottom Right)
-    const footerW = 95;
+    // Data/Protocolo Box (Rodapé)
+    const footerW = 92;
     const footerH = 20;
     const footerX = pageWidth - margin - footerW;
-    const footerY = finalY - 12;
+    const footerY = finalY - 10;
 
     doc.setLineWidth(0.3);
     doc.roundedRect(footerX, footerY, footerW, footerH, 2, 2);
-    doc.setFontSize(9);
+    doc.setFontSize(8.5);
     doc.setFont("helvetica", "bold");
     doc.text(`LOTE ${lote.numero.toString().padStart(2, '0')}`, footerX + (footerW / 2), footerY + 6, { align: "center" });
-    doc.setFontSize(8);
+    doc.setFontSize(7.5);
     doc.setFont("helvetica", "normal");
-    doc.text(`Protocolo: ${lote.protocolo}`, footerX + (footerW / 2), footerY + 12, { align: "center" });
-    doc.text(`Incineração realizada em ____/____/____`, footerX + (footerW / 2), footerY + 17, { align: "center" });
+    doc.text(`Protocolo: ${lote.protocolo}`, footerX + (footerW / 2), footerY + 11, { align: "center" });
+    doc.text(`Incineração realizada em ____/____/____`, footerX + (footerW / 2), footerY + 16, { align: "center" });
 
     // LOTE box no topo (Header)
     doc.setDrawColor(220, 38, 38);
     doc.setLineWidth(0.5);
-    doc.roundedRect(pageWidth - 48, 12, 33, 15, 3, 3);
-    doc.setFontSize(16);
+    doc.roundedRect(pageWidth - 46, 12, 31, 14, 2, 2);
+    doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.text(`LOTE ${lote.numero.toString().padStart(2, '0')}`, pageWidth - 31.5, 22, { align: "center" });
+    doc.text(`LOTE ${lote.numero.toString().padStart(2, '0')}`, pageWidth - 30.5, 21.5, { align: "center" });
 
     doc.save(`QUEIMA_LOTE_${lote.numero}.pdf`);
   };
