@@ -19,6 +19,7 @@ const formatarPesoDisplay = (valor, unidade) => {
 export default function CofreView() {
   const [apreensoes, setApreensoes] = useState([]);
   const [busca, setBusca] = useState("");
+  const [obsVisivel, setObsVisivel] = useState(null); // Armazena o item para ver a observação
 
   useEffect(() => {
     carregar();
@@ -63,6 +64,49 @@ export default function CofreView() {
 
   return (
     <div className="card">
+      {/* Modal para Visualizar Observação */}
+      {obsVisivel && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
+          background: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 2000,
+          backdropFilter: "blur(4px)"
+        }}>
+          <div style={{ background: "white", padding: "30px", borderRadius: "16px", width: "500px", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)" }}>
+            <div style={{ display: "flex", alignItems: "center", marginBottom: "20px", borderBottom: "1px solid #e2e8f0", paddingBottom: "15px" }}>
+              <span style={{ fontSize: "24px", marginRight: "12px" }}>📝</span>
+              <h3 style={{ margin: 0, color: "#1e293b", fontSize: "20px" }}>Observação de Entrada</h3>
+            </div>
+            
+            <div style={{ marginBottom: "25px" }}>
+              <p style={{ fontSize: "12px", fontWeight: "600", color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px" }}>
+                BOU/ANO: {obsVisivel.bou}
+              </p>
+              <div style={{ 
+                background: "#f8fafc", 
+                padding: "20px", 
+                borderRadius: "12px", 
+                border: "1px solid #e2e8f0",
+                color: "#334155",
+                fontSize: "15px",
+                lineHeight: "1.6",
+                minHeight: "100px",
+                whiteSpace: "pre-wrap"
+              }}>
+                {obsVisivel.observacao_cofre || "Nenhuma observação registrada."}
+              </div>
+            </div>
+
+            <button 
+              className="btn-blue" 
+              style={{ width: "100%", padding: "12px", borderRadius: "10px", fontWeight: "600" }} 
+              onClick={() => setObsVisivel(null)}
+            >
+              FECHAR
+            </button>
+          </div>
+        </div>
+      )}
+
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
         <div style={{ display: "flex", alignItems: "center" }}>
           <span style={{ fontSize: "24px", marginRight: "10px", color: "#10b981" }}>🗄️</span>
@@ -89,6 +133,7 @@ export default function CofreView() {
               <th>BOU</th>
               <th>Material / Noticiado</th>
               <th>Peso Real</th>
+              <th style={{ textAlign: "center" }}>OBSERVAÇÃO</th>
               <th>PDF / Autorização</th>
               <th style={{ textAlign: "right" }}>Ações</th>
             </tr>
@@ -96,7 +141,7 @@ export default function CofreView() {
           <tbody>
             {itens.length === 0 && (
               <tr>
-                <td colSpan="6" style={{ textAlign: "center", padding: "30px", color: "#64748b" }}>
+                <td colSpan="7" style={{ textAlign: "center", padding: "30px", color: "#64748b" }}>
                   Nenhum material no cofre.
                 </td>
               </tr>
@@ -104,6 +149,7 @@ export default function CofreView() {
             {itens.map((item) => {
               const hasPDF = !!item.arquivo_pdf;
               const pdfUrl = item.arquivo_pdf ? (item.arquivo_pdf.startsWith('http') ? item.arquivo_pdf : `${MEDIA_URL.endsWith('/') ? MEDIA_URL.slice(0, -1) : MEDIA_URL}${item.arquivo_pdf.startsWith('/') ? '' : '/'}${item.arquivo_pdf}`) : null;
+              const hasObs = !!item.observacao_cofre;
 
               return (
                 <tr key={item.id}>
@@ -116,6 +162,43 @@ export default function CofreView() {
                     </div>
                   </td>
                   <td style={{ fontWeight: "600" }}>{formatarPesoDisplay(item.peso, item.unidade)}</td>
+                  
+                  {/* Nova Coluna OBSERVACAO */}
+                  <td style={{ textAlign: "center" }}>
+                    {hasObs ? (
+                      <button 
+                        onClick={() => setObsVisivel(item)}
+                        title="Ver Observação"
+                        style={{ 
+                          background: "#f1f5f9", 
+                          border: "1px solid #e2e8f0", 
+                          cursor: "pointer", 
+                          fontSize: "14px",
+                          padding: "6px 12px",
+                          borderRadius: "20px",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          color: "#1e293b",
+                          fontWeight: "600",
+                          transition: "all 0.2s"
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.background = "#e2e8f0";
+                          e.currentTarget.style.transform = "scale(1.05)";
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.background = "#f1f5f9";
+                          e.currentTarget.style.transform = "scale(1)";
+                        }}
+                      >
+                        ✅ <span style={{ fontSize: "11px" }}>VER</span>
+                      </button>
+                    ) : (
+                      <span style={{ color: "#cbd5e1", fontSize: "18px" }}>-</span>
+                    )}
+                  </td>
+
                   <td>
                     {hasPDF ? (
                       <a 
