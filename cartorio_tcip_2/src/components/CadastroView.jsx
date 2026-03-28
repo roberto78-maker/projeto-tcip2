@@ -39,6 +39,8 @@ export default function CadastroView() {
     { id: Date.now(), reu: "", substancia: "Maconha", peso: "", unidadePeso: "g", lacre: "" }
   ]);
 
+  const [salvando, setSalvando] = useState(false);
+
   const upper = (t) => t.toUpperCase();
 
   const adicionarMaterial = () => {
@@ -190,6 +192,8 @@ export default function CadastroView() {
   };
 
   const salvar = async () => {
+    if (salvando) return;
+
     // 1. Validação
     if (!processo || !bou || !policial) {
       alert("Preencha todos os campos da ocorrência (BOU, PROJUDI, Policial).");
@@ -203,6 +207,7 @@ export default function CadastroView() {
       return;
     }
 
+    setSalvando(true);
     try {
       console.log("Iniciando salvamento de", materiais.length, "itens...");
 
@@ -251,6 +256,8 @@ export default function CadastroView() {
     } catch (err) {
       console.error("Erro Geral Salvar:", err);
       alert("Não foi possível finalizar o registro: " + (err.message || "Erro desconhecido"));
+    } finally {
+      setSalvando(false);
     }
   };
 
@@ -318,8 +325,28 @@ export default function CadastroView() {
         ))}
       </div>
 
-      <button className="btn-green" onClick={salvar} style={{ width: "100%", padding: "16px", fontWeight: "700" }}>
-        FINALIZAR REGISTRO E GERAR RECIBO
+      <button 
+        className="btn-green" 
+        onClick={salvar} 
+        disabled={salvando}
+        style={{ 
+          width: "100%", 
+          padding: "16px", 
+          fontWeight: "700", 
+          opacity: salvando ? 0.7 : 1,
+          cursor: salvando ? "not-allowed" : "pointer",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: "10px"
+        }}
+      >
+        {salvando ? (
+          <>
+            <span className="spinner"></span> 
+            PROCESSANDO E GERANDO PDF...
+          </>
+        ) : "FINALIZAR REGISTRO E GERAR RECIBO"}
       </button>
     </div>
   );
