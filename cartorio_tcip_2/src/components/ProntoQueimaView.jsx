@@ -107,9 +107,9 @@ export default function ProntoQueimaView() {
     doc.text(textoPrincipal, margin, 48);
 
     doc.setFont("helvetica", "bold");
-    doc.text(`DATA: ${dataFormatada}`, margin, 55);
+    doc.text(`DATA: ${dataFormatada}`, margin, 53);
 
-    // Tabela de itens - Aumentada para ocupar mais espaço
+    // Tabela de itens - Mais compacta para caber tudo em uma página
     const tableData = lote.itens.map(item => [
       item.bou,
       item.processo,
@@ -119,14 +119,14 @@ export default function ProntoQueimaView() {
     ]);
 
     autoTable(doc, {
-      startY: 62,
+      startY: 59,
       head: [["BOU", "PROCESSO", "NOTICIADO", "DROGAS", "PESO"]],
       body: tableData,
       theme: "grid",
       styles: { 
-        fontSize: 9, 
+        fontSize: 8.5, 
         font: "helvetica", 
-        cellPadding: 3, 
+        cellPadding: 2, 
         textColor: [0,0,0], 
         lineColor: [0,0,0],
         valign: 'middle'
@@ -136,18 +136,18 @@ export default function ProntoQueimaView() {
         textColor: [0, 0, 0], 
         lineWidth: 0.1, 
         fontStyle: "bold",
-        fontSize: 10
+        fontSize: 9.5
       },
       margin: { left: margin, right: margin },
     });
 
     // Final Y da tabela
-    let finalY = doc.lastAutoTable.finalY + 2;
+    let finalY = doc.lastAutoTable.finalY + 1;
 
-    // Linha de Totais após a tabela (estilo simplificado sem bordas pesadas)
-    doc.setFontSize(10);
+    // Linha de Totais após a tabela
+    doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
-    doc.text(`TOTAL: ${totalProcessos} PROCESSOS`, margin, finalY + 6);
+    doc.text(`TOTAL: ${totalProcessos} PROCESSOS`, margin, finalY + 5);
     
     let textoPesoTotal = "";
     if (totalGramas > 0) {
@@ -158,17 +158,17 @@ export default function ProntoQueimaView() {
       if (textoPesoTotal) textoPesoTotal += " | ";
       textoPesoTotal += `${totalUnidades} unidades`;
     }
-    doc.text(`TOTAL: ${textoPesoTotal || '0'}`, pageWidth - margin, finalY + 6, { align: "right" });
+    doc.text(`TOTAL: ${textoPesoTotal || '0'}`, pageWidth - margin, finalY + 5, { align: "right" });
 
     // --- POSICIONAMENTO DAS ASSINATURAS E RODAPÉ ---
-    // Calculamos se precisamos de nova página (Assinaturas precisam de ~50mm)
-    finalY += 15;
-    if (finalY > pageHeight - 65) {
+    // Tentamos manter na mesma página se houver pelo menos 45mm de espaço
+    finalY += 12;
+    if (finalY > pageHeight - 50) {
       doc.addPage();
       finalY = 30; 
     } else {
-      // Se couber, empurramos para o final da página para manter o padrão do modelo
-      finalY = pageHeight - 65;
+      // Posição fixa no rodapé da página para manter padrão
+      finalY = pageHeight - 55;
     }
 
     const lineW = 75;
@@ -177,44 +177,45 @@ export default function ProntoQueimaView() {
     // Linha 1: RESPONSÁVEL (Esquerda) e TESTEMUNHA 01 (Direita)
     doc.setLineWidth(0.1);
     doc.line(margin, finalY, margin + lineW, finalY);
-    doc.text("RESPONSÁVEL", margin + (lineW / 2), finalY + 5, { align: "center" });
+    doc.setFontSize(9);
+    doc.text("RESPONSÁVEL", margin + (lineW / 2), finalY + 4, { align: "center" });
 
     doc.line(col2X, finalY, pageWidth - margin, finalY);
-    doc.text("TESTEMUNHA 01", col2X + (lineW / 2), finalY + 5, { align: "center" });
+    doc.text("TESTEMUNHA 01", col2X + (lineW / 2), finalY + 4, { align: "center" });
 
-    finalY += 28;
+    finalY += 23;
     
     // Linha 2: TESTEMUNHA 02 (Esquerda) e Bloco de Protocolo (Direita)
     doc.line(margin, finalY, margin + lineW, finalY);
-    doc.text("TESTEMUNHA 02", margin + (lineW / 2), finalY + 5, { align: "center" });
+    doc.text("TESTEMUNHA 02", margin + (lineW / 2), finalY + 4, { align: "center" });
 
-    // Bloco do Protocolo no Rodapé (Alinhado à TESTEMUNHA 02)
-    const footerW = 95;
-    const footerH = 22;
+    // Bloco do Protocolo no Rodapé
+    const footerW = 92;
+    const footerH = 20;
     const footerX = pageWidth - margin - footerW;
-    const footerY = finalY - 12; // Alinhado visualmente com a linha da TESTEMUNHA 02
+    const footerY = finalY - 10;
 
     doc.setLineWidth(0.3);
     doc.roundedRect(footerX, footerY, footerW, footerH, 2, 2);
     
-    doc.setFontSize(9);
+    doc.setFontSize(8.5);
     doc.setFont("helvetica", "bold");
     doc.text(`LOTE ${String(lote.numero).padStart(2, '0')} - PROTOCOLO: ${lote.protocolo}`, footerX + (footerW / 2), footerY + 6, { align: "center" });
     
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.text("Certidão emitida via Sistema Eletrônico pelo", footerX + (footerW / 2), footerY + 12, { align: "center" });
+    doc.setFontSize(7.5);
+    doc.text("Certidão emitida via Sistema Eletrônico pelo", footerX + (footerW / 2), footerY + 11, { align: "center" });
     
     doc.setFont("helvetica", "bold");
     const txtAgente = `Agente: ${usuario?.username || 'Sistema'} em ${dataFormatada} às ${horaFormatada}`;
-    doc.text(txtAgente, footerX + (footerW / 2), footerY + 17, { align: "center" });
+    doc.text(txtAgente, footerX + (footerW / 2), footerY + 16, { align: "center" });
 
     // Numero do Lote grande no canto Top Right (Header)
     doc.setLineWidth(0.5);
-    doc.roundedRect(pageWidth - 48, 12, 33, 15, 3, 3);
-    doc.setFontSize(16);
+    doc.roundedRect(pageWidth - 46, 12, 31, 14, 2, 2);
+    doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
-    doc.text(`LOTE ${lote.numero.toString().padStart(2, '0')}`, pageWidth - 31.5, 22, { align: "center" });
+    doc.text(`LOTE ${String(lote.numero).padStart(2, '0')}`, pageWidth - 30.5, 21.5, { align: "center" });
 
     doc.save(`CERTIDAO_LOTE_${lote.numero}.pdf`);
   };
