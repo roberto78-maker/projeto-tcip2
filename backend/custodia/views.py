@@ -241,9 +241,11 @@ class RelatorioIncineracaoView(APIView):
                     "peso": item["peso"],
                     "vara": item["vara"],
                     "status_label": status_desc,
-                    "data": item["data_criacao"].strftime("%Y-%m-%d")
-                    if item["data_criacao"]
-                    else None,
+                    "data": (
+                        item["data_criacao"].strftime("%Y-%m-%d")
+                        if item["data_criacao"]
+                        else None
+                    ),
                 }
             )
 
@@ -437,9 +439,11 @@ class RelatorioIncineracaoPDFView(APIView):
                             item.substancia or "-",
                             f"{item.peso} {item.unidade}",
                             status_desc,
-                            item.data_criacao.strftime("%d/%m/%Y")
-                            if item.data_criacao
-                            else "-",
+                            (
+                                item.data_criacao.strftime("%d/%m/%Y")
+                                if item.data_criacao
+                                else "-"
+                            ),
                         ]
                     )
 

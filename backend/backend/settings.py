@@ -3,7 +3,6 @@ import os
 import urllib.parse
 from datetime import timedelta
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # 🔐 SEGURANÇA

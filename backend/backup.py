@@ -120,12 +120,16 @@ def export_json():
                 "policial": apreensao.policial,
                 "vara": apreensao.vara,
                 "status": apreensao.status,
-                "data_criacao": apreensao.data_criacao.isoformat()
-                if apreensao.data_criacao
-                else None,
-                "lote_incineracao": apreensao.lote_incineracao.protocolo
-                if apreensao.lote_incineracao
-                else None,
+                "data_criacao": (
+                    apreensao.data_criacao.isoformat()
+                    if apreensao.data_criacao
+                    else None
+                ),
+                "lote_incineracao": (
+                    apreensao.lote_incineracao.protocolo
+                    if apreensao.lote_incineracao
+                    else None
+                ),
             }
         )
 
@@ -137,9 +141,9 @@ def export_json():
                 "ano": lote.ano,
                 "protocolo": lote.protocolo,
                 "origem": lote.origem,
-                "data_criacao": lote.data_criacao.isoformat()
-                if lote.data_criacao
-                else None,
+                "data_criacao": (
+                    lote.data_criacao.isoformat() if lote.data_criacao else None
+                ),
             }
         )
 
