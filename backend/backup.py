@@ -91,7 +91,7 @@ def export_json():
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
     django.setup()
 
-    from custodia.models import Apreensao, LoteIncineracao, Historico
+    from custodia.models import Apreensao, LoteIncineracao
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     export_file = BACKUP_DIR / f"export_{timestamp}.json"

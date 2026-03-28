@@ -11,13 +11,14 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
 
 application = get_wsgi_application()
 
 
 # 🔐 Criação automática de superuser (Render - sem shell)
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model  # noqa: E402
+
 
 def create_superuser():
     User = get_user_model()
@@ -29,6 +30,7 @@ def create_superuser():
     if not User.objects.filter(username=username).exists():
         User.objects.create_superuser(username, email, password)
         print("✅ Superuser criado automaticamente!")
+
 
 try:
     create_superuser()

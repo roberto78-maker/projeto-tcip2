@@ -5,12 +5,18 @@ from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 from rest_framework import permissions
-from custodia.views import ApreensaoViewSet, LoteIncineracaoViewSet, RelatorioIncineracaoView, RelatorioIncineracaoPDFView
+from custodia.views import (
+    ApreensaoViewSet,
+    LoteIncineracaoViewSet,
+    RelatorioIncineracaoView,
+    RelatorioIncineracaoPDFView,
+)
 
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from django.views.static import serve
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -29,18 +35,23 @@ router = DefaultRouter()
 router.register(r"apreensoes", ApreensaoViewSet)
 router.register(r"lotes", LoteIncineracaoViewSet)
 
-from django.views.static import serve
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include(router.urls)),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
-    
     # 📊 Relatórios de Auditoria
-    path("api/relatorios/incineracao/", RelatorioIncineracaoView.as_view(), name="relatorio_incineracao"),
-    path("api/relatorios/incineracao/pdf/", RelatorioIncineracaoPDFView.as_view(), name="relatorio_incineracao_pdf"),
-
+    path(
+        "api/relatorios/incineracao/",
+        RelatorioIncineracaoView.as_view(),
+        name="relatorio_incineracao",
+    ),
+    path(
+        "api/relatorios/incineracao/pdf/",
+        RelatorioIncineracaoPDFView.as_view(),
+        name="relatorio_incineracao_pdf",
+    ),
     # 📚 Swagger / OpenAPI
     path(
         "swagger/",

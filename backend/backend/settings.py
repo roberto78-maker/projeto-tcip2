@@ -1,11 +1,8 @@
 from pathlib import Path
 import os
+import urllib.parse
 from datetime import timedelta
-import dj_database_url
 
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -79,7 +76,6 @@ TEMPLATES = [
 WSGI_APPLICATION = "backend.wsgi.application"
 
 # 🗄️ BANCO
-import urllib.parse
 
 DATABASES = {
     "default": {

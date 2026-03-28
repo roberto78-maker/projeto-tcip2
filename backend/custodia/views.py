@@ -4,7 +4,6 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import filters, permissions
-from django.db.models import Sum, Count
 from django.http import HttpResponse
 from django_filters import rest_framework as django_filters
 from django.utils import timezone
@@ -164,6 +163,7 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
             }
         )
 
+
 class RelatorioIncineracaoView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -179,56 +179,82 @@ class RelatorioIncineracaoView(APIView):
         processo = request.GET.get("processo")
         reu = request.GET.get("reu")
 
-        if data_inicio: qs = qs.filter(data_criacao__gte=data_inicio)
-        if data_fim: qs = qs.filter(data_criacao__lte=data_fim)
-        if vara: qs = qs.filter(vara__icontains=vara)
-        if substancia: qs = qs.filter(substancia__icontains=substancia)
-        if status_filter: qs = qs.filter(status=status_filter)
-        if bou: qs = qs.filter(bou__icontains=bou)
-        if processo: qs = qs.filter(processo__icontains=processo)
-        if reu: qs = qs.filter(reu__icontains=reu)
+        if data_inicio:
+            qs = qs.filter(data_criacao__gte=data_inicio)
+        if data_fim:
+            qs = qs.filter(data_criacao__lte=data_fim)
+        if vara:
+            qs = qs.filter(vara__icontains=vara)
+        if substancia:
+            qs = qs.filter(substancia__icontains=substancia)
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+        if bou:
+            qs = qs.filter(bou__icontains=bou)
+        if processo:
+            qs = qs.filter(processo__icontains=processo)
+        if reu:
+            qs = qs.filter(reu__icontains=reu)
 
         detalhado = qs.values(
-            "id", "bou", "substancia", "peso", "vara", "data_criacao", "status", "processo", "reu", 
-            "lote_incineracao__numero", "lote_incineracao__data_criacao"
-        ).order_by("-data_criacao")[:500] 
-        
+            "id",
+            "bou",
+            "substancia",
+            "peso",
+            "vara",
+            "data_criacao",
+            "status",
+            "processo",
+            "reu",
+            "lote_incineracao__numero",
+            "lote_incineracao__data_criacao",
+        ).order_by("-data_criacao")[:500]
+
         status_labels = {
             "conferencia": "Aguardando Balança",
             "cofre": "No Cofre",
             "incineracao": "Lotes (P. Queima)",
-            "queima_pronta": "Incinerado"
+            "queima_pronta": "Incinerado",
         }
 
         detalhado_formatado = []
         for item in detalhado:
             status_desc = status_labels.get(item["status"], item["status"])
-            
+
             # Se já está associado a um lote (seja Incinerado ou em Montagem)
             if item.get("lote_incineracao__numero"):
                 lote_num = str(item["lote_incineracao__numero"]).zfill(2)
-                lote_data = item["lote_incineracao__data_criacao"].strftime("%d/%m/%y") if item.get("lote_incineracao__data_criacao") else "S/D"
+                lote_data = (
+                    item["lote_incineracao__data_criacao"].strftime("%d/%m/%y")
+                    if item.get("lote_incineracao__data_criacao")
+                    else "S/D"
+                )
                 status_desc = f"{status_desc} (Lote {lote_num} - {lote_data})"
 
-            detalhado_formatado.append({
-                "id": item["id"],
-                "bou": item["bou"],
-                "processo": item["processo"],
-                "reu": item["reu"],
-                "substancia": item["substancia"],
-                "peso": item["peso"],
-                "vara": item["vara"],
-                "status_label": status_desc,
-                "data": item["data_criacao"].strftime("%Y-%m-%d") if item["data_criacao"] else None
-            })
+            detalhado_formatado.append(
+                {
+                    "id": item["id"],
+                    "bou": item["bou"],
+                    "processo": item["processo"],
+                    "reu": item["reu"],
+                    "substancia": item["substancia"],
+                    "peso": item["peso"],
+                    "vara": item["vara"],
+                    "status_label": status_desc,
+                    "data": item["data_criacao"].strftime("%Y-%m-%d")
+                    if item["data_criacao"]
+                    else None,
+                }
+            )
 
         return Response({"detalhado": detalhado_formatado})
+
 
 class RelatorioIncineracaoPDFView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        qs = Apreensao.objects.select_related('lote_incineracao').all()
+        qs = Apreensao.objects.select_related("lote_incineracao").all()
 
         data_inicio = request.GET.get("data_inicio")
         data_fim = request.GET.get("data_fim")
@@ -239,43 +265,96 @@ class RelatorioIncineracaoPDFView(APIView):
         processo = request.GET.get("processo")
         reu = request.GET.get("reu")
 
-        if data_inicio: qs = qs.filter(data_criacao__gte=data_inicio)
-        if data_fim: qs = qs.filter(data_criacao__lte=data_fim)
-        if vara: qs = qs.filter(vara__icontains=vara)
-        if substancia: qs = qs.filter(substancia__icontains=substancia)
-        if status_filter: qs = qs.filter(status=status_filter)
-        if bou: qs = qs.filter(bou__icontains=bou)
-        if processo: qs = qs.filter(processo__icontains=processo)
-        if reu: qs = qs.filter(reu__icontains=reu)
+        if data_inicio:
+            qs = qs.filter(data_criacao__gte=data_inicio)
+        if data_fim:
+            qs = qs.filter(data_criacao__lte=data_fim)
+        if vara:
+            qs = qs.filter(vara__icontains=vara)
+        if substancia:
+            qs = qs.filter(substancia__icontains=substancia)
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+        if bou:
+            qs = qs.filter(bou__icontains=bou)
+        if processo:
+            qs = qs.filter(processo__icontains=processo)
+        if reu:
+            qs = qs.filter(reu__icontains=reu)
 
-        qs = qs.order_by('data_criacao')[:1000] # Evitar travamentos
+        qs = qs.order_by("data_criacao")[:1000]  # Evitar travamentos
 
         buffer = io.BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=30, leftMargin=30, topMargin=30, bottomMargin=18)
+        doc = SimpleDocTemplate(
+            buffer,
+            pagesize=A4,
+            rightMargin=30,
+            leftMargin=30,
+            topMargin=30,
+            bottomMargin=18,
+        )
         elements = []
         styles = getSampleStyleSheet()
-        
-        title_style = ParagraphStyle('TitleCenter', parent=styles['Heading1'], fontName='Helvetica-Bold', fontSize=11, alignment=1, spaceAfter=5)
-        subtitle_title_style = ParagraphStyle('TitleCenterSub', parent=styles['Normal'], fontName='Helvetica', fontSize=9, alignment=1, spaceAfter=15)
-        
-        normal_style = styles['Normal']
-        subtitle_style = ParagraphStyle('SubTitle', parent=styles['Heading2'], spaceAfter=10, spaceBefore=20, textColor=colors.HexColor("#1e3a8a"))
+
+        title_style = ParagraphStyle(
+            "TitleCenter",
+            parent=styles["Heading1"],
+            fontName="Helvetica-Bold",
+            fontSize=11,
+            alignment=1,
+            spaceAfter=5,
+        )
+        subtitle_title_style = ParagraphStyle(
+            "TitleCenterSub",
+            parent=styles["Normal"],
+            fontName="Helvetica",
+            fontSize=9,
+            alignment=1,
+            spaceAfter=15,
+        )
+
+        normal_style = styles["Normal"]
+        subtitle_style = ParagraphStyle(
+            "SubTitle",
+            parent=styles["Heading2"],
+            spaceAfter=10,
+            spaceBefore=20,
+            textColor=colors.HexColor("#1e3a8a"),
+        )
 
         # Cabeçalho como Certidão de Queima
         elements.append(Paragraph("POLÍCIA MILITAR DO PARANÁ - 6º BPM", title_style))
         elements.append(Paragraph("PRIMEIRO CARTÓRIO - CASCAVEL", subtitle_title_style))
-        
-        elements.append(Paragraph("RELATÓRIO DE AUDITORIA E RASTREIO", ParagraphStyle('DocTitle', parent=styles['Heading2'], fontName='Helvetica-Bold', fontSize=12, alignment=1, spaceAfter=10)))
-        
+
+        elements.append(
+            Paragraph(
+                "RELATÓRIO DE AUDITORIA E RASTREIO",
+                ParagraphStyle(
+                    "DocTitle",
+                    parent=styles["Heading2"],
+                    fontName="Helvetica-Bold",
+                    fontSize=12,
+                    alignment=1,
+                    spaceAfter=10,
+                ),
+            )
+        )
+
         periodo_texto = f"Período: {data_inicio or 'Início'} a {data_fim or 'Hoje'}"
         filtros_usados = []
-        if vara: filtros_usados.append(f"Vara: {vara}")
-        if substancia: filtros_usados.append(f"Substância: {substancia}")
-        if status_filter: filtros_usados.append(f"Status: {status_filter}")
-        if bou: filtros_usados.append(f"BOU: {bou}")
-        if processo: filtros_usados.append(f"Processo: {processo}")
-        if reu: filtros_usados.append(f"Réu/Autor: {reu}")
-        
+        if vara:
+            filtros_usados.append(f"Vara: {vara}")
+        if substancia:
+            filtros_usados.append(f"Substância: {substancia}")
+        if status_filter:
+            filtros_usados.append(f"Status: {status_filter}")
+        if bou:
+            filtros_usados.append(f"BOU: {bou}")
+        if processo:
+            filtros_usados.append(f"Processo: {processo}")
+        if reu:
+            filtros_usados.append(f"Réu/Autor: {reu}")
+
         filtros_str = " | ".join(filtros_usados) if filtros_usados else "Nenhum"
 
         info = f"<b>{periodo_texto}</b><br/><b>Filtros Aplicados:</b> {filtros_str}"
@@ -284,16 +363,28 @@ class RelatorioIncineracaoPDFView(APIView):
 
         # Agrupar por mes/ano
         from collections import defaultdict
-        
+
         meses = {
-            1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril", 5: "Maio", 6: "Junho",
-            7: "Julho", 8: "Agosto", 9: "Setembro", 10: "Outubro", 11: "Novembro", 12: "Dezembro"
+            1: "Janeiro",
+            2: "Fevereiro",
+            3: "Março",
+            4: "Abril",
+            5: "Maio",
+            6: "Junho",
+            7: "Julho",
+            8: "Agosto",
+            9: "Setembro",
+            10: "Outubro",
+            11: "Novembro",
+            12: "Dezembro",
         }
 
         agrupado = defaultdict(list)
         for item in qs:
             if item.data_criacao:
-                mes_ano = f"{meses[item.data_criacao.month]} de {item.data_criacao.year}"
+                mes_ano = (
+                    f"{meses[item.data_criacao.month]} de {item.data_criacao.year}"
+                )
             else:
                 mes_ano = "Data Desconhecida"
             agrupado[mes_ano].append(item)
@@ -302,53 +393,88 @@ class RelatorioIncineracaoPDFView(APIView):
             "conferencia": "Aguardando Balança",
             "cofre": "No Cofre",
             "incineracao": "Lotes",
-            "queima_pronta": "Incinerado"
+            "queima_pronta": "Incinerado",
         }
 
         if not agrupado:
-            elements.append(Paragraph("Nenhum registro encontrado para os filtros selecionados.", normal_style))
+            elements.append(
+                Paragraph(
+                    "Nenhum registro encontrado para os filtros selecionados.",
+                    normal_style,
+                )
+            )
         else:
             for mes_ano, itens in agrupado.items():
                 elements.append(Paragraph(mes_ano, subtitle_style))
-                
-                data = [["BOU/Processo", "Substância", "Volume/Peso", "Local (Status)", "Data"]]
+
+                data = [
+                    [
+                        "BOU/Processo",
+                        "Substância",
+                        "Volume/Peso",
+                        "Local (Status)",
+                        "Data",
+                    ]
+                ]
                 for item in itens:
                     linha1 = item.bou or "-"
-                    if item.processo: linha1 += f"\nProc: {item.processo}"
-                    
-                    status_desc = status_labels.get(item.status, item.status)
-                    if hasattr(item, 'lote_incineracao') and item.lote_incineracao:
-                        lote_num = str(item.lote_incineracao.numero).zfill(2)
-                        lote_data = item.lote_incineracao.data_criacao.strftime("%d/%m/%y") if item.lote_incineracao.data_criacao else "S/D"
-                        status_desc = f"{status_desc}\n(Lote {lote_num} - {lote_data})"
-                    
-                    data.append([
-                        linha1, 
-                        item.substancia or "-", 
-                        f"{item.peso} {item.unidade}", 
-                        status_desc, 
-                        item.data_criacao.strftime("%d/%m/%Y") if item.data_criacao else "-"
-                    ])
+                    if item.processo:
+                        linha1 += f"\nProc: {item.processo}"
 
-                t = Table(data, colWidths=[1.7*inch, 1.2*inch, 1.1*inch, 1.6*inch, 1.0*inch])
-                t.setStyle(TableStyle([
-                    ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#dc2626")),
-                    ('TEXTCOLOR', (0,0), (-1,0), colors.whitesmoke),
-                    ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-                    ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-                    ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
-                    ('FONTSIZE', (0,0), (-1,0), 9),
-                    ('FONTSIZE', (0,1), (-1,-1), 8),
-                    ('BOTTOMPADDING', (0,0), (-1,0), 8),
-                    ('BACKGROUND', (0,1), (-1,-1), colors.whitesmoke),
-                    ('GRID', (0,0), (-1,-1), 0.5, colors.black),
-                ]))
+                    status_desc = status_labels.get(item.status, item.status)
+                    if hasattr(item, "lote_incineracao") and item.lote_incineracao:
+                        lote_num = str(item.lote_incineracao.numero).zfill(2)
+                        lote_data = (
+                            item.lote_incineracao.data_criacao.strftime("%d/%m/%y")
+                            if item.lote_incineracao.data_criacao
+                            else "S/D"
+                        )
+                        status_desc = f"{status_desc}\n(Lote {lote_num} - {lote_data})"
+
+                    data.append(
+                        [
+                            linha1,
+                            item.substancia or "-",
+                            f"{item.peso} {item.unidade}",
+                            status_desc,
+                            item.data_criacao.strftime("%d/%m/%Y")
+                            if item.data_criacao
+                            else "-",
+                        ]
+                    )
+
+                t = Table(
+                    data,
+                    colWidths=[
+                        1.7 * inch,
+                        1.2 * inch,
+                        1.1 * inch,
+                        1.6 * inch,
+                        1.0 * inch,
+                    ],
+                )
+                t.setStyle(
+                    TableStyle(
+                        [
+                            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#dc2626")),
+                            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                            ("FONTSIZE", (0, 0), (-1, 0), 9),
+                            ("FONTSIZE", (0, 1), (-1, -1), 8),
+                            ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
+                            ("BACKGROUND", (0, 1), (-1, -1), colors.whitesmoke),
+                            ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
+                        ]
+                    )
+                )
                 elements.append(t)
                 elements.append(Spacer(1, 10))
 
         doc.build(elements)
         buffer.seek(0)
 
-        response = HttpResponse(buffer, content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename="relatorio_radar.pdf"'
+        response = HttpResponse(buffer, content_type="application/pdf")
+        response["Content-Disposition"] = 'attachment; filename="relatorio_radar.pdf"'
         return response

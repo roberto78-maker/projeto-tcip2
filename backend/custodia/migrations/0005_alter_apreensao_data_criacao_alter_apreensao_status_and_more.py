@@ -4,25 +4,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('custodia', '0004_apreensao_arquivo_pdf_url'),
+        ("custodia", "0004_apreensao_arquivo_pdf_url"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='apreensao',
-            name='data_criacao',
+            model_name="apreensao",
+            name="data_criacao",
             field=models.DateTimeField(auto_now_add=True, db_index=True),
         ),
         migrations.AlterField(
-            model_name='apreensao',
-            name='status',
-            field=models.CharField(db_index=True, default='conferencia', max_length=50),
+            model_name="apreensao",
+            name="status",
+            field=models.CharField(db_index=True, default="conferencia", max_length=50),
         ),
         migrations.AlterField(
-            model_name='historico',
-            name='data',
+            model_name="historico",
+            name="data",
             field=models.DateTimeField(auto_now_add=True, db_index=True),
         ),
     ]

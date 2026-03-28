@@ -5,46 +5,63 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('custodia', '0002_alter_apreensao_autorizacao_alter_apreensao_id_and_more'),
+        ("custodia", "0002_alter_apreensao_autorizacao_alter_apreensao_id_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='LoteIncineracao',
+            name="LoteIncineracao",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('numero', models.IntegerField()),
-                ('ano', models.IntegerField()),
-                ('protocolo', models.CharField(max_length=100, unique=True)),
-                ('origem', models.CharField(default='1ºCART6BPM', max_length=50)),
-                ('data_criacao', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("numero", models.IntegerField()),
+                ("ano", models.IntegerField()),
+                ("protocolo", models.CharField(max_length=100, unique=True)),
+                ("origem", models.CharField(default="1ºCART6BPM", max_length=50)),
+                ("data_criacao", models.DateTimeField(auto_now_add=True)),
             ],
         ),
         migrations.AddField(
-            model_name='apreensao',
-            name='arquivo_pdf',
-            field=models.FileField(blank=True, null=True, upload_to='laudos_pdf/'),
+            model_name="apreensao",
+            name="arquivo_pdf",
+            field=models.FileField(blank=True, null=True, upload_to="laudos_pdf/"),
         ),
         migrations.AddField(
-            model_name='apreensao',
-            name='observacao_cofre',
+            model_name="apreensao",
+            name="observacao_cofre",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='apreensao',
-            name='id',
-            field=models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID'),
+            model_name="apreensao",
+            name="id",
+            field=models.BigAutoField(
+                auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+            ),
         ),
         migrations.AlterField(
-            model_name='historico',
-            name='id',
-            field=models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID'),
+            model_name="historico",
+            name="id",
+            field=models.BigAutoField(
+                auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+            ),
         ),
         migrations.AddField(
-            model_name='apreensao',
-            name='lote_incineracao',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='apreensoes', to='custodia.loteincineracao'),
+            model_name="apreensao",
+            name="lote_incineracao",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="apreensoes",
+                to="custodia.loteincineracao",
+            ),
         ),
     ]

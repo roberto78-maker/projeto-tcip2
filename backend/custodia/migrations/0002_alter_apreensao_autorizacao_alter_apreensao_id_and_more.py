@@ -4,35 +4,38 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('custodia', '0001_initial'),
+        ("custodia", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='apreensao',
-            name='autorizacao',
+            model_name="apreensao",
+            name="autorizacao",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='apreensao',
-            name='id',
-            field=models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID'),
+            model_name="apreensao",
+            name="id",
+            field=models.AutoField(
+                auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+            ),
         ),
         migrations.AlterField(
-            model_name='apreensao',
-            name='peso',
+            model_name="apreensao",
+            name="peso",
             field=models.FloatField(),
         ),
         migrations.AlterField(
-            model_name='apreensao',
-            name='status',
-            field=models.CharField(default='conferencia', max_length=50),
+            model_name="apreensao",
+            name="status",
+            field=models.CharField(default="conferencia", max_length=50),
         ),
         migrations.AlterField(
-            model_name='historico',
-            name='id',
-            field=models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID'),
+            model_name="historico",
+            name="id",
+            field=models.AutoField(
+                auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+            ),
         ),
     ]

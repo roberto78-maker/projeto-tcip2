@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('custodia', '0003_loteincineracao_apreensao_arquivo_pdf_and_more'),
+        ("custodia", "0003_loteincineracao_apreensao_arquivo_pdf_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='apreensao',
-            name='arquivo_pdf_url',
+            model_name="apreensao",
+            name="arquivo_pdf_url",
             field=models.URLField(blank=True, max_length=500, null=True),
         ),
     ]

@@ -5,39 +5,74 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Apreensao',
+            name="Apreensao",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('processo', models.CharField(max_length=100)),
-                ('bou', models.CharField(max_length=100)),
-                ('reu', models.CharField(max_length=200)),
-                ('substancia', models.CharField(max_length=100)),
-                ('peso', models.DecimalField(decimal_places=3, max_digits=10)),
-                ('unidade', models.CharField(max_length=50)),
-                ('lacre', models.CharField(blank=True, max_length=100, null=True)),
-                ('policial', models.CharField(blank=True, max_length=200, null=True)),
-                ('vara', models.CharField(blank=True, max_length=200, null=True)),
-                ('descricao', models.TextField(blank=True, null=True)),
-                ('status', models.CharField(choices=[('conferencia', 'Conferência'), ('cofre', 'Cofre'), ('queima', 'Incineração')], default='conferencia', max_length=20)),
-                ('autorizacao', models.FileField(blank=True, null=True, upload_to='autorizacoes/')),
-                ('data_criacao', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("processo", models.CharField(max_length=100)),
+                ("bou", models.CharField(max_length=100)),
+                ("reu", models.CharField(max_length=200)),
+                ("substancia", models.CharField(max_length=100)),
+                ("peso", models.DecimalField(decimal_places=3, max_digits=10)),
+                ("unidade", models.CharField(max_length=50)),
+                ("lacre", models.CharField(blank=True, max_length=100, null=True)),
+                ("policial", models.CharField(blank=True, max_length=200, null=True)),
+                ("vara", models.CharField(blank=True, max_length=200, null=True)),
+                ("descricao", models.TextField(blank=True, null=True)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("conferencia", "Conferência"),
+                            ("cofre", "Cofre"),
+                            ("queima", "Incineração"),
+                        ],
+                        default="conferencia",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "autorizacao",
+                    models.FileField(blank=True, null=True, upload_to="autorizacoes/"),
+                ),
+                ("data_criacao", models.DateTimeField(auto_now_add=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Historico',
+            name="Historico",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('acao', models.CharField(max_length=200)),
-                ('data', models.DateTimeField(auto_now_add=True)),
-                ('apreensao', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='historico', to='custodia.apreensao')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("acao", models.CharField(max_length=200)),
+                ("data", models.DateTimeField(auto_now_add=True)),
+                (
+                    "apreensao",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="historico",
+                        to="custodia.apreensao",
+                    ),
+                ),
             ],
         ),
     ]
