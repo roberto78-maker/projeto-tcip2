@@ -142,7 +142,7 @@ export default function ProntoQueimaView() {
     });
 
     // Final Y da tabela
-    finalY = doc.lastAutoTable.finalY + 2;
+    let finalY = doc.lastAutoTable.finalY + 2;
 
     // Linha de Totais após a tabela (estilo simplificado sem bordas pesadas)
     doc.setFontSize(10);
