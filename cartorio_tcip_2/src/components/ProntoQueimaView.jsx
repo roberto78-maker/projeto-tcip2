@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { getApreensoes, getLotes, finalizarLote } from "../services/api.js";
+import { getUsuario } from "../services/auth.js";
 import brasao from "../assets/brasao.png";
 
 // Formata peso com unidade inteligente
@@ -54,36 +55,60 @@ export default function ProntoQueimaView() {
     const doc = new jsPDF();
     const margin = 15;
     const pageWidth = doc.internal.pageSize.getWidth();
+    const usuario = getUsuario();
+    const agora = new Date();
+    const dataFormatada = agora.toLocaleDateString('pt-BR');
+    const horaFormatada = agora.toLocaleTimeString('pt-BR');
+
+    // Cálculos de Totais
+    const totalProcessos = lote.itens.length;
+    let totalGramas = 0;
+    let totalUnidades = 0;
+
+    lote.itens.forEach(item => {
+      const p = parseFloat(String(item.peso).replace(",", ".")) || 0;
+      const uni = String(item.unidade).toLowerCase();
+      if (uni.includes("g") || uni.includes("kg")) {
+        // Converte kg para gramas para o total se for o caso, ou mantém se o user preferir
+        if (uni.includes("kg")) totalGramas += p * 1000;
+        else totalGramas += p;
+      } else {
+        totalUnidades += p;
+      }
+    });
+
+    // Configuração de Cor Global (Preto)
+    doc.setTextColor(0, 0, 0);
+    doc.setDrawColor(0, 0, 0);
     
     // Header com Logo
     try {
       const img = new Image();
       img.src = brasao;
       await new Promise(r => img.onload = r);
-      doc.addImage(img, 'PNG', margin, 10, 20, 20);
+      doc.addImage(img, 'PNG', margin, 10, 18, 18);
     } catch(e) {}
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.text("POLÍCIA MILITAR DO PARANÁ - 6º BPM", pageWidth / 2, 18, { align: "center" });
-    doc.setFontSize(9);
-    doc.text("PRIMEIRO CARTÓRIO - CASCAVEL", pageWidth / 2, 23, { align: "center" });
+    doc.setFontSize(10);
+    doc.text("POLÍCIA MILITAR DO PARANÁ - 6º BPM", pageWidth / 2, 16, { align: "center" });
+    doc.setFontSize(8);
+    doc.text("PRIMEIRO CARTÓRIO - CASCAVEL", pageWidth / 2, 20, { align: "center" });
     
-    doc.setFontSize(12);
-    doc.text("CERTIDÃO DE INCINERAÇÃO DE ENTORPECENTES", pageWidth / 2, 32, { align: "center" });
-    doc.line(margin, 35, pageWidth - margin, 35);
+    doc.setFontSize(11);
+    doc.text("CERTIDÃO DE INCINERAÇÃO DE ENTORPECENTES", pageWidth / 2, 28, { align: "center" });
+    doc.line(margin, 31, pageWidth - margin, 31);
 
     // Corpo do Texto
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     const textoPrincipal = "Certifico que, em conformidade com as autorizações judiciais, procedeu-se a incineração dos materiais abaixo:";
-    doc.text(textoPrincipal, margin, 45);
+    doc.text(textoPrincipal, margin, 38);
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.text(`LOTE ${lote.numero} - PROTOCOLO: ${lote.protocolo}`, margin, 52);
+    doc.text(`DATA: ${dataFormatada}`, margin, 43);
 
-    // Tabela de itens (máximo 20)
+    // Tabela de itens
     const tableData = lote.itens.map(item => [
       item.bou,
       item.processo,
@@ -93,36 +118,76 @@ export default function ProntoQueimaView() {
     ]);
 
     autoTable(doc, {
-      startY: 58,
+      startY: 48,
       head: [["BOU", "PROCESSO", "NOTICIADO", "DROGAS", "PESO"]],
       body: tableData,
       theme: "grid",
-      styles: { fontSize: 8, font: "helvetica", cellPadding: 2 },
+      styles: { fontSize: 7, font: "helvetica", cellPadding: 1.5, textColor: [0,0,0], lineColor: [0,0,0] },
       headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], lineWidth: 0.1, fontStyle: "bold" },
       margin: { left: margin, right: margin },
     });
 
-    let finalY = doc.lastAutoTable.finalY + 30;
+    let finalY = doc.lastAutoTable.finalY;
 
-    // Assinaturas
-    const colWidth = (pageWidth - (margin * 2)) / 2;
-    doc.line(margin, finalY, margin + colWidth - 10, finalY);
-    doc.text("RESPONSÁVEL", margin + (colWidth / 2) - 5, finalY + 5, { align: "center" });
+    // Linha de Totais após a tabela
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    doc.setLineWidth(0.1);
+    doc.rect(margin, finalY, pageWidth - (margin * 2), 7);
+    doc.text(`TOTAL: ${totalProcessos} PROCESSOS`, margin + 2, finalY + 5);
+    
+    let textoPesoTotal = "";
+    if (totalGramas > 0) {
+      if (totalGramas >= 1000) textoPesoTotal += `${(totalGramas/1000).toFixed(3).replace(".",",")} Kg`;
+      else textoPesoTotal += `${totalGramas.toFixed(2).replace(".",",")} g`;
+    }
+    if (totalUnidades > 0) {
+      if (textoPesoTotal) textoPesoTotal += " | ";
+      textoPesoTotal += `${totalUnidades} unidades`;
+    }
+    doc.text(`TOTAL: ${textoPesoTotal || '0'}`, pageWidth - margin - 2, finalY + 5, { align: "right" });
 
-    doc.line(margin + colWidth + 10, finalY, pageWidth - margin, finalY);
-    doc.text("TESTEMUNHA 01", margin + colWidth + 10 + (colWidth / 2) - 5, finalY + 5, { align: "center" });
+    finalY += 25;
 
-    finalY += 30;
-    doc.line(margin, finalY, margin + colWidth - 10, finalY);
-    doc.text("TESTEMUNHA 02", margin + (colWidth / 2) - 5, finalY + 5, { align: "center" });
+    // Assinaturas (Conforme Modelo)
+    const lineW = 60;
+    const centerX = pageWidth / 2;
+    
+    // Responsável Meio
+    doc.line(centerX - (lineW/2), finalY, centerX + (lineW/2), finalY);
+    doc.text("RESPONSÁVEL", centerX, finalY + 4, { align: "center" });
 
-    doc.text("_______/_______/_______", pageWidth - margin - 40, finalY + 5);
+    // Testemunha 01 Lado Direito
+    doc.line(pageWidth - margin - lineW, finalY, pageWidth - margin, finalY);
+    doc.text("TESTEMUNHA 01", pageWidth - margin - (lineW/2), finalY + 4, { align: "center" });
 
-    // Numero do Lote grande no canto
-    doc.setDrawColor(0);
-    doc.roundedRect(pageWidth - 50, 8, 35, 15, 3, 3);
-    doc.setFontSize(16);
-    doc.text(`LOTE ${lote.numero.toString().padStart(2, '0')}`, pageWidth - 32.5, 18, { align: "center" });
+    finalY += 20;
+    // Testemunha 02 Lado Esquerdo
+    doc.line(margin, finalY, margin + lineW, finalY);
+    doc.text("TESTEMUNHA 02", margin + (lineW/2), finalY + 4, { align: "center" });
+
+    // Bloco do Protocolo no Rodapé (Direita)
+    const footerW = 85;
+    const footerH = 15;
+    const footerX = pageWidth - margin - footerW;
+    const footerY = doc.internal.pageSize.getHeight() - margin - footerH;
+
+    doc.setLineWidth(0.2);
+    doc.rect(footerX, footerY, footerW, footerH);
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "bold");
+    doc.text(`LOTE ${lote.numero} - PROTOCOLO: ${lote.protocolo}`, footerX + (footerW/2), footerY + 4, { align: "center" });
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6);
+    doc.text("Certidão emitida via Sistema Eletrônico pelo", footerX + (footerW/2), footerY + 8, { align: "center" });
+    doc.text(`Agente: ${usuario?.username || 'Sistema'} em ${dataFormatada} às ${horaFormatada}`, footerX + (footerW/2), footerY + 11, { align: "center" });
+
+    // Numero do Lote grande no canto Top Right
+    doc.setLineWidth(0.5);
+    doc.roundedRect(pageWidth - 45, 10, 30, 12, 2, 2);
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text(`LOTE ${lote.numero.toString().padStart(2, '0')}`, pageWidth - 30, 18, { align: "center" });
 
     doc.save(`CERTIDAO_LOTE_${lote.numero}.pdf`);
   };
