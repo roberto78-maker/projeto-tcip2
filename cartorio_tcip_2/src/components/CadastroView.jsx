@@ -3,6 +3,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { addApreensao } from "../services/api.js";
 import { getUsuario } from "../services/auth.js";
+import { VARAS, SUBSTANCIAS, UNIDADES_PM, PATENTES } from "../constants/options.js";
 import logoBpm from "../assets/brasao.png";
 
 const FormGroup = ({ label, children }) => (
@@ -268,7 +269,7 @@ export default function CadastroView() {
           <FormGroup label="Vara Destino *">
             <select style={inputStyle} value={vara} onChange={e => setVara(e.target.value)}>
               <option value="">Selecione...</option>
-              <option>1ª VARA ESPECIAL CRIMINAL</option><option>2ª VARA ESPECIAL CRIMINAL</option><option>3ª VARA ESPECIAL CRIMINAL</option>
+              {VARAS.map(v => <option key={v} value={v}>{v}</option>)}
             </select>
           </FormGroup>
         </div>
@@ -276,12 +277,12 @@ export default function CadastroView() {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr 1fr", gap: "20px" }}>
           <FormGroup label="Unidade">
             <select style={inputStyle} value={unidadeOrigem} onChange={e => setUnidadeOrigem(e.target.value)}>
-              <option>RPA</option><option>ROCAM</option><option>ROTAM</option><option>CHOQUE</option><option>BOPE</option><option>CAVALARIA</option><option>BPRV</option><option>BPMOA</option><option>GOTRAN</option><option>BPEC</option><option>TRANSITO</option>
+              {UNIDADES_PM.map(u => <option key={u} value={u}>{u}</option>)}
             </select>
           </FormGroup>
           <FormGroup label="Graduação">
             <select style={inputStyle} value={patente} onChange={e => setPatente(e.target.value)}>
-              <option>CEL</option><option>MAJ</option><option>CAP</option><option>SGT</option><option>CB</option><option>SD</option><option>TEN</option><option>ASP</option><option>AL</option>
+              {PATENTES.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
           </FormGroup>
           <FormGroup label="Policial Entregador *"><input type="text" style={inputStyle} value={policial} onChange={e => setPolicial(upper(e.target.value))} /></FormGroup>
@@ -300,7 +301,7 @@ export default function CadastroView() {
             <FormGroup label="Noticiado"><input type="text" style={inputStyle} value={m.reu} onChange={e => updateMaterial(m.id, "reu", upper(e.target.value))} /></FormGroup>
             <FormGroup label="Substância *">
               <select style={inputStyle} value={m.substancia} onChange={e => updateMaterial(m.id, "substancia", e.target.value)}>
-                <option>Maconha</option><option>Crack</option><option>Cocaína</option><option>Ecstasy</option><option>Haxixe</option><option>LSD</option><option>Pé de Maconha</option>
+                {SUBSTANCIAS.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </FormGroup>
             <FormGroup label="Peso Est. *">

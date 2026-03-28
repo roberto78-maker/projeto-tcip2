@@ -196,3 +196,4 @@ return data.results || data;  // Frontend espera array ou .results
 | 2026-03-25 | 1.0.0 | Versão inicial do relatório |
 | 2026-03-25 | 1.1.0 | Adicionado paginação e filtros |
 | 2026-03-25 | 1.2.0 | Adicionado Swagger e CI/CD |
+| 2026-03-28 | 1.3.0 | Padronização de constantes no Cadastro e fallback para SQLite |
