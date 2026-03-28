@@ -149,22 +149,23 @@ export default function ProntoQueimaView() {
 
     finalY += 25;
 
-    // Assinaturas (Conforme Modelo)
+    // Assinaturas (Conforme Modelo - Alinhamento Corrigido)
     const lineW = 60;
-    const centerX = pageWidth / 2;
     
-    // Responsável Meio
-    doc.line(centerX - (lineW/2), finalY, centerX + (lineW/2), finalY);
-    doc.text("RESPONSÁVEL", centerX, finalY + 4, { align: "center" });
+    // Linha Superior: RESPONSÁVEL (Esquerda) e TESTEMUNHA 01 (Direita)
+    doc.line(margin, finalY, margin + lineW, finalY);
+    doc.text("RESPONSÁVEL", margin + (lineW/2), finalY + 4, { align: "center" });
 
-    // Testemunha 01 Lado Direito
     doc.line(pageWidth - margin - lineW, finalY, pageWidth - margin, finalY);
     doc.text("TESTEMUNHA 01", pageWidth - margin - (lineW/2), finalY + 4, { align: "center" });
 
     finalY += 20;
-    // Testemunha 02 Lado Esquerdo
+    
+    // Linha Inferior: TESTEMUNHA 02 (Esquerda) e Campo de Data (Direita)
     doc.line(margin, finalY, margin + lineW, finalY);
     doc.text("TESTEMUNHA 02", margin + (lineW/2), finalY + 4, { align: "center" });
+
+    doc.text("_______/_______/_______", pageWidth - margin - 40, finalY + 4);
 
     // Bloco do Protocolo no Rodapé (Direita)
     const footerW = 85;
