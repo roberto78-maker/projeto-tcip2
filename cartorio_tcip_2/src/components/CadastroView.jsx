@@ -125,7 +125,7 @@ export default function CadastroView() {
     doc.text("6º BATALHÃO DE POLÍCIA MILITAR", centerX, currY, { align: "center" }); currY += 5;
 
     doc.setFont("helvetica", "normal"); doc.setFontSize(10);
-    doc.text("Seção de Custódia de Materiais Apreendidos", centerX, currY, { align: "center" }); currY += 6;
+    doc.text("Primeiro Cartorio - 6ºBPM", centerX, currY, { align: "center" }); currY += 6;
     doc.line(marginX, currY, pageWidth - marginX, currY); currY += 10;
 
     doc.setFont("helvetica", "bold");
@@ -168,7 +168,7 @@ export default function CadastroView() {
 
     currY = doc.lastAutoTable.finalY + 10;
     doc.setFontSize(8);
-    const obsText = "Obs: O peso real será aferido em balança de precisão durante a conferência de entrada no cofre, podendo haver variações em relação ao peso estimado declarado no momento da entrega.";
+    const obsText = "Obs: O material coletado foi acondicionado em embalagem lacrada, impedindo nova manipulação por este cartório. A responsabilidade pelo item é exclusiva do policial signatário, com entrega registrada sob a custódia desta unidade.";
     const splitObs = doc.splitTextToSize(obsText, contentWidth);
     doc.text(obsText, marginX, currY, { align: "justify", maxWidth: contentWidth });
     currY += (splitObs.length * 4) + 40;
@@ -179,8 +179,11 @@ export default function CadastroView() {
     doc.setFont("helvetica", "normal"); doc.text(`RG: ${dados.rg}`, marginX + (lineSize / 2), currY + 10, { align: "center" });
     doc.text("Responsável pela Entrega", marginX + (lineSize / 2), currY + 15, { align: "center" });
 
+    const usuario = getUsuario();
+    const nomeOperador = usuario?.username?.toUpperCase() || "ADMIN";
+
     doc.line(pageWidth - marginX - lineSize, currY, pageWidth - marginX, currY);
-    doc.setFont("helvetica", "bold"); doc.text("ADMIN", pageWidth - marginX - (lineSize / 2), currY + 5, { align: "center" });
+    doc.setFont("helvetica", "bold"); doc.text(nomeOperador, pageWidth - marginX - (lineSize / 2), currY + 5, { align: "center" });
     doc.setFont("helvetica", "normal"); doc.text("6º BPM - Cartório de Custódia", pageWidth - marginX - (lineSize / 2), currY + 10, { align: "center" });
     doc.text("Recebedor / Cartorário", pageWidth - marginX - (lineSize / 2), currY + 15, { align: "center" });
 
