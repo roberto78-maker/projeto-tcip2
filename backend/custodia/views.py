@@ -134,7 +134,8 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
 
         if not lote_id:
             return Response(
-                {"error": "lote_id é obrigatório"}, status=status.HTTP_400_BAD_REQUEST
+                {"error": "lote_id é obrigatório"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
@@ -148,7 +149,7 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
         if arquivo and arquivo.size > 2 * 1024 * 1024:
             return Response(
                 {"error": "O arquivo é muito grande. Limite máximo: 2MB."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         apreensoes = Apreensao.objects.filter(
@@ -156,8 +157,9 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
         )
 
         if apreensoes.count() < 20:
+            error_msg = f"Lote precisa de 20 itens. Atual: {apreensoes.count()}"
             return Response(
-                {"error": f"Lote precisa de 20 itens para finalizar. Atual: {apreensoes.count()}"},
+                {"error": error_msg},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -169,13 +171,15 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
             apreensao.save()
             count += 1
 
-        logger.info(f"Lote {lote.protocolo} finalizado com {count} registros. Doc: {bool(arquivo)}")
+        logger.info(
+            f"Lote {lote.protocolo} finalizado com {count} registros. Doc: {bool(arquivo)}"
+        )
 
         return Response(
             {
                 "message": f"Incineração Lote {lote.protocolo} concluída com sucesso.",
                 "itens_finalizados": count,
-                "documento_anexado": bool(arquivo)
+                "documento_anexado": bool(arquivo),
             }
         )
 
