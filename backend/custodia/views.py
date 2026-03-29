@@ -126,10 +126,11 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
     def finalizar_lote(self, request):
         """
         Finaliza lote: recebe lote_id e altera status das apreensões para 'queima_pronta'.
-        Pode receber um arquivo_pdf para anexar a todos os itens do lote.
+        Pode receber um arquivo_pdf (PDF ou Imagem) para anexar a todos os itens do lote.
+        Limite de arquivo: 2MB.
         """
         lote_id = request.data.get("lote_id")
-        arquivo_pdf = request.FILES.get("arquivo_pdf")
+        arquivo = request.FILES.get("arquivo_pdf")
 
         if not lote_id:
             return Response(
@@ -143,13 +144,18 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
                 {"error": "Lote não encontrado"}, status=status.HTTP_404_NOT_FOUND
             )
 
+        # Validação de Tamanho (2MB Máximo)
+        if arquivo and arquivo.size > 2 * 1024 * 1024:
+            return Response(
+                {"error": "O arquivo é muito grande. Limite máximo: 2MB."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         apreensoes = Apreensao.objects.filter(
             lote_incineracao=lote, status="incineracao"
         )
 
         if apreensoes.count() < 20:
-             # Permitir finalizar com menos se for o último caso, mas manter a regra de 20 por segurança
-             # O usuário pode querer flexibilidade, mas vou manter a regra solicitada anteriormente
             return Response(
                 {"error": f"Lote precisa de 20 itens para finalizar. Atual: {apreensoes.count()}"},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -158,18 +164,18 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
         count = 0
         for apreensao in apreensoes:
             apreensao.status = "queima_pronta"
-            if arquivo_pdf:
-                apreensao.arquivo_pdf = arquivo_pdf
+            if arquivo:
+                apreensao.arquivo_pdf = arquivo
             apreensao.save()
             count += 1
 
-        logger.info(f"Lote {lote.protocolo} finalizado com {count} apreensões. PDF anexo: {bool(arquivo_pdf)}")
+        logger.info(f"Lote {lote.protocolo} finalizado com {count} registros. Doc: {bool(arquivo)}")
 
         return Response(
             {
-                "message": f"Lote {lote.protocolo} finalizada com sucesso",
+                "message": f"Incineração Lote {lote.protocolo} concluída com sucesso.",
                 "itens_finalizados": count,
-                "documento_anexado": bool(arquivo_pdf)
+                "documento_anexado": bool(arquivo)
             }
         )
 
