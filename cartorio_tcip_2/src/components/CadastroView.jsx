@@ -124,8 +124,8 @@ export default function CadastroView() {
     doc.text("POLÍCIA MILITAR DO PARANÁ", centerX, currY, { align: "center" }); currY += 5;
     doc.text("6º BATALHÃO DE POLÍCIA MILITAR", centerX, currY, { align: "center" }); currY += 5;
 
-    doc.setFont("helvetica", "normal"); doc.setFontSize(10);
-    doc.text("Primeiro Cartorio - 6ºBPM", centerX, currY, { align: "center" }); currY += 6;
+    doc.setFont("helvetica", "bold"); doc.setFontSize(10);
+    doc.text("PRIMEIRO CARTÓRIO - 6ºBPM", centerX, currY, { align: "center" }); currY += 6;
     doc.line(marginX, currY, pageWidth - marginX, currY); currY += 10;
 
     doc.setFont("helvetica", "bold");
@@ -184,7 +184,7 @@ export default function CadastroView() {
 
     doc.line(pageWidth - marginX - lineSize, currY, pageWidth - marginX, currY);
     doc.setFont("helvetica", "bold"); doc.text(nomeOperador, pageWidth - marginX - (lineSize / 2), currY + 5, { align: "center" });
-    doc.setFont("helvetica", "normal"); doc.text("6º BPM - Cartório de Custódia", pageWidth - marginX - (lineSize / 2), currY + 10, { align: "center" });
+    doc.setFont("helvetica", "normal"); doc.text("Primeiro Cartório - 6ºBPM", pageWidth - marginX - (lineSize / 2), currY + 10, { align: "center" });
     doc.text("Recebedor / Cartorário", pageWidth - marginX - (lineSize / 2), currY + 15, { align: "center" });
 
     const dataHora = new Date().toLocaleString("pt-BR").replace(',', ' -');
