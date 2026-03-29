@@ -125,9 +125,11 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["post"])
     def finalizar_lote(self, request):
         """
-        Finaliza lote: recebe lote_id e altera status das apreensões para 'queima_pronta'
+        Finaliza lote: recebe lote_id e altera status das apreensões para 'queima_pronta'.
+        Pode receber um arquivo_pdf para anexar a todos os itens do lote.
         """
         lote_id = request.data.get("lote_id")
+        arquivo_pdf = request.FILES.get("arquivo_pdf")
 
         if not lote_id:
             return Response(
@@ -146,20 +148,28 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
         )
 
         if apreensoes.count() < 20:
+             # Permitir finalizar com menos se for o último caso, mas manter a regra de 20 por segurança
+             # O usuário pode querer flexibilidade, mas vou manter a regra solicitada anteriormente
             return Response(
-                {"error": f"Lote precisa de 20 itens. Atual: {apreensoes.count()}"},
+                {"error": f"Lote precisa de 20 itens para finalizar. Atual: {apreensoes.count()}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        count = apreensoes.count()
-        apreensoes.update(status="queima_pronta")
+        count = 0
+        for apreensao in apreensoes:
+            apreensao.status = "queima_pronta"
+            if arquivo_pdf:
+                apreensao.arquivo_pdf = arquivo_pdf
+            apreensao.save()
+            count += 1
 
-        logger.info(f"Lote {lote.protocolo} finalizado com {count} apreensões")
+        logger.info(f"Lote {lote.protocolo} finalizado com {count} apreensões. PDF anexo: {bool(arquivo_pdf)}")
 
         return Response(
             {
                 "message": f"Lote {lote.protocolo} finalizada com sucesso",
                 "itens_finalizados": count,
+                "documento_anexado": bool(arquivo_pdf)
             }
         )
 
