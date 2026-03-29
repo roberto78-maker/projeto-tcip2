@@ -279,12 +279,21 @@ export default function ProntoQueimaView() {
               {/* Passo 2 */}
               <div style={{ background: "#f8fafc", padding: "15px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
                 <span style={{ fontSize: "12px", fontWeight: "700", color: "#143a2b", textTransform: "uppercase" }}>Passo 2</span>
-                <p style={{ margin: "2px 0 10px", fontSize: "14px", color: "#334155" }}>Anexar documento assinado (PDF ou Imagem).</p>
+                <p style={{ margin: "2px 0 10px", fontSize: "14px", color: "#334155" }}>Anexar documento assinado (PDF ou Imagem - Máx 2MB).</p>
                 <input 
                   type="file" 
-                  accept="application/pdf,image/*" 
+                  accept="application/pdf,image/jpeg,image/png" 
                   style={{ width: "100%", fontSize: "13px" }} 
-                  onChange={(e) => setArquivoAssinado(e.target.files[0])}
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file && file.size > 2 * 1024 * 1024) {
+                      alert("O arquivo excede o limite de 2MB!");
+                      e.target.value = "";
+                      setArquivoAssinado(null);
+                    } else {
+                      setArquivoAssinado(file);
+                    }
+                  }}
                 />
               </div>
             </div>
