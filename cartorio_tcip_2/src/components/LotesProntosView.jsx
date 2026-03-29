@@ -173,68 +173,71 @@ export default function LotesProntosView() {
 
       <div className="card">
         <h2 className="card-title">Incinerados</h2>
-        <p className="card-subtitle">Listagem de lotes finalizados aguardando destruição oficial.</p>
       </div>
 
       {lotesAgrupados.length === 0 && (
         <div className="card" style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
-          Nenhum lote pronto para queima no momento.
+          Nenhum lote finalizado encontrado.
         </div>
       )}
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(400px, 1fr))", gap: "20px" }}>
-        {lotesAgrupados.map(lote => (
-          <div key={lote.id} className="card" style={{ borderLeft: "5px solid #dc2626" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "15px" }}>
-              <div>
-                <h3 style={{ color: "#dc2626", margin: 0 }}>LOTE {lote.numero.toString().padStart(2, '0')}</h3>
-                <span style={{ fontSize: "12px", color: "#64748b" }}>Protocolo: {lote.protocolo}</span>
-              </div>
-              <span className="badge" style={{ background: "#dc2626", color: "white" }}>
-                {lote.itens.length} ITENS
-              </span>
-            </div>
+      {lotesAgrupados.length > 0 && (
+        <div className="card" style={{ padding: "0", overflow: "hidden" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead style={{ background: "#f8fafc" }}>
+              <tr>
+                <th style={{ textAlign: "left", padding: "18px", color: "#64748b", textTransform: "uppercase", fontSize: "11px", fontWeight: "700" }}>Nº do Lote</th>
+                <th style={{ textAlign: "left", padding: "18px", color: "#64748b", textTransform: "uppercase", fontSize: "11px", fontWeight: "700" }}>Protocolo</th>
+                <th style={{ textAlign: "left", padding: "18px", color: "#64748b", textTransform: "uppercase", fontSize: "11px", fontWeight: "700" }}>Data da Incineração</th>
+                <th style={{ textAlign: "left", padding: "18px", color: "#64748b", textTransform: "uppercase", fontSize: "11px", fontWeight: "700" }}>Hora</th>
+                <th style={{ textAlign: "center", padding: "18px", color: "#64748b", textTransform: "uppercase", fontSize: "11px", fontWeight: "700" }}>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {lotesAgrupados.map(lote => {
+                const dataObj = new Date(lote.data_criacao);
+                const dataFormatada = dataObj.toLocaleDateString("pt-BR");
+                const horaFormatada = dataObj.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
+                
+                // Pega o arquivo do primeiro item do lote
+                const arquivoUrl = lote.itens[0]?.arquivo_pdf_url || lote.itens[0]?.arquivo_pdf;
 
-            <div style={{ maxHeight: "250px", overflowY: "auto", marginBottom: "15px", fontSize: "12px", border: "1px solid #f1f5f9", borderRadius: "6px" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead style={{ background: "#fef2f2", position: "sticky", top: 0 }}>
-                  <tr>
-                    <th style={{ textAlign: "left", padding: "8px" }}>BOU</th>
-                    <th style={{ textAlign: "left", padding: "8px" }}>NOTICIADO</th>
-                    <th style={{ textAlign: "right", padding: "8px" }}>PESO</th>
+                return (
+                  <tr key={lote.id} style={{ borderBottom: "1px solid #f1f5f9", transition: "all 0.2s" }} className="table-row-hover">
+                    <td style={{ padding: "18px", fontWeight: "700", color: "#1e293b" }}>
+                      LOTE {String(lote.numero).padStart(2, '0')}
+                    </td>
+                    <td style={{ padding: "18px", fontWeight: "700", color: "#dc2626" }}>
+                      {lote.protocolo}
+                    </td>
+                    <td style={{ padding: "18px", color: "#475569" }}>
+                      {dataFormatada}
+                    </td>
+                    <td style={{ padding: "18px", color: "#475569" }}>
+                      {horaFormatada}
+                    </td>
+                    <td style={{ padding: "18px", textAlign: "center" }}>
+                      {arquivoUrl ? (
+                         <a 
+                           href={arquivoUrl} 
+                           target="_blank" 
+                           rel="noreferrer"
+                           className="btn-green"
+                           style={{ padding: "8px 15px", fontSize: "12px", display: "inline-flex", alignItems: "center", gap: "5px" }}
+                         >
+                           👁️ VISUALIZAR ASSINADO
+                         </a>
+                      ) : (
+                        <span style={{ fontSize: "11px", color: "#94a3b8" }}>Sem arquivo</span>
+                      )}
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {lote.itens.map(item => (
-                    <tr key={item.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                      <td style={{ padding: "8px", fontWeight: "600" }}>{item.bou}</td>
-                      <td style={{ padding: "8px", color: "#64748b" }}>{item.reu || "N/I"}</td>
-                      <td style={{ padding: "8px", textAlign: "right" }}>{formatarPesoDisplay(item.peso, item.unidade)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <button
-              style={{
-                width: "100%",
-                background: "#dc2626",
-                color: "white",
-                border: "none",
-                borderRadius: "6px",
-                padding: "12px",
-                cursor: "pointer",
-                fontWeight: "600",
-                fontSize: "14px"
-              }}
-              onClick={() => gerarCertidaoPDF(lote)}
-            >
-              🔥 IMPRIMIR CERTIDÃO DE QUEIMA
-            </button>
-          </div>
-        ))}
-      </div>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
