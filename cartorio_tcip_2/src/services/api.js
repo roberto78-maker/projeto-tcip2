@@ -132,12 +132,18 @@ export async function destinarIncineracao(id) {
   return await res.json();
 }
 
-// ✅ FINALIZAR LOTE (Action específica)
-export async function finalizarLote(loteId) {
+// ✅ FINALIZAR LOTE (Action específica) - Suporta envio de arquivo assinado
+export async function finalizarLote(loteId, file = null) {
+  const formData = new FormData();
+  formData.append("lote_id", loteId);
+  if (file) {
+    formData.append("arquivo_pdf", file);
+  }
+
   const res = await fetch(`${API_URL}finalizar_lote/`, {
     method: "POST",
-    headers: getHeaders(),
-    body: JSON.stringify({ lote_id: loteId })
+    headers: getHeaders(true),
+    body: formData
   });
 
   if (!res.ok) {

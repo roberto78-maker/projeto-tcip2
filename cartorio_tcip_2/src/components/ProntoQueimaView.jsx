@@ -16,11 +16,13 @@ const formatarPesoDisplay = (valor, unidade) => {
   if (["Mg", "mg"].includes(unidade)) return `${num.toFixed(2).replace(".", ",")} mg`;
   return `${num} ${unidade}`;
 };
-
 export default function ProntoQueimaView() {
   const [apreensoes, setApreensoes] = useState([]);
   const [lotes, setLotes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [modalLote, setModalLote] = useState(null);
+  const [arquivoAssinado, setArquivoAssinado] = useState(null);
+  const [finalizando, setFinalizando] = useState(false);
 
   useEffect(() => {
     carregar();
@@ -220,22 +222,24 @@ export default function ProntoQueimaView() {
     doc.save(`CERTIDAO_LOTE_${lote.numero}.pdf`);
   };
 
-  const handleFinalizarLote = async (lote) => {
-    if (lote.itens.length < 20) {
-      alert(`Lote precisa de 20 itens. Atual: ${lote.itens.length}`);
-      return;
-    }
-    
-    if (!confirm(`Finalizar lote ${lote.numero} com ${lote.itens.length} itens?`)) {
+  const handleConfirmarFinalizacao = async () => {
+    if (!modalLote) return;
+    if (!arquivoAssinado) {
+      alert("Por favor, anexe a certidão assinada para concluir.");
       return;
     }
 
+    setFinalizando(true);
     try {
-      await finalizarLote(lote.id);
-      alert("Lote finalizada com sucesso!");
+      await finalizarLote(modalLote.id, arquivoAssinado);
+      alert("Lote finalizado e documento anexado com sucesso!");
+      setModalLote(null);
+      setArquivoAssinado(null);
       carregar();
     } catch (e) {
       alert(e.message);
+    } finally {
+      setFinalizando(false);
     }
   };
 
@@ -244,6 +248,68 @@ export default function ProntoQueimaView() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "25px" }}>
       
+      {/* Modal de Finalização (Semelhante ao Itens no Cofre) */}
+      {modalLote && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
+          background: "rgba(0,0,0,0.65)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 2000,
+          backdropFilter: "blur(6px)"
+        }}>
+          <div style={{ background: "white", padding: "40px", borderRadius: "20px", width: "550px", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)" }}>
+            <div style={{ display: "flex", alignItems: "center", marginBottom: "25px", borderBottom: "1px solid #f1f5f9", paddingBottom: "20px" }}>
+              <span style={{ fontSize: "32px", marginRight: "15px" }}>🔥</span>
+              <div>
+                <h3 style={{ margin: 0, color: "#1e293b", fontSize: "22px" }}>Finalizar Lote {String(modalLote.numero).padStart(2, '0')}</h3>
+                <p style={{ margin: 0, fontSize: "12px", color: "#64748b" }}>Siga os passos abaixo para concluir a incineração.</p>
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gap: "15px", marginBottom: "30px" }}>
+              {/* Passo 1 */}
+              <div style={{ background: "#f8fafc", padding: "15px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div>
+                    <span style={{ fontSize: "12px", fontWeight: "700", color: "#143a2b", textTransform: "uppercase" }}>Passo 1</span>
+                    <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#334155" }}>Gerar certidão para coleta de assinaturas.</p>
+                  </div>
+                  <button className="btn-green" onClick={() => gerarCertidaoPDF(modalLote)} style={{ padding: "8px 15px", fontSize: "12px" }}>📄 BAIXAR PDF</button>
+                </div>
+              </div>
+
+              {/* Passo 2 */}
+              <div style={{ background: "#f8fafc", padding: "15px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
+                <span style={{ fontSize: "12px", fontWeight: "700", color: "#143a2b", textTransform: "uppercase" }}>Passo 2</span>
+                <p style={{ margin: "2px 0 10px", fontSize: "14px", color: "#334155" }}>Anexar documento assinado (PDF ou Imagem).</p>
+                <input 
+                  type="file" 
+                  accept="application/pdf,image/*" 
+                  style={{ width: "100%", fontSize: "13px" }} 
+                  onChange={(e) => setArquivoAssinado(e.target.files[0])}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button 
+                className="btn-outline-gray" 
+                style={{ flex: 1, padding: "12px", borderRadius: "10px", fontWeight: "600" }} 
+                onClick={() => { setModalLote(null); setArquivoAssinado(null); }}
+              >
+                CANCELAR
+              </button>
+              <button 
+                className="btn-green" 
+                style={{ flex: 2, padding: "12px", borderRadius: "10px", fontWeight: "600", background: arquivoAssinado ? "#143a2b" : "#94a3b8" }} 
+                onClick={handleConfirmarFinalizacao}
+                disabled={!arquivoAssinado || finalizando}
+              >
+                {finalizando ? "PROCESSANDO..." : "CONCLUIR INCINERAÇÃO"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="card">
         <h2 className="card-title">Lotes</h2>
         <p className="card-subtitle">Listagem de materiais agrupados em lotes de 20 para destruição oficial.</p>
@@ -308,7 +374,7 @@ export default function ProntoQueimaView() {
                   cursor: lote.itens.length >= 20 ? "pointer" : "not-allowed",
                   fontWeight: "600"
                 }}
-                onClick={() => handleFinalizarLote(lote)}
+                onClick={() => setModalLote(lote)}
                 disabled={lote.itens.length < 20}
               >
                 ✅ FINALIZAR
