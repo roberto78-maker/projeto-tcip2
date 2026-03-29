@@ -10,8 +10,8 @@ class LoteIncineracao(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.protocolo:
-            # Formato: 1ºCART6BPM-000125.2026
-            self.protocolo = f"{self.origem}-{str(self.numero).zfill(6)}.{self.ano}"
+            # Formato: 1ºCART6BPM-000125-2026
+            self.protocolo = f"{self.origem}-{str(self.numero).zfill(6)}-{self.ano}"
         super().save(*args, **kwargs)
 
     def __str__(self):
