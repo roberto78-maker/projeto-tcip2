@@ -375,16 +375,16 @@ export default function ProntoQueimaView() {
               <button 
                 style={{ 
                   flex: 1, 
-                  background: lote.itens.length >= 20 ? "#dc2626" : "#94a3b8",
+                  background: lote.itens.length > 0 ? "#dc2626" : "#94a3b8",
                   color: "white",
                   border: "none",
                   borderRadius: "6px",
                   padding: "10px",
-                  cursor: lote.itens.length >= 20 ? "pointer" : "not-allowed",
+                  cursor: lote.itens.length > 0 ? "pointer" : "not-allowed",
                   fontWeight: "600"
                 }}
                 onClick={() => setModalLote(lote)}
-                disabled={lote.itens.length < 20}
+                disabled={lote.itens.length === 0}
               >
                 ✅ FINALIZAR
               </button>
