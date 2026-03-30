@@ -194,6 +194,7 @@ export default function AuditoriaView() {
               <option value="cofre">No Cofre</option>
               <option value="incineracao">Lotes (Em Formação)</option>
               <option value="queima_pronta">Já Incinerados</option>
+              <option value="excluido">Excluídos / Cancelados</option>
             </select>
           </div>
 
@@ -298,9 +299,14 @@ export default function AuditoriaView() {
                         </div>
                       </td>
                       <td>
-                        <span className={`badge ${item.status_label === 'No Cofre' ? 'blue' : item.status_label === 'Incinerado' ? 'green' : 'gray'}`}>
+                        <span className={`badge ${item.status_label.includes('Excluído') ? 'red' : item.status_label === 'No Cofre' ? 'blue' : item.status_label === 'Incinerado' ? 'green' : 'gray'}`}>
                           {item.status_label}
                         </span>
+                        {item.motivo_exclusao && (
+                          <div style={{ marginTop: "5px", fontSize: "11px", color: "#ef4444", fontWeight: "bold", background: "#fef2f2", padding: "4px", borderRadius: "4px", maxWidth: "200px" }}>
+                            Motivo: {item.motivo_exclusao}
+                          </div>
+                        )}
                       </td>
                       <td style={{ fontSize: "13px", color: "#475569" }}>{item.vara || "-"}</td>
                       <td style={{ fontSize: "13px", color: "#475569" }}>{item.data ? item.data.split("-").reverse().join("/") : "-"}</td>

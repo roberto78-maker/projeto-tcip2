@@ -132,27 +132,42 @@ export async function destinarIncineracao(id) {
   return await res.json();
 }
 
-// ✅ FINALIZAR LOTE (Action específica) - Suporta envio de arquivo assinado
 export async function finalizarLote(loteId, file = null) {
-  const formData = new FormData();
-  formData.append("lote_id", loteId);
-  if (file) {
-    formData.append("arquivo_pdf", file);
+    const formData = new FormData();
+    formData.append("lote_id", loteId);
+    if (file) {
+      formData.append("arquivo_pdf", file);
+    }
+  
+    const res = await fetch(`${API_URL}finalizar_lote/`, {
+      method: "POST",
+      headers: getHeaders(true),
+      body: formData
+    });
+  
+    if (!res.ok) {
+      const erro = await res.json();
+      throw new Error(erro.error || "Erro ao finalizar lote");
+    }
+  
+    return await res.json();
   }
-
-  const res = await fetch(`${API_URL}finalizar_lote/`, {
-    method: "POST",
-    headers: getHeaders(true),
-    body: formData
-  });
-
-  if (!res.ok) {
-    const erro = await res.json();
-    throw new Error(erro.error || "Erro ao finalizar lote");
+  
+  // 🗑️ EXCLUIR (Lógica de cancelamento com motivo)
+  export async function excluirApreensao(id, motivo) {
+    const res = await fetch(`${API_URL}${id}/excluir/`, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ motivo })
+    });
+  
+    if (!res.ok) {
+        const erro = await res.json();
+        throw new Error(erro.error || "Erro ao excluir registro");
+    }
+  
+    return await res.json();
   }
-
-  return await res.json();
-}
 
 // 📊 RELATÓRIOS E AUDITORIA
 export async function getRelatorioIncineracao(filtros = {}) {

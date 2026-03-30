@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import { getApreensoes, updateApreensao } from "../services/api.js";
+import { getApreensoes, updateApreensao, excluirApreensao } from "../services/api.js";
 
 // Formata peso com unidade inteligente
 const formatarPesoDisplay = (valor, unidade) => {
@@ -53,10 +52,63 @@ const ModalDespacho = ({ item, onConfirm, onClose }) => {
   );
 };
 
+// Modal para Excluir (Cancelamento)
+const ModalExclusao = ({ item, onConfirm, onClose }) => {
+  const [motivo, setMotivo] = useState("");
+
+  return (
+    <div style={{
+      position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
+      background: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000,
+      backdropFilter: "blur(4px)"
+    }}>
+      <div style={{ background: "white", padding: "30px", borderRadius: "16px", width: "450px", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)" }}>
+        <h3 style={{ marginBottom: "15px", color: "#dc2626", display: "flex", alignItems: "center", gap: "10px" }}>
+          ⚠️ Cancelar Registro (Excluir)
+        </h3>
+        <p style={{ fontSize: "14px", color: "#64748b", marginBottom: "20px" }}>
+          Você está prestes a excluir o registro do <strong>BOU {item.bou}</strong>. Esta ação ficara registrada na auditoria.
+        </p>
+        
+        <div style={{ marginBottom: "20px" }}>
+          <label style={{ display: "block", fontSize: "12px", fontWeight: "700", marginBottom: "8px", color: "#475569" }}>
+            MOTIVO DA EXCLUSÃO / CANCELAMENTO
+          </label>
+          <textarea 
+            style={{ width: "100%", height: "100px", padding: "12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "14px" }}
+            placeholder="Descreva obrigatoriamente o motivo..."
+            value={motivo}
+            onChange={(e) => setMotivo(e.target.value)}
+          />
+        </div>
+
+        <div style={{ display: "flex", gap: "12px" }}>
+          <button 
+            className="btn-red" 
+            style={{ flex: 1, padding: "12px", borderRadius: "8px", fontWeight: "600", opacity: motivo.trim().length < 5 ? 0.5 : 1 }} 
+            onClick={() => onConfirm(motivo)}
+            disabled={motivo.trim().length < 5}
+          >
+            CONFIRMAR EXCLUSÃO
+          </button>
+          <button 
+            className="btn-outline-gray" 
+            style={{ padding: "12px", borderRadius: "8px", border: "1px solid #cbd5e1", color: "#64748b", fontWeight: "600" }} 
+            onClick={onClose}
+          >
+            CANCELAR
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function ConferenciaView() {
   const [apreensoes, setApreensoes] = useState([]);
   const [busca, setBusca] = useState("");
   const [itemSelecionado, setItemSelecionado] = useState(null);
+  const [itemParaExcluir, setItemParaExcluir] = useState(null);
 
   useEffect(() => {
     carregar();
@@ -87,6 +139,18 @@ export default function ConferenciaView() {
     }
   }
 
+  async function handleConfirmarExclusao(motivo) {
+    if (!itemParaExcluir) return;
+    try {
+      await excluirApreensao(itemParaExcluir.id, motivo);
+      setItemParaExcluir(null);
+      carregar();
+      alert("Registro excluído com sucesso.");
+    } catch (e) {
+        alert(e.message);
+    }
+  }
+
   const itensConferencia = apreensoes.filter(
     (item) =>
       item.status === "conferencia" &&
@@ -101,6 +165,14 @@ export default function ConferenciaView() {
           item={itemSelecionado} 
           onClose={() => setItemSelecionado(null)} 
           onConfirm={confirmarDespacho} 
+        />
+      )}
+
+      {itemParaExcluir && (
+        <ModalExclusao
+          item={itemParaExcluir}
+          onClose={() => setItemParaExcluir(null)}
+          onConfirm={handleConfirmarExclusao}
         />
       )}
 
@@ -151,9 +223,18 @@ export default function ConferenciaView() {
                 </td>
                 <td style={{ color: "#dc2626", fontWeight: "600" }}>{formatarPesoDisplay(item.peso, item.unidade)}</td>
                 <td style={{ textAlign: "right" }}>
-                  <button className="btn-green" onClick={() => setItemSelecionado(item)}>
-                    📦 CONFERIR
-                  </button>
+                  <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+                    <button className="btn-green" onClick={() => setItemSelecionado(item)}>
+                      📦 CONFERIR
+                    </button>
+                    <button 
+                      className="btn-outline-red" 
+                      onClick={() => setItemParaExcluir(item)}
+                      style={{ padding: "8px 12px", border: "1px solid #fee2e2", color: "#ef4444", background: "#fef2f2", borderRadius: "6px", fontWeight: "600", cursor: "pointer" }}
+                    >
+                      🗑️ EXCLUIR
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
