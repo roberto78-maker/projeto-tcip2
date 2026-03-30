@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import { getApreensoes, updateApreensao, excluirApreensao } from "../services/api.js";
 
 // Formata peso com unidade inteligente
