@@ -1,7 +1,8 @@
-from pathlib import Path
 import os
 import urllib.parse
+import cloudinary
 from datetime import timedelta
+from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -137,12 +138,11 @@ CLOUDINARY_STORAGE = {
     "SECURE": True,
 }
 # Configuração global para Cloudinary reconhecer PDFs corretamente
-import cloudinary
 cloudinary.config(
-  cloud_name = os.environ.get("CLOUD_NAME"),
-  api_key = os.environ.get("API_KEY"),
-  api_secret = os.environ.get("API_SECRET"),
-  secure = True
+    cloud_name=os.environ.get("CLOUD_NAME"),
+    api_key=os.environ.get("API_KEY"),
+    api_secret=os.environ.get("API_SECRET"),
+    secure=True,
 )
 
 USE_CLOUDINARY = all(
