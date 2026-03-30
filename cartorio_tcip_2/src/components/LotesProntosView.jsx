@@ -4,6 +4,9 @@ import autoTable from "jspdf-autotable";
 import { getApreensoes, getLotes } from "../services/api.js";
 import brasao from "../assets/brasao.png";
 
+// Pegar URL Base para Mídia
+const MEDIA_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+
 const formatarPesoDisplay = (valor, unidade) => {
   const num = parseFloat(String(valor).replace(",", ".")) || 0;
   if (["Kg", "kg"].includes(unidade)) return `${num.toFixed(3).replace(".", ",")} Kg`;
@@ -200,7 +203,8 @@ export default function LotesProntosView() {
                 const horaFormatada = dataObj.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
                 
                 // Pega o arquivo do primeiro item do lote
-                const arquivoUrl = lote.itens[0]?.arquivo_pdf_url || lote.itens[0]?.arquivo_pdf;
+                const arqRaw = lote.itens[0]?.arquivo_pdf_url || lote.itens[0]?.arquivo_pdf;
+                const arquivoUrl = arqRaw ? (arqRaw.startsWith('http') ? arqRaw : `${MEDIA_URL.endsWith('/') ? MEDIA_URL.slice(0, -1) : MEDIA_URL}${arqRaw.startsWith('/') ? '' : '/'}${arqRaw}`) : null;
 
                 return (
                   <tr key={lote.id} style={{ borderBottom: "1px solid #f1f5f9", transition: "all 0.2s" }} className="table-row-hover">
