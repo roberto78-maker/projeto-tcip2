@@ -196,6 +196,25 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
             }
         )
 
+    @action(detail=True, methods=["post"])
+    def excluir(self, request, pk=None):
+        apreensao = self.get_object()
+        motivo = request.data.get("motivo")
+
+        if not motivo:
+            return Response(
+                {"error": "Motivo da exclusão é obrigatório"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        apreensao.status = "excluido"
+        apreensao.motivo_exclusao = motivo
+        apreensao.save()
+
+        logger.info(f"Apreensão {apreensao.id} excluída. Motivo: {motivo}")
+
+        return Response(ApreensaoSerializer(apreensao).data)
+
 
 class RelatorioIncineracaoView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -239,6 +258,7 @@ class RelatorioIncineracaoView(APIView):
             "status",
             "processo",
             "reu",
+            "motivo_exclusao",
             "lote_incineracao__numero",
             "lote_incineracao__data_criacao",
         ).order_by("-data_criacao")[:500]
@@ -248,6 +268,7 @@ class RelatorioIncineracaoView(APIView):
             "cofre": "No Cofre",
             "incineracao": "Lotes (P. Queima)",
             "queima_pronta": "Incinerado",
+            "excluido": "Excluído / Cancelado",
         }
 
         detalhado_formatado = []
@@ -274,6 +295,7 @@ class RelatorioIncineracaoView(APIView):
                     "peso": item["peso"],
                     "vara": item["vara"],
                     "status_label": status_desc,
+                    "motivo_exclusao": item["motivo_exclusao"],
                     "data": (
                         item["data_criacao"].strftime("%Y-%m-%d")
                         if item["data_criacao"]
@@ -429,6 +451,7 @@ class RelatorioIncineracaoPDFView(APIView):
             "cofre": "No Cofre",
             "incineracao": "Lotes",
             "queima_pronta": "Incinerado",
+            "excluido": "Excluído",
         }
 
         if not agrupado:

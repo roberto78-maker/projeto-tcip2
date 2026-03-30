@@ -46,6 +46,7 @@ class Apreensao(models.Model):
         blank=True,
         related_name="apreensoes",
     )
+    motivo_exclusao = models.TextField(blank=True, null=True)
 
     data_criacao = models.DateTimeField(auto_now_add=True, db_index=True)
 
