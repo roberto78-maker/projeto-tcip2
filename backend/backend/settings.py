@@ -136,7 +136,7 @@ CLOUDINARY_STORAGE = {
     "API_SECRET": os.environ.get("API_SECRET", ""),
 }
 
-USE_CLOUDINARY = DEBUG and all(
+USE_CLOUDINARY = all(
     [
         os.environ.get("CLOUD_NAME"),
         os.environ.get("API_KEY"),
