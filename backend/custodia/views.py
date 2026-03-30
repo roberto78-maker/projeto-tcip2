@@ -176,25 +176,32 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        count = 0
-        for apreensao in apreensoes:
-            apreensao.status = "queima_pronta"
-            if arquivo:
-                apreensao.arquivo_pdf = arquivo
-            apreensao.save()
-            count += 1
+        try:
+            count = 0
+            for apreensao in apreensoes:
+                apreensao.status = "queima_pronta"
+                if arquivo:
+                    apreensao.arquivo_pdf = arquivo
+                apreensao.save()
+                count += 1
 
-        logger.info(
-            f"Lote {lote.protocolo} finalizado com {count} registros. Doc: {bool(arquivo)}"
-        )
+            logger.info(
+                f"Lote {lote.protocolo} finalizado com {count} registros. Doc: {bool(arquivo)}"
+            )
 
-        return Response(
-            {
-                "message": f"Incineração Lote {lote.protocolo} concluída com sucesso.",
-                "itens_finalizados": count,
-                "documento_anexado": bool(arquivo),
-            }
-        )
+            return Response(
+                {
+                    "message": f"Incineração Lote {lote.protocolo} concluída com sucesso.",
+                    "itens_finalizados": count,
+                    "documento_anexado": bool(arquivo),
+                }
+            )
+        except Exception as e:
+            logger.error(f"ERRO CRÍTICO ao finalizar lote {lote_id}: {str(e)}")
+            return Response(
+                {"error": f"Erro interno ao salvar arquivos no Cloudinary: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
     @action(detail=True, methods=["post"])
     def excluir(self, request, pk=None):
