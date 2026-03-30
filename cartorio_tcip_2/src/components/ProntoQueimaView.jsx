@@ -338,7 +338,11 @@ export default function ProntoQueimaView() {
                 <h3 style={{ color: "#143a2b", margin: 0 }}>LOTE {lote.numero.toString().padStart(2, '0')}</h3>
                 <span style={{ fontSize: "12px", color: "#64748b" }}>Protocolo: {lote.protocolo}</span>
               </div>
-              <span className="badge" style={{ background: "#f1f5f9", color: "#1e293b" }}>
+              <span className="badge" style={{ 
+                background: lote.itens.length >= 20 ? "#143a2b" : "#f1f5f9", 
+                color: lote.itens.length >= 20 ? "white" : "#1e293b",
+                transition: "all 0.3s ease"
+              }}>
                 {lote.itens.length} / 20 PROCESSOS
               </span>
             </div>
@@ -367,24 +371,41 @@ export default function ProntoQueimaView() {
             <div style={{ display: "flex", gap: "10px" }}>
               <button 
                 className="btn-green" 
-                style={{ flex: 1, justifyContent: "center" }}
+                style={{ 
+                  flex: 1, 
+                  justifyContent: "center",
+                  background: lote.itens.length >= 20 ? "#143a2b" : "#94a3b8",
+                  opacity: 1,
+                  cursor: lote.itens.length >= 20 ? "pointer" : "not-allowed",
+                  border: "none",
+                  borderRadius: "6px",
+                  padding: "10px",
+                  color: "white",
+                  fontWeight: "600",
+                  transition: "all 0.3s ease"
+                }}
+                disabled={lote.itens.length < 20}
                 onClick={() => gerarCertidaoPDF(lote)}
+                title={lote.itens.length < 20 ? "O lote precisa de 20 processos para permitir a impressão" : "Imprimir Certidão"}
               >
                 📄 IMPRIMIR
               </button>
               <button 
                 style={{ 
                   flex: 1, 
-                  background: lote.itens.length > 0 ? "#dc2626" : "#94a3b8",
+                  background: lote.itens.length >= 20 ? "#dc2626" : "#cbd5e1",
                   color: "white",
                   border: "none",
                   borderRadius: "6px",
                   padding: "10px",
-                  cursor: lote.itens.length > 0 ? "pointer" : "not-allowed",
-                  fontWeight: "600"
+                  cursor: lote.itens.length >= 20 ? "pointer" : "not-allowed",
+                  fontWeight: "600",
+                  transition: "all 0.3s ease",
+                  opacity: 1
                 }}
                 onClick={() => setModalLote(lote)}
-                disabled={lote.itens.length === 0}
+                disabled={lote.itens.length < 20}
+                title={lote.itens.length < 20 ? "O lote precisa de 20 processos para ser finalizado" : "Finalizar Lote"}
               >
                 ✅ FINALIZAR
               </button>
