@@ -136,6 +136,14 @@ CLOUDINARY_STORAGE = {
     "API_SECRET": os.environ.get("API_SECRET", ""),
     "SECURE": True,
 }
+# Configuração global para Cloudinary reconhecer PDFs corretamente
+import cloudinary
+cloudinary.config(
+  cloud_name = os.environ.get("CLOUD_NAME"),
+  api_key = os.environ.get("API_KEY"),
+  api_secret = os.environ.get("API_SECRET"),
+  secure = True
+)
 
 USE_CLOUDINARY = all(
     [
