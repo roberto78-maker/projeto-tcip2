@@ -103,10 +103,22 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
             )
 
         agora = timezone.now()
-        ultimo_lote = LoteIncineracao.objects.order_by("-numero").first()
+        from django.db.models import Count
+        # Busca o lote 'aberto' (status incineracao) mais antigo que ainda tenha menos de 20 itens
+        lote_aberto = LoteIncineracao.objects.filter(
+            apreensoes__status="incineracao"
+        ).annotate(
+            qtd=Count('apreensoes')
+        ).filter(
+            qtd__lt=20
+        ).order_by('numero').first()
 
-        if not ultimo_lote or ultimo_lote.apreensoes.count() >= 20:
-            novo_numero = (ultimo_lote.numero + 1) if ultimo_lote else 1
+        if lote_aberto:
+            ultimo_lote = lote_aberto
+        else:
+            # Se não houver lote com espaço, busca o último número para criar um novo
+            ultimo_referencia = LoteIncineracao.objects.order_by("-numero").first()
+            novo_numero = (ultimo_referencia.numero + 1) if ultimo_referencia else 1
             protocolo = f"1CART6BPM-{str(novo_numero).zfill(6)}.{agora.year}"
             ultimo_lote = LoteIncineracao.objects.create(
                 numero=novo_numero, ano=agora.year, protocolo=protocolo
