@@ -181,6 +181,7 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
             for apreensao in apreensoes:
                 apreensao.status = "queima_pronta"
                 if arquivo:
+                    arquivo.seek(0)  # ⏪ Rebobina o arquivo para o início para não dar erro de arquivo vazio
                     apreensao.arquivo_pdf = arquivo
                 apreensao.save()
                 count += 1
