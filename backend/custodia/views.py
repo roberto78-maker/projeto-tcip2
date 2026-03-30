@@ -156,8 +156,8 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
             lote_incineracao=lote, status="incineracao"
         )
 
-        if apreensoes.count() < 20:
-            error_msg = f"Lote precisa de 20 itens. Atual: {apreensoes.count()}"
+        if apreensoes.count() == 0:
+            error_msg = "Lote não possui itens para finalizar."
             return Response(
                 {"error": error_msg},
                 status=status.HTTP_400_BAD_REQUEST,
