@@ -104,14 +104,15 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
 
         agora = timezone.now()
         from django.db.models import Count
+
         # Busca o lote 'aberto' (status incineracao) mais antigo que ainda tenha menos de 20 itens
-        lote_aberto = LoteIncineracao.objects.filter(
-            apreensoes__status="incineracao"
-        ).annotate(
-            qtd=Count('apreensoes')
-        ).filter(
-            qtd__lt=20
-        ).order_by('numero').first()
+        lote_aberto = (
+            LoteIncineracao.objects.filter(apreensoes__status="incineracao")
+            .annotate(qtd=Count("apreensoes"))
+            .filter(qtd__lt=20)
+            .order_by("numero")
+            .first()
+        )
 
         if lote_aberto:
             ultimo_lote = lote_aberto
