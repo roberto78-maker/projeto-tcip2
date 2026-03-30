@@ -5,6 +5,7 @@ import { addApreensao } from "../services/api.js";
 import { getUsuario } from "../services/auth.js";
 import { VARAS, SUBSTANCIAS, UNIDADES_PM, PATENTES } from "../constants/options.js";
 import logoBpm from "../assets/brasao.png";
+import AutocompleteInput, { saveHistory } from "./AutocompleteInput.jsx";
 
 const FormGroup = ({ label, children }) => (
   <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -251,6 +252,11 @@ export default function CadastroView() {
 
       alert("Registros inseridos com sucesso e Recibo Gerado!");
 
+      // Salva histórico para autocomplete
+      saveHistory("hist_policial", policial);
+      saveHistory("hist_rg", rg);
+      materiais.forEach(m => saveHistory("hist_noticiado", m.reu));
+
       // Limpa formulário
       setProcesso("");
       setRg("");
@@ -295,8 +301,24 @@ export default function CadastroView() {
               {PATENTES.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
           </FormGroup>
-          <FormGroup label="Policial Entregador *"><input type="text" style={inputStyle} value={policial} onChange={e => setPolicial(upper(e.target.value))} /></FormGroup>
-          <FormGroup label="RG *"><input type="text" style={inputStyle} value={rg} onChange={e => setRg(formatarRG(e.target.value))} /></FormGroup>
+          <FormGroup label="Policial Entregador *">
+            <AutocompleteInput
+              historyKey="hist_policial"
+              value={policial}
+              onChange={e => setPolicial(upper(e.target.value))}
+              style={inputStyle}
+              placeholder="Nome do policial..."
+            />
+          </FormGroup>
+          <FormGroup label="RG *">
+            <AutocompleteInput
+              historyKey="hist_rg"
+              value={rg}
+              onChange={e => setRg(formatarRG(e.target.value))}
+              style={inputStyle}
+              placeholder="00.000.000-0"
+            />
+          </FormGroup>
         </div>
       </div>
 
@@ -308,7 +330,15 @@ export default function CadastroView() {
 
         {materiais.map((m, idx) => (
           <div key={m.id} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 40px", gap: "20px", background: "#f8fafc", padding: "15px", borderRadius: "8px", borderLeft: "4px solid #10b981", marginBottom: "10px" }}>
-            <FormGroup label="Noticiado"><input type="text" style={inputStyle} value={m.reu} onChange={e => updateMaterial(m.id, "reu", upper(e.target.value))} /></FormGroup>
+            <FormGroup label="Noticiado">
+              <AutocompleteInput
+                historyKey="hist_noticiado"
+                value={m.reu}
+                onChange={e => updateMaterial(m.id, "reu", upper(e.target.value))}
+                style={inputStyle}
+                placeholder="Nome do noticiado..."
+              />
+            </FormGroup>
             <FormGroup label="Substância *">
               <select style={inputStyle} value={m.substancia} onChange={e => updateMaterial(m.id, "substancia", e.target.value)}>
                 {SUBSTANCIAS.map(s => <option key={s} value={s}>{s}</option>)}
