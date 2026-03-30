@@ -6,13 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('custodia', '0005_alter_apreensao_data_criacao_alter_apreensao_status_and_more'),
+        (
+            "custodia",
+            "0005_alter_apreensao_data_criacao_alter_apreensao_status_and_more",
+        ),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='apreensao',
-            name='motivo_exclusao',
+            model_name="apreensao",
+            name="motivo_exclusao",
             field=models.TextField(blank=True, null=True),
         ),
     ]
