@@ -27,9 +27,12 @@ export const UNIDADES_PM = [
   "BPMOA",
   "GOTRAN",
   "BPEC",
-  "TRANSITO"
+  "TRANSITO",
+  "CPU",
+  "BPFRON",
+  "P2"
 ];
 
 export const PATENTES = [
-  "CEL", "TEN CEL", "MAJ", "CAP", "1º TEN", "2º TEN", "ASP", "SUBTEN", "1º SGT", "2º SGT", "3º SGT", "CB", "SD", "AL", "CPU", "BPFRON", "P2"
+  "CEL", "TEN CEL", "MAJ", "CAP", "1º TEN", "2º TEN", "ASP", "SUBTEN", "1º SGT", "2º SGT", "3º SGT", "CB", "SD", "AL"
 ];
