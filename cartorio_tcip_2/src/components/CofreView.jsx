@@ -148,7 +148,10 @@ export default function CofreView() {
             )}
             {itens.map((item) => {
               const hasPDF = !!item.arquivo_pdf;
-              const pdfUrl = item.arquivo_pdf ? (item.arquivo_pdf.startsWith('http') ? item.arquivo_pdf : `${MEDIA_URL.endsWith('/') ? MEDIA_URL.slice(0, -1) : MEDIA_URL}${item.arquivo_pdf.startsWith('/') ? '' : '/'}${item.arquivo_pdf}`) : null;
+              let pdfUrl = item.arquivo_pdf ? (item.arquivo_pdf.startsWith('http') ? item.arquivo_pdf : `${MEDIA_URL.endsWith('/') ? MEDIA_URL.slice(0, -1) : MEDIA_URL}${item.arquivo_pdf.startsWith('/') ? '' : '/'}${item.arquivo_pdf}`) : null;
+              if (pdfUrl && pdfUrl.includes('cloudinary.com') && !pdfUrl.toLowerCase().endsWith('.pdf') && !pdfUrl.toLowerCase().endsWith('.jpg') && !pdfUrl.toLowerCase().endsWith('.jpeg')) {
+                pdfUrl = `${pdfUrl}.pdf`;
+              }
               const hasObs = !!item.observacao_cofre;
 
               return (

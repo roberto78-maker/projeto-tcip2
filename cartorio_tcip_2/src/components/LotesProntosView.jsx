@@ -204,7 +204,12 @@ export default function LotesProntosView() {
                 
                 // Pega o arquivo do primeiro item do lote
                 const arqRaw = lote.itens[0]?.arquivo_pdf_url || lote.itens[0]?.arquivo_pdf;
-                const arquivoUrl = arqRaw ? (arqRaw.startsWith('http') ? arqRaw : `${MEDIA_URL.endsWith('/') ? MEDIA_URL.slice(0, -1) : MEDIA_URL}${arqRaw.startsWith('/') ? '' : '/'}${arqRaw}`) : null;
+                let arquivoUrl = arqRaw ? (arqRaw.startsWith('http') ? arqRaw : `${MEDIA_URL.endsWith('/') ? MEDIA_URL.slice(0, -1) : MEDIA_URL}${arqRaw.startsWith('/') ? '' : '/'}${arqRaw}`) : null;
+
+                // 📁 Correção para Cloudinary sem extensão (muitas vezes PDFs não abrem sem .pdf no final da URL)
+                if (arquivoUrl && arquivoUrl.includes('cloudinary.com') && !arquivoUrl.toLowerCase().endsWith('.pdf') && !arquivoUrl.toLowerCase().endsWith('.jpg') && !arquivoUrl.toLowerCase().endsWith('.jpeg')) {
+                  arquivoUrl = `${arquivoUrl}.pdf`;
+                }
 
                 return (
                   <tr key={lote.id} style={{ borderBottom: "1px solid #f1f5f9", transition: "all 0.2s" }} className="table-row-hover">
