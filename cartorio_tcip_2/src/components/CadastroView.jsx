@@ -159,10 +159,10 @@ export default function CadastroView() {
      const materiaisComApreensao = materiais.filter(m => m.substancia && m.substancia.trim() !== "");
  
     if (drogasSelecionadas.length > 0 || materiaisComApreensao.length > 0) {
-        const bodyTable = materiaisComApreensao.map((item, index) => [
+         const bodyTable = materiaisComApreensao.map((item, index) => [
           `1.${index + 1}`,
           item.reu || "NÃO IDENTIFICADO",
-          item.substancia,
+          item.substancia || "N/A",
           formatarPesoDisplay(item.peso, item.unidadePeso),
           item.lacre || "N/A"
         ]);
@@ -220,12 +220,13 @@ export default function CadastroView() {
      try {
       const promises = materiais.map(async (m) => {
         const p = parseFloat(String(m.peso).replace(",", "."));
-        const payload = {
+         const payload = {
           processo,
           bou,
           reu: m.reu || "NÃO IDENTIFICADO",
-          natureza: drogasSelecionadas.length > 0 ? "DROGAS" : "GERAL",
-          substancia: [...crimesSelecionados, ...drogasSelecionadas].join(', ') || "TERMO GERAL",
+          natureza: drogasSelecionadas.length > 0 ? "DROGAS" : "OUTROS",
+          substancia: m.substancia, 
+          descricao: [...crimesSelecionados, ...drogasSelecionadas].join(', ') || "TERMO GERAL",
           peso: isNaN(p) ? 0 : p,
           unidade: m.unidadePeso,
           status: (drogasSelecionadas.length === 0 && (!m.substancia || fielDepositario)) ? "arquivado" : "conferencia",
