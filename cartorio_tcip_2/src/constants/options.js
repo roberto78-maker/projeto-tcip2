@@ -1,7 +1,6 @@
 export const NATUREZAS = [
   { id: "DROGAS", label: "💊 ENTORPECENTES (DROGAS)", temApreensao: true },
-  { id: "SOM", label: "🔊 PERTURBAÇÃO DO SOSSEGO (SOM)", temApreensao: true },
-  { id: "OUTROS", label: "⚖️ OUTROS TERMOS (GERAL)", temApreensao: false }
+  { id: "GERAL", label: "⚖️ TERMOS GERAIS (AMEAÇA, SOM, OUTROS)", temApreensao: false }
 ];
 
 export const CRIMES_GERAIS = [
