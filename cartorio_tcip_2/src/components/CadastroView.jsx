@@ -162,6 +162,7 @@ export default function CadastroView() {
     doc.setFont("helvetica", "bold"); doc.text("VARA:", marginX, currY);
     doc.setFont("helvetica", "normal"); doc.text(dados.vara || "", marginX + 13, currY); currY += 12;
 
+    const nomeExibicaoNatureza = natureza === "OUTROS" ? (dados.crimesSelecionados?.join(', ') || "TERMO GERAL") : natureza;
     const acaoCustoia = dados.fielDepositario ? "nomeado FIEL DEPOSITÁRIO (Objeto permanece com proprietário)" : "a custódia";
     const textoBase = `Certifico para os devidos fins que, na data de hoje, recebi do(a) ${dados.patente} ${dados.policial}, RG ${dados.rg}, pertencente à unidade policial ${dados.unidadeOrigem}, ${acaoCustoia} dos itens listados abaixo conforme natureza "${nomeExibicaoNatureza}", para fins de registro e destinação legal.`;
     
@@ -424,7 +425,7 @@ export default function CadastroView() {
 
       <div className="card" style={{ padding: "25px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px", borderBottom: "1px solid #e2e8f0", paddingBottom: "15px" }}>
-          <h2 style={{ fontSize: "16px", color: "#1e3a8a", margin: 0 }}>👥 2. NOTICIADOS E MATERIAIS</h2>
+          <h2 style={{ fontSize: "16px", color: "#1e3a8a", margin: 0 }}>👥 2. NOTICIADOS</h2>
           {natureza !== "AMEACA" && (
             <button className="btn-blue" onClick={adicionarMaterial} style={{ fontSize: "12px" }}>+ Adicionar Item</button>
           )}
