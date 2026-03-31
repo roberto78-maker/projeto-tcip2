@@ -9,6 +9,7 @@ from django_filters import rest_framework as django_filters
 from django.utils import timezone
 from .models import Apreensao, LoteIncineracao
 from .serializers import ApreensaoSerializer, LoteIncineracaoSerializer
+import cloudinary.uploader
 
 import io
 from reportlab.lib.pagesizes import A4
@@ -177,32 +178,53 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
             )
 
         try:
-            count = 0
-            for apreensao in apreensoes:
+            url_cloudinary = None
+
+            if arquivo:
+                # ☁️ FAZ O UPLOAD UMA ÚNICA VEZ para o Cloudinary
+                logger.info(f"Iniciando upload único ao Cloudinary para o lote {lote.protocolo}...")
+                arquivo.seek(0)
+                upload_result = cloudinary.uploader.upload(
+                    arquivo,
+                    resource_type="auto",
+                    folder="laudos_pdf",
+                    public_id=f"lote_{lote.protocolo.replace('.', '_')}",
+                    overwrite=True,
+                )
+                url_cloudinary = upload_result.get("secure_url")
+                logger.info(f"Upload concluído. URL: {url_cloudinary}")
+
+            # ⚡ ATUALIZA TODOS OS ITENS COM UM ÚNICO COMANDO (bulk_update)
+            lista_apreensoes = list(apreensoes)
+            for apreensao in lista_apreensoes:
                 apreensao.status = "queima_pronta"
-                if arquivo:
-                    arquivo.seek(
-                        0
-                    )  # ⏪ Rebobina o arquivo para o início para não dar erro de arquivo vazio
-                    apreensao.arquivo_pdf = arquivo
-                apreensao.save()
-                count += 1
+                if url_cloudinary:
+                    apreensao.arquivo_pdf_url = url_cloudinary
+
+            campos_atualizar = ["status"]
+            if url_cloudinary:
+                campos_atualizar.append("arquivo_pdf_url")
+
+            Apreensao.objects.bulk_update(lista_apreensoes, campos_atualizar)
+            count = len(lista_apreensoes)
 
             logger.info(
-                f"Lote {lote.protocolo} finalizado com {count} registros. Doc: {bool(arquivo)}"
+                f"Lote {lote.protocolo} finalizado com {count} registros. "
+                f"URL doc: {url_cloudinary or 'Nenhum'}"
             )
 
             return Response(
                 {
                     "message": f"Incineração Lote {lote.protocolo} concluída com sucesso.",
                     "itens_finalizados": count,
-                    "documento_anexado": bool(arquivo),
+                    "documento_anexado": bool(url_cloudinary),
+                    "url_documento": url_cloudinary,
                 }
             )
         except Exception as e:
             logger.error(f"ERRO CRÍTICO ao finalizar lote {lote_id}: {str(e)}")
             return Response(
-                {"error": f"Erro interno ao salvar arquivos no Cloudinary: {str(e)}"},
+                {"error": f"Erro interno ao finalizar lote: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 

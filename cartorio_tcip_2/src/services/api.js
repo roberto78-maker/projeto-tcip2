@@ -203,14 +203,35 @@ export async function downloadRelatorioPdf(filtros = {}) {
     headers: getHeaders()
   });
   if (!res.ok) throw new Error("Erro ao gerar PDF do relatório");
-  
+
   const blob = await res.blob();
-  const url = window.URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `relatorio_radar_${new Date().getTime()}.pdf`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  window.URL.revokeObjectURL(url);
+  const blobUrl = window.URL.createObjectURL(blob);
+
+  // ✅ Compatível com Navegador e Android WebView (Capacitor)
+  // Em navegadores desktop, usa o atributo download para salvar o arquivo.
+  // Em Android WebViews (Capacitor), o "click" pode não funcionar, então
+  // usamos window.open como fallback para abrir o PDF no visualizador nativo.
+  const nomeArquivo = `relatorio_radar_${new Date().getTime()}.pdf`;
+
+  const tentouDownload = (() => {
+    try {
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = nomeArquivo;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      return true;
+    } catch {
+      return false;
+    }
+  })();
+
+  // Fallback: abre o PDF num nova aba (funciona no Android WebView)
+  if (!tentouDownload) {
+    window.open(blobUrl, "_blank");
+  }
+
+  // Revoga a URL após um curto delay para garantir que o browser processou
+  setTimeout(() => window.URL.revokeObjectURL(blobUrl), 5000);
 }

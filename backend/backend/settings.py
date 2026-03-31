@@ -173,8 +173,9 @@ else:
     }
     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 
-# 🌐 CORS
-CORS_ALLOW_ALL_ORIGINS = True
+# 🌐 CORS — Restrito por segurança
+# Em produção, configure a variável FRONTEND_URL no painel do Render.
+# Em desenvolvimento, localhost é sempre permitido.
 
 # 🔐 CSRF
 CSRF_TRUSTED_ORIGINS = [
@@ -188,7 +189,12 @@ if FRONTEND_URL:
         CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
     CORS_ALLOWED_ORIGINS = [FRONTEND_URL]
 else:
-    CORS_ALLOW_ALL_ORIGINS = True
+    # Apenas localhost para desenvolvimento local. NUNCA abrir para todos em produção.
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+    ]
 
 # 🔌 REST FRAMEWORK
 REST_FRAMEWORK = {
