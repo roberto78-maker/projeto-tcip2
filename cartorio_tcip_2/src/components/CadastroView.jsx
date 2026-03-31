@@ -27,6 +27,7 @@ const inputStyle = {
 export default function CadastroView() {
   const [natureza, setNatureza] = useState("DROGAS");
   const [crimesSelecionados, setCrimesSelecionados] = useState([]);
+  const [fielDepositario, setFielDepositario] = useState(false);
   
   const [dataFato, setDataFato] = useState("");
   const [bou, setBou] = useState(`${new Date().getFullYear()}/`);
@@ -49,6 +50,7 @@ export default function CadastroView() {
   const handleNaturezaChange = (novaId) => {
     setNatureza(novaId);
     setCrimesSelecionados([]); // Reseta os crimes selecionados ao mudar de aba
+    setFielDepositario(false); // Reseta fiel depositário
     // Se for Ameaça, limpa os materiais ou deixa apenas um placeholder
     if (novaId === "AMEACA" || novaId === "OUTROS") {
         setMateriais([{ id: Date.now(), reu: "", substancia: "APENAS REGISTRO", peso: "0,00", unidadePeso: "g", lacre: "" }]);
@@ -145,7 +147,7 @@ export default function CadastroView() {
 
     doc.setFont("helvetica", "bold");
     const titulo = natureza === "DROGAS" ? "RECIBO DE DEPÓSITO DE ENTORPECENTES" 
-                 : natureza === "SOM" ? "RECIBO DE DEPÓSITO DE MATERIAIS APREENDIDOS"
+                 : natureza === "SOM" ? (dados.fielDepositario ? "TERMO DE FIEL DEPOSITÁRIO" : "RECIBO DE DEPÓSITO DE MATERIAIS APREENDIDOS")
                  : "CERTIDÃO DE RECEBIMENTO DE TERMO CIRCUNSTANCIADO";
     
     const anoRecibo = dados.bou.split("/")[0] || new Date().getFullYear();
@@ -160,8 +162,8 @@ export default function CadastroView() {
     doc.setFont("helvetica", "bold"); doc.text("VARA:", marginX, currY);
     doc.setFont("helvetica", "normal"); doc.text(dados.vara || "", marginX + 13, currY); currY += 12;
 
-    const nomeExibicaoNatureza = natureza === "OUTROS" ? (dados.crimesSelecionados?.join(', ') || "TERMO GERAL") : natureza;
-    const textoBase = `Certifico para os devidos fins que, na data de hoje, recebi do(a) ${dados.patente} ${dados.policial}, RG ${dados.rg}, pertencente à unidade policial ${dados.unidadeOrigem}, a custódia dos itens listados abaixo conforme natureza "${nomeExibicaoNatureza}", para fins de registro e destinação legal.`;
+    const acaoCustoia = dados.fielDepositario ? "nomeado FIEL DEPOSITÁRIO (Objeto permanece com proprietário)" : "a custódia";
+    const textoBase = `Certifico para os devidos fins que, na data de hoje, recebi do(a) ${dados.patente} ${dados.policial}, RG ${dados.rg}, pertencente à unidade policial ${dados.unidadeOrigem}, ${acaoCustoia} dos itens listados abaixo conforme natureza "${nomeExibicaoNatureza}", para fins de registro e destinação legal.`;
     
     const splitText = doc.splitTextToSize(textoBase, contentWidth);
     doc.text(textoBase, marginX, currY, { align: "justify", maxWidth: contentWidth });
@@ -237,17 +239,17 @@ export default function CadastroView() {
           substancia: natureza === "OUTROS" ? (crimesSelecionados.join(', ') || "TERMO GERAL") : m.substancia,
           peso: isNaN(p) ? 0 : p,
           unidade: m.unidadePeso,
-          status: (natureza === "AMEACA" || natureza === "OUTROS") ? "arquivado" : "conferencia",
+          status: (natureza === "AMEACA" || natureza === "OUTROS" || (natureza === "SOM" && fielDepositario)) ? "arquivado" : "conferencia",
           lacre: m.lacre || "",
           vara: vara || "",
           policial: `${patente} ${policial}`,
-          tem_apreensao: (natureza !== "AMEACA" && natureza !== "OUTROS")
+          tem_apreensao: (natureza !== "AMEACA" && natureza !== "OUTROS" && !(natureza === "SOM" && fielDepositario))
         };
         return addApreensao(payload);
       });
 
       await Promise.all(promises);
-      await gerarPDF({ processo, bou, materiais, vara, patente, policial, rg, unidadeOrigem, natureza, crimesSelecionados });
+      await gerarPDF({ processo, bou, materiais, vara, patente, policial, rg, unidadeOrigem, natureza, crimesSelecionados, fielDepositario });
 
       alert("Procedimento registrado com sucesso!");
       setProcesso("");
@@ -338,6 +340,32 @@ export default function CadastroView() {
                         </label>
                     ))}
                 </div>
+            </div>
+        )}
+
+        {natureza === "SOM" && (
+            <div style={{ width: "100%", marginTop: "15px", display: "flex", justifyContent: "center" }}>
+                <label style={{ 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: "10px", 
+                    background: fielDepositario ? "#fef2f2" : "#f8fafc", 
+                    padding: "12px 25px", 
+                    borderRadius: "12px", 
+                    border: fielDepositario ? "1px solid #fecaca" : "1px solid #e2e8f0",
+                    cursor: "pointer",
+                    transition: "all 0.2s"
+                }}>
+                    <input 
+                        type="checkbox" 
+                        checked={fielDepositario} 
+                        onChange={(e) => setFielDepositario(e.target.checked)}
+                        style={{ width: "18px", height: "18px" }}
+                    />
+                    <span style={{ fontSize: "13px", fontWeight: "700", color: fielDepositario ? "#dc2626" : "#475569" }}>
+                        🛡️ ENTREGAR COMO FIEL DEPOSITÁRIO (Objeto fica com o proprietário)
+                    </span>
+                </label>
             </div>
         )}
       </div>
