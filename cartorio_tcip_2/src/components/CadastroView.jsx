@@ -162,7 +162,7 @@ export default function CadastroView() {
          const bodyTable = materiaisComApreensao.map((item, index) => [
           `1.${index + 1}`,
           item.reu || "NÃO IDENTIFICADO",
-          `${item.tipo === 'DROGA' ? '💊 ' : item.tipo === 'SOM' ? '🔊 ' : '⚙️ '}${item.substancia}`,
+          `${item.tipo === 'DROGA' ? 'DROGA - ' : item.tipo === 'SOM' ? 'SOM - ' : 'OBJETO - '}${item.substancia}`,
           formatarPesoDisplay(item.peso, item.unidadePeso),
           item.lacre || "N/A"
         ]);
@@ -186,7 +186,7 @@ export default function CadastroView() {
     }
 
     doc.setFontSize(8);
-    const obsText = "Obs: O procedimento foi devidamente registrado no Sistema TCIP. Se houver objetos, estes estão sob guarda da unidade. Se não houver objetos, o processo segue diretamente para o arquivo e baixa.";
+    const obsText = "Obs: O material coletado é de responsabilidade exclusiva da equipe policial signatária, na qual os entorpecentes são recebidos mediante embalagem de custódia com lacre discriminado. Os demais objetos que compõem o termo, como aparelhos de som e facas, serão recebidos no estado em que se encontram no momento da entrega a este cartório.";
     const splitObs = doc.splitTextToSize(obsText, contentWidth);
     doc.text(obsText, marginX, currY, { align: "justify", maxWidth: contentWidth });
     currY += (splitObs.length * 4) + 40;
