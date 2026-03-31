@@ -118,25 +118,22 @@ export default function CadastroView() {
     img.src = logoBpm;
     await new Promise((resolve) => { img.onload = resolve; img.onerror = resolve; });
 
-    // 🏛️ CABEÇALHO (Logo à esquerda conforme modelo)
+    // 🏛️ CABEÇALHO (Centralizado conforme modelo)
     try { doc.addImage(img, "PNG", marginX, currY, 20, 24); } catch (e) { }
     
     doc.setFont("helvetica", "bold"); doc.setFontSize(10);
-    const headerX = marginX + 25;
-    doc.text("ESTADO DO PARANÁ", headerX, currY + 5);
-    doc.text("POLÍCIA MILITAR", headerX, currY + 10);
-    doc.text("5º COMANDO REGIONAL DE POLÍCIA MILITAR", headerX, currY + 15);
-    doc.text("6º BATALHÃO DE POLÍCIA MILITAR", headerX, currY + 20);
-    doc.text("PRIMEIRO CARTÓRIO - TCIP", headerX, currY + 25);
+    doc.text("ESTADO DO PARANÁ", centerX, currY + 5, { align: "center" });
+    doc.text("POLÍCIA MILITAR", centerX, currY + 10, { align: "center" });
+    doc.text("5º COMANDO REGIONAL DE POLÍCIA MILITAR", centerX, currY + 15, { align: "center" });
+    doc.text("6º BATALHÃO DE POLÍCIA MILITAR", centerX, currY + 20, { align: "center" });
+    doc.text("PRIMEIRO CARTÓRIO - TCIP", centerX, currY + 25, { align: "center" });
     
     currY += 32;
     doc.line(marginX, currY, pageWidth - marginX, currY); currY += 10;
 
-    // 📜 TÍTULO
+    // 📜 TÍTULO (Padronizado conforme modelo)
     doc.setFont("helvetica", "bold"); doc.setFontSize(11);
-    const tituloDoc = natureza === "DROGAS" ? "RECIBO DE DEPÓSITO DE ENTORPECENTES" 
-                 : (fielDepositario ? "TERMO DE FIEL DEPOSITÁRIO" : "RECIBO DE DEPÓSITO DE MATERIAIS APREENDIDOS");
-    
+    const tituloDoc = "RECIBO DE OBJETOS APREENDIDOS";
     const anoRecibo = bou.split("/")[0] || new Date().getFullYear();
     const numAleatorio = Math.floor(Math.random() * 900) + 100;
     doc.text(`${tituloDoc} Nº ${numAleatorio}/${anoRecibo}`, centerX, currY, { align: "center" }); currY += 12;
@@ -161,11 +158,11 @@ export default function CadastroView() {
     doc.text(textoBase, marginX, currY, { align: "justify", maxWidth: contentWidth });
     currY += (splitText.length * 5) + 5;
 
-    // ⚡ LISTA DE NATUREZAS (✓ conforme modelo)
-    doc.setFont("helvetica", "bold"); doc.setFontSize(9);
+    // ⚡ LISTA DE NATUREZAS (Fonte normal, sem espaçamento extra)
+    doc.setFont("helvetica", "normal"); doc.setFontSize(9);
     listaCrimesEDrogas.forEach(crime => {
         doc.text(`✓ ${crime}`, marginX + 5, currY);
-        currY += 5;
+        currY += 4;
     });
     currY += 8;
 
@@ -219,13 +216,14 @@ export default function CadastroView() {
     doc.setFont("helvetica", "normal"); doc.text("Primeiro Cartório - TCIP", pageWidth - marginX - (lineSize / 2), currY + 10, { align: "center" });
     doc.text("Recebedor / Cartorário", pageWidth - marginX - (lineSize / 2), currY + 15, { align: "center" });
 
-    doc.save(`RECIBO_${bou.replace(/\//g, "-")}.pdf`);
-
-    // 🕒 RODAPÉ COM DATA/HORA
+    // 🕒 RODAPÉ COM DATA/HORA (PROTOCOLO)
     doc.setFontSize(7);
     const agora = new Date();
     const dataHora = agora.toLocaleDateString("pt-BR") + " - " + agora.toLocaleTimeString("pt-BR");
-    doc.text(`Gerado em: ${dataHora}`, pageWidth - marginX, doc.internal.pageSize.getHeight() - 10, { align: "right" });
+    const protocolo = `PROTOCOLADO: #${numAleatorio}/${anoRecibo}`;
+    doc.text(`Gerado em: ${dataHora} - ${protocolo}`, pageWidth - marginX, doc.internal.pageSize.getHeight() - 10, { align: "right" });
+    
+    doc.save(`RECIBO_${bou.replace(/\//g, "-")}.pdf`);
   };
 
   const salvar = async () => {
