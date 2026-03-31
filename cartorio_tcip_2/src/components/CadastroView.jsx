@@ -146,7 +146,8 @@ export default function CadastroView() {
     doc.setFont("helvetica", "bold"); doc.text("VARA:", marginX, currY);
     doc.setFont("helvetica", "normal"); doc.text(vara || "", marginX + 13, currY); currY += 12;
 
-     const listaCrimesEDrogas = [...crimesSelecionados, ...drogasSelecionadas];
+      const listaDrogasNoGrid = materiais.filter(m => m.tipo === "DROGA").map(m => m.substancia);
+     const listaCrimesEDrogas = [...new Set([...crimesSelecionados, ...listaDrogasNoGrid])];
     const nomeExibicaoNatureza = listaCrimesEDrogas.length > 0 ? listaCrimesEDrogas.join(', ') : "TERMO GERAL";
     const acaoCustoia = fielDepositario ? "nomeado FIEL DEPOSITÁRIO (Objeto permanece com proprietário)" : "a custódia";
     const textoBase = `Certifico para os devidos fins que, na data de hoje, recebi do(a) ${patente} ${policial}, RG ${rg}, pertencente à unidade policial ${unidadeOrigem}, ${acaoCustoia} dos itens listados abaixo conforme natureza "${nomeExibicaoNatureza}", para fins de registro e destinação legal.`;
@@ -288,9 +289,9 @@ export default function CadastroView() {
       </div>
 
       <div className="card" style={{ padding: "25px" }}>
-         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px", borderBottom: "1px solid #e2e8f0", paddingBottom: "15px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px", borderBottom: "1px solid #e2e8f0", paddingBottom: "15px" }}>
           <h2 style={{ fontSize: "16px", color: "#1e3a8a", margin: 0 }}>
-             🛡️ 1. DADOS DA OCORRÊNCIA ({[...crimesSelecionados, ...drogasSelecionadas].length > 0 ? [...crimesSelecionados, ...drogasSelecionadas].join(', ') : 'GERAL'})
+             🛡️ 1. DADOS DA OCORRÊNCIA ({crimesSelecionados.length > 0 ? crimesSelecionados.join(', ') : 'GERAL'})
           </h2>
           <span className="badge" style={{ background: "#1e293b", color: "white" }}>OPERADOR: {getUsuario()?.username?.toUpperCase()}</span>
         </div>
