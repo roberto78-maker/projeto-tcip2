@@ -101,33 +101,27 @@ export default function LotesProntosView() {
       margin: { left: margin, right: margin },
     });
 
-    // Final Y da tabela
     let finalY = doc.lastAutoTable.finalY + 1;
 
-    // Linha de Totais (Simplificada)
     doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
     doc.text(`TOTAL: ${lote.itens.length} ITENS`, margin, finalY + 5);
     doc.text(`PROTOCOLO: ${lote.protocolo}`, pageWidth - margin, finalY + 5, { align: "right" });
 
-    // --- POSICIONAMENTO DAS ASSINATURAS E RODAPÉ ---
-    // Tentamos manter na mesma página se houver pelo menos 45mm de espaço
     finalY += 12;
     const pageHeight = doc.internal.pageSize.getHeight();
     if (finalY > pageHeight - 50) {
       doc.addPage();
       finalY = 30;
     } else {
-      // Posição fixa no rodapé da página para manter padrão
       finalY = pageHeight - 55;
     }
 
     const lineW = 75;
     const col2X = pageWidth - margin - lineW;
 
-    // Linha 1
     doc.setLineWidth(0.1);
-    doc.setDrawColor(0, 0, 0); // Reset color to black for signatures
+    doc.setDrawColor(0, 0, 0); 
     doc.setTextColor(0, 0, 0);
     doc.line(margin, finalY, margin + lineW, finalY);
     doc.setFontSize(9);
@@ -138,11 +132,9 @@ export default function LotesProntosView() {
 
     finalY += 23;
 
-    // Linha 2
     doc.line(margin, finalY, margin + lineW, finalY);
     doc.text("TESTEMUNHA 02", margin + (lineW / 2), finalY + 4, { align: "center" });
 
-    // Data/Protocolo Box (Rodapé)
     const footerW = 92;
     const footerH = 20;
     const footerX = pageWidth - margin - footerW;
@@ -158,7 +150,6 @@ export default function LotesProntosView() {
     doc.text(`Protocolo: ${lote.protocolo}`, footerX + (footerW / 2), footerY + 11, { align: "center" });
     doc.text(`Incineração realizada em ____/____/____`, footerX + (footerW / 2), footerY + 16, { align: "center" });
 
-    // LOTE box no topo (Header)
     doc.setDrawColor(220, 38, 38);
     doc.setLineWidth(0.5);
     doc.roundedRect(pageWidth - 46, 12, 31, 14, 2, 2);
@@ -206,7 +197,6 @@ export default function LotesProntosView() {
                 const arqRaw = lote.itens[0]?.arquivo_pdf_url || lote.itens[0]?.arquivo_pdf;
                 let arquivoUrl = arqRaw ? (arqRaw.startsWith('http') ? arqRaw : `${MEDIA_URL.endsWith('/') ? MEDIA_URL.slice(0, -1) : MEDIA_URL}${arqRaw.startsWith('/') ? '' : '/'}${arqRaw}`) : null;
 
-                // 📁 Correção para Cloudinary sem extensão (muitas vezes PDFs não abrem sem .pdf no final da URL)
                 if (arquivoUrl && arquivoUrl.includes('cloudinary.com') && !arquivoUrl.toLowerCase().endsWith('.pdf') && !arquivoUrl.toLowerCase().endsWith('.jpg') && !arquivoUrl.toLowerCase().endsWith('.jpeg')) {
                   arquivoUrl = `${arquivoUrl}.pdf`;
                 }

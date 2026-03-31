@@ -16,6 +16,7 @@ const formatarPesoDisplay = (valor, unidade) => {
   if (["Mg", "mg"].includes(unidade)) return `${num.toFixed(2).replace(".", ",")} mg`;
   return `${num} ${unidade}`;
 };
+
 export default function ProntoQueimaView() {
   const [apreensoes, setApreensoes] = useState([]);
   const [lotes, setLotes] = useState([]);
@@ -69,7 +70,7 @@ export default function ProntoQueimaView() {
     let totalUnidades = 0;
 
     lote.itens.forEach(item => {
-      const p = parseFloat(String(item.peso).replace(",", ".")) || 0;
+      const p = parseFloat(String(item.weight || item.peso).replace(",", ".")) || 0;
       const uni = String(item.unidade).toLowerCase();
       if (uni.includes("g") || uni.includes("kg")) {
         if (uni.includes("kg")) totalGramas += p * 1000;
@@ -111,7 +112,7 @@ export default function ProntoQueimaView() {
     doc.setFont("helvetica", "bold");
     doc.text(`DATA: ${dataFormatada}`, margin, 53);
 
-    // Tabela de itens - Mais compacta para caber tudo em uma página
+    // Tabela de itens
     const tableData = lote.itens.map(item => [
       item.bou,
       item.processo,
@@ -143,10 +144,8 @@ export default function ProntoQueimaView() {
       margin: { left: margin, right: margin },
     });
 
-    // Final Y da tabela
     let finalY = doc.lastAutoTable.finalY + 1;
 
-    // Linha de Totais após a tabela
     doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
     doc.text(`TOTAL: ${totalProcessos} PROCESSOS`, margin, finalY + 5);
@@ -162,21 +161,17 @@ export default function ProntoQueimaView() {
     }
     doc.text(`TOTAL: ${textoPesoTotal || '0'}`, pageWidth - margin, finalY + 5, { align: "right" });
 
-    // --- POSICIONAMENTO DAS ASSINATURAS E RODAPÉ ---
-    // Tentamos manter na mesma página se houver pelo menos 45mm de espaço
     finalY += 12;
     if (finalY > pageHeight - 50) {
       doc.addPage();
       finalY = 30; 
     } else {
-      // Posição fixa no rodapé da página para manter padrão
       finalY = pageHeight - 55;
     }
 
     const lineW = 75;
     const col2X = pageWidth - margin - lineW;
     
-    // Linha 1: RESPONSÁVEL (Esquerda) e TESTEMUNHA 01 (Direita)
     doc.setLineWidth(0.1);
     doc.line(margin, finalY, margin + lineW, finalY);
     doc.setFontSize(9);
@@ -187,11 +182,9 @@ export default function ProntoQueimaView() {
 
     finalY += 23;
     
-    // Linha 2: TESTEMUNHA 02 (Esquerda) e Bloco de Protocolo (Direita)
     doc.line(margin, finalY, margin + lineW, finalY);
     doc.text("TESTEMUNHA 02", margin + (lineW / 2), finalY + 4, { align: "center" });
 
-    // Bloco do Protocolo no Rodapé
     const footerW = 92;
     const footerH = 20;
     const footerX = pageWidth - margin - footerW;
@@ -212,7 +205,6 @@ export default function ProntoQueimaView() {
     const txtAgente = `Agente: ${usuario?.username || 'Sistema'} em ${dataFormatada} às ${horaFormatada}`;
     doc.text(txtAgente, footerX + (footerW / 2), footerY + 16, { align: "center" });
 
-    // Numero do Lote grande no canto Top Right (Header)
     doc.setLineWidth(0.5);
     doc.roundedRect(pageWidth - 46, 12, 31, 14, 2, 2);
     doc.setFontSize(14);
@@ -225,7 +217,7 @@ export default function ProntoQueimaView() {
   const handleConfirmarFinalizacao = async () => {
     if (!modalLote) return;
     if (!arquivoAssinado) {
-      alert("Por favor, anexe a certidão assinada para concluir.");
+      alert("Por favor, anexe a certidãão assinada para concluir.");
       return;
     }
 
@@ -248,7 +240,6 @@ export default function ProntoQueimaView() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "25px" }}>
       
-      {/* Modal de Finalização (Semelhante ao Itens no Cofre) */}
       {modalLote && (
         <div style={{
           position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
@@ -265,7 +256,6 @@ export default function ProntoQueimaView() {
             </div>
 
             <div style={{ display: "grid", gap: "15px", marginBottom: "30px" }}>
-              {/* Passo 1 */}
               <div style={{ background: "#f8fafc", padding: "15px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
@@ -276,7 +266,6 @@ export default function ProntoQueimaView() {
                 </div>
               </div>
 
-              {/* Passo 2 */}
               <div style={{ background: "#f8fafc", padding: "15px", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
                 <span style={{ fontSize: "12px", fontWeight: "700", color: "#143a2b", textTransform: "uppercase" }}>Passo 2</span>
                 <p style={{ margin: "2px 0 10px", fontSize: "14px", color: "#334155" }}>Anexar documento assinado (PDF ou Imagem - Máx 2MB).</p>
@@ -321,7 +310,7 @@ export default function ProntoQueimaView() {
 
       <div className="card">
         <h2 className="card-title">Lotes</h2>
-        <p className="card-subtitle">Listagem de materiais agrupados em lotes de 20 para destruição oficial.</p>
+        <p className="card-subtitle">Listagem de materiais agrupados em lotes para destruição oficial.</p>
       </div>
 
       {lotesAgrupados.length === 0 && (

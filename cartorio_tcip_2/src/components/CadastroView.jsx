@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+import React, { useState } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { addApreensao } from "../services/api.js";
@@ -47,7 +47,7 @@ export default function CadastroView() {
 
   const handleNaturezaChange = (novaId) => {
     setNatureza(novaId);
-    // Se for AmeaÃ§a, limpa os materiais ou deixa apenas um placeholder
+    // Se for Ameaça, limpa os materiais ou deixa apenas um placeholder
     if (novaId === "AMEACA" || novaId === "OUTROS") {
         setMateriais([{ id: Date.now(), reu: "", substancia: "APENAS REGISTRO", peso: "0,00", unidadePeso: "g", lacre: "" }]);
     } else if (novaId === "SOM") {
@@ -133,22 +133,22 @@ export default function CadastroView() {
     currY += 35;
 
     doc.setFont("helvetica", "bold"); doc.setFontSize(11);
-    doc.text("ESTADO DO PARANÃ", centerX, currY, { align: "center" }); currY += 5;
-    doc.text("POLÃCIA MILITAR DO PARANÃ", centerX, currY, { align: "center" }); currY += 5;
-    doc.text("6Âº BATALHÃƒO DE POLÃCIA MILITAR", centerX, currY, { align: "center" }); currY += 5;
+    doc.text("ESTADO DO PARANÁ", centerX, currY, { align: "center" }); currY += 5;
+    doc.text("POLÍCIA MILITAR DO PARANÁ", centerX, currY, { align: "center" }); currY += 5;
+    doc.text("6º BATALHÃO DE POLÍCIA MILITAR", centerX, currY, { align: "center" }); currY += 5;
 
     doc.setFont("helvetica", "bold"); doc.setFontSize(10);
-    doc.text("PRIMEIRO CARTÃ“RIO - 6ÂºBPM", centerX, currY, { align: "center" }); currY += 6;
+    doc.text("PRIMEIRO CARTÓRIO - 6ºBPM", centerX, currY, { align: "center" }); currY += 6;
     doc.line(marginX, currY, pageWidth - marginX, currY); currY += 10;
 
     doc.setFont("helvetica", "bold");
-    const titulo = natureza === "DROGAS" ? "RECIBO DE DEPÃ“SITO DE ENTORPECENTES" 
-                 : natureza === "SOM" ? "RECIBO DE DEPÃ“SITO DE MATERIAIS APREENDIDOS"
-                 : "CERTIDÃƒO DE RECEBIMENTO DE TERMO CIRCUNSTANCIADO";
+    const titulo = natureza === "DROGAS" ? "RECIBO DE DEPÓSITO DE ENTORPECENTES" 
+                 : natureza === "SOM" ? "RECIBO DE DEPÓSITO DE MATERIAIS APREENDIDOS"
+                 : "CERTIDÃO DE RECEBIMENTO DE TERMO CIRCUNSTANCIADO";
     
     const anoRecibo = dados.bou.split("/")[0] || new Date().getFullYear();
     const numAleatorio = Math.floor(Math.random() * 900) + 100;
-    doc.text(`${titulo} NÂº ${numAleatorio}/${anoRecibo}`, centerX, currY, { align: "center" }); currY += 12;
+    doc.text(`${titulo} Nº ${numAleatorio}/${anoRecibo}`, centerX, currY, { align: "center" }); currY += 12;
 
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold"); doc.text("BOU:", marginX, currY);
@@ -158,7 +158,7 @@ export default function CadastroView() {
     doc.setFont("helvetica", "bold"); doc.text("VARA:", marginX, currY);
     doc.setFont("helvetica", "normal"); doc.text(dados.vara || "", marginX + 13, currY); currY += 12;
 
-    const textoBase = `Certifico para os devidos fins que, na data de hoje, recebi do(a) ${dados.patente} ${dados.policial}, RG ${dados.rg}, pertencente Ã  unidade policial ${dados.unidadeOrigem}, a custoÌdia dos itens listados abaixo conforme natureza "${natureza}", para fins de registro e destinaÃ§Ã£o legal.`;
+    const textoBase = `Certifico para os devidos fins que, na data de hoje, recebi do(a) ${dados.patente} ${dados.policial}, RG ${dados.rg}, pertencente à unidade policial ${dados.unidadeOrigem}, a custódia dos itens listados abaixo conforme natureza "${natureza}", para fins de registro e destinaçãão legal.`;
     
     const splitText = doc.splitTextToSize(textoBase, contentWidth);
     doc.text(textoBase, marginX, currY, { align: "justify", maxWidth: contentWidth });
@@ -167,7 +167,7 @@ export default function CadastroView() {
     if (natureza !== "AMEACA" && natureza !== "OUTROS") {
         const bodyTable = dados.materiais.map((item, index) => [
           `1.${index + 1}`,
-          item.reu || "NÃƒO IDENTIFICADO",
+          item.reu || "NÃO IDENTIFICADO",
           item.substancia,
           formatarPesoDisplay(item.peso, item.unidadePeso),
           item.lacre || "N/A"
@@ -175,7 +175,7 @@ export default function CadastroView() {
 
         autoTable(doc, {
           startY: currY,
-          head: [["Item", "Noticiado/Infrator", "Objeto/SubstÃ¢ncia", "Qtd/Peso", "NÂº Lacre"]],
+          head: [["Item", "Noticiado/Infrator", "Objeto/Substância", "Qtd/Peso", "Nº Lacre"]],
           body: bodyTable,
           theme: "grid",
           styles: { font: "helvetica", fontSize: 9, cellPadding: 3, textColor: [0, 0, 0], lineColor: [0, 0, 0], lineWidth: 0.1 },
@@ -184,15 +184,15 @@ export default function CadastroView() {
         });
         currY = doc.lastAutoTable.finalY + 10;
     } else {
-        // Para AmeaÃ§a, apenas lista os nomes dos noticiados
-        const noticiados = dados.materiais.map(m => m.reu || "NÃƒO IDENTIFICADO").join(", ");
+        // Para Ameaça, apenas lista os nomes dos noticiados
+        const noticiados = dados.materiais.map(m => m.reu || "NÃO IDENTIFICADO").join(", ");
         doc.setFont("helvetica", "bold"); doc.text("NOTICIADO(S): ", marginX, currY);
         doc.setFont("helvetica", "normal"); doc.text(noticiados, marginX + 28, currY);
         currY += 15;
     }
 
     doc.setFontSize(8);
-    const obsText = "Obs: O procedimento foi devidamente registrado no Sistema TCIP. Se houver objetos, estes estÃ£o sob guarda da unidade. Se nÃ£o houver objetos, o processo segue diretamente para o arquivo e baixa.";
+    const obsText = "Obs: O procedimento foi devidamente registrado no Sistema TCIP. Se houver objetos, estes estão sob guarda da unidade. Se não houver objetos, o processo segue diretamente para o arquivo e baixa.";
     const splitObs = doc.splitTextToSize(obsText, contentWidth);
     doc.text(obsText, marginX, currY, { align: "justify", maxWidth: contentWidth });
     currY += (splitObs.length * 4) + 40;
@@ -201,15 +201,15 @@ export default function CadastroView() {
     doc.line(marginX, currY, marginX + lineSize, currY);
     doc.setFont("helvetica", "bold"); doc.text(`${dados.patente.toUpperCase()} ${dados.policial.toUpperCase()}`, marginX + (lineSize / 2), currY + 5, { align: "center" });
     doc.setFont("helvetica", "normal"); doc.text(`RG: ${dados.rg}`, marginX + (lineSize / 2), currY + 10, { align: "center" });
-    doc.text("ResponsÃ¡vel pela Entrega", marginX + (lineSize / 2), currY + 15, { align: "center" });
+    doc.text("Responsável pela Entrega", marginX + (lineSize / 2), currY + 15, { align: "center" });
 
     const usuario = getUsuario();
     const nomeOperador = usuario?.username?.toUpperCase() || "ADMIN";
 
     doc.line(pageWidth - marginX - lineSize, currY, pageWidth - marginX, currY);
     doc.setFont("helvetica", "bold"); doc.text(nomeOperador, pageWidth - marginX - (lineSize / 2), currY + 5, { align: "center" });
-    doc.setFont("helvetica", "normal"); doc.text("Primeiro CartÃ³rio - 6ÂºBPM", pageWidth - marginX - (lineSize / 2), currY + 10, { align: "center" });
-    doc.text("Recebedor / CartorÃ¡rio", pageWidth - marginX - (lineSize / 2), currY + 15, { align: "center" });
+    doc.setFont("helvetica", "normal"); doc.text("Primeiro Cartório - 6ºBPM", pageWidth - marginX - (lineSize / 2), currY + 10, { align: "center" });
+    doc.text("Recebedor / Cartorário", pageWidth - marginX - (lineSize / 2), currY + 15, { align: "center" });
 
     doc.save(`RECIBO_${dados.bou.replace(/\//g, "-")}.pdf`);
   };
@@ -218,7 +218,7 @@ export default function CadastroView() {
     if (salvando) return;
 
     if (!processo || !bou || !policial) {
-      alert("Preencha todos os campos obrigatÃ³rios (BOU, PROJUDI, Policial).");
+      alert("Preencha todos os campos obrigatórios (BOU, PROJUDI, Policial).");
       return;
     }
 
@@ -229,7 +229,7 @@ export default function CadastroView() {
         const payload = {
           processo,
           bou,
-          reu: m.reu || "NÃƒO IDENTIFICADO",
+          reu: m.reu || "NÃO IDENTIFICADO",
           natureza: natureza,
           substancia: m.substancia,
           peso: isNaN(p) ? 0 : p,
@@ -262,7 +262,7 @@ export default function CadastroView() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       
-      {/* ðŸš€ SELEÃ‡ÃƒO DE NATUREZA DO FATO */}
+      {/* 🚀 SELEÇÃO DE NATUREZA DO FATO */}
       <div className="card" style={{ padding: "20px", display: "flex", justifyContent: "center", gap: "10px", background: "#f1f5f9" }}>
         {NATUREZAS.map(n => (
           <button 
@@ -288,13 +288,13 @@ export default function CadastroView() {
 
       <div className="card" style={{ padding: "25px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px", borderBottom: "1px solid #e2e8f0", paddingBottom: "15px" }}>
-          <h2 style={{ fontSize: "16px", color: "#1e3a8a", margin: 0 }}>ðŸ›¡ï¸ 1. DADOS DA OCORRÃŠNCIA ({natureza})</h2>
+          <h2 style={{ fontSize: "16px", color: "#1e3a8a", margin: 0 }}>🛡️ 1. DADOS DA OCORRÊNCIA ({natureza})</h2>
           <span className="badge" style={{ background: "#1e293b", color: "white" }}>OPERADOR: {getUsuario()?.username?.toUpperCase()}</span>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "20px", marginBottom: "20px" }}>
           <FormGroup label="Data do Fato *"><input type="date" style={inputStyle} value={dataFato} onChange={e => setDataFato(e.target.value)} /></FormGroup>
-          <FormGroup label="NÂº BOU (AAAA/Seq) *"><input type="text" style={inputStyle} value={bou} onChange={e => setBou(formatarBOU(e.target.value))} /></FormGroup>
+          <FormGroup label="Nº BOU (AAAA/Seq) *"><input type="text" style={inputStyle} value={bou} onChange={e => setBou(formatarBOU(e.target.value))} /></FormGroup>
           <FormGroup label="PROJUDI *"><input type="text" style={inputStyle} value={processo} onChange={e => setProcesso(formatarProcesso(e.target.value))} /></FormGroup>
           <FormGroup label="Vara Destino *">
             <select style={inputStyle} value={vara} onChange={e => setVara(e.target.value)}>
@@ -310,7 +310,7 @@ export default function CadastroView() {
               {UNIDADES_PM.map(u => <option key={u} value={u}>{u}</option>)}
             </select>
           </FormGroup>
-          <FormGroup label="GraduaÃ§Ã£o">
+          <FormGroup label="Graduação">
             <select style={inputStyle} value={patente} onChange={e => setPatente(e.target.value)}>
               {PATENTES.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
@@ -338,7 +338,7 @@ export default function CadastroView() {
 
       <div className="card" style={{ padding: "25px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px", borderBottom: "1px solid #e2e8f0", paddingBottom: "15px" }}>
-          <h2 style={{ fontSize: "16px", color: "#1e3a8a", margin: 0 }}>ðŸ‘¤ 2. NOTICIADOS E MATERIAIS</h2>
+          <h2 style={{ fontSize: "16px", color: "#1e3a8a", margin: 0 }}>👥 2. NOTICIADOS E MATERIAIS</h2>
           {natureza !== "AMEACA" && (
             <button className="btn-blue" onClick={adicionarMaterial} style={{ fontSize: "12px" }}>+ Adicionar Item</button>
           )}
@@ -357,7 +357,7 @@ export default function CadastroView() {
             </FormGroup>
             
             {natureza === "DROGAS" && (
-                <FormGroup label="SubstÃ¢ncia *">
+                <FormGroup label="Substância *">
                   <select style={inputStyle} value={m.substancia} onChange={e => updateMaterial(m.id, "substancia", e.target.value)}>
                     {SUBSTANCIAS.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
@@ -392,11 +392,11 @@ export default function CadastroView() {
 
             {natureza === "AMEACA" && (
                 <div style={{gridColumn: "span 3", display: "flex", alignItems: "center", color: "#64748b", fontStyle: "italic"}}>
-                    Nenhum objeto para apreensÃ£o neste tipo de processo.
+                    Nenhum objeto para apreensão neste tipo de processo.
                 </div>
             )}
 
-            <button onClick={() => removerMaterial(m.id)} style={{ alignSelf: "center", background: "none", border: "none", color: "#f87171", cursor: "pointer", fontSize: "20px" }} title="Remover">Ã—</button>
+            <button onClick={() => removerMaterial(m.id)} style={{ alignSelf: "center", background: "none", border: "none", color: "#f87171", cursor: "pointer", fontSize: "20px" }} title="Remover">×</button>
           </div>
         ))}
       </div>

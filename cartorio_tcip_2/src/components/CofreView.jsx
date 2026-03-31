@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { getApreensoes, updateApreensao, destinarIncineracao } from "../services/api.js";
 
 const MEDIA_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
@@ -48,16 +48,16 @@ export default function CofreView() {
   const enviarParaIncineracao = async (id) => {
     try {
       await destinarIncineracao(id);
-      alert("Item destinado aos Lotes de IncineraÃ§Ã£o!");
+      alert("Item destinado aos Lotes de Incineracão!");
       carregar();
     } catch (e) {
       console.error(e);
-      alert(e.message || "Erro ao destinar para incineraÃ§Ã£o");
+      alert(e.message || "Erro ao destinar para incineração");
     }
   };
 
   const liberarObjeto = async (id) => {
-    if (!window.confirm("Deseja realmente confirmar a LIBERAÃ‡ÃƒO deste objeto do sistema?")) return;
+    if (!window.confirm("Deseja realmente confirmar a LIBERAÇÃO deste objeto do sistema?")) return;
     try {
       await updateApreensao(id, { status: "arquivado" });
       alert("Item liberado e arquivado com sucesso!");
@@ -67,7 +67,7 @@ export default function CofreView() {
     }
   };
 
-  // LÃ³gica de Filtragem por Aba e Busca
+  // Lógica de Filtragem por Aba e Busca
   const itensFiltrados = apreensoes.filter(a => {
     const combinaBusca = !busca || a.bou.toLowerCase().includes(busca.toLowerCase()) || a.reu.toLowerCase().includes(busca.toLowerCase());
     const ehCofre = a.status === "cofre";
@@ -75,20 +75,20 @@ export default function CofreView() {
     if (abaAtiva === "DROGAS") {
       return ehCofre && a.natureza === "DROGAS" && combinaBusca;
     } else {
-      // Objetos Diversos (Natureza SOM ou outros que tenham apreensÃ£o)
+      // Objetos Diversos (Natureza SOM ou outros que tenham apreensão)
       return ehCofre && a.natureza !== "DROGAS" && a.tem_apreensao && combinaBusca;
     }
   });
 
   return (
     <div className="card" style={{ padding: "0", overflow: "hidden" }}>
-      {/* Modal de ObservaÃ§Ã£o */}
+      {/* Modal de Observação */}
       {obsVisivel && (
         <div style={{ position: "fixed", top:0, left:0, width:"100%", height:"100%", background:"rgba(0,0,0,0.6)", display:"flex", justifyContent:"center", alignItems:"center", zIndex:2000, backdropFilter:"blur(4px)" }}>
           <div style={{ background: "white", padding: "30px", borderRadius: "16px", width: "500px" }}>
-            <h3 style={{ marginBottom: "15px" }}>ðŸ“ ObservaÃ§Ã£o de Entrada</h3>
+            <h3 style={{ marginBottom: "15px" }}>📌 Observação de Entrada</h3>
             <div style={{ background: "#f8fafc", padding: "15px", borderRadius: "8px", marginBottom: "20px", whiteSpace: "pre-wrap" }}>
-              {obsVisivel.observacao_cofre || "Nenhuma observaÃ§Ã£o."}
+              {obsVisivel.observacao_cofre || "Nenhuma observação."}
             </div>
             <button className="btn-blue" style={{ width: "100%" }} onClick={() => setObsVisivel(null)}>FECHAR</button>
           </div>
@@ -99,12 +99,12 @@ export default function CofreView() {
       <div style={{ padding: "25px", background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
           <div>
-            <h2 style={{ margin: 0, color: "#1e293b", fontSize: "20px" }}>ðŸ“¦ Central de CustoÌdia / DepÃ³sito</h2>
+            <h2 style={{ margin: 0, color: "#1e293b", fontSize: "20px" }}>📦 Central de Custódia / Depósito</h2>
             <p style={{ margin: "5px 0 0 0", color: "#64748b", fontSize: "14px" }}>Gerencie entorpecentes e materiais apreendidos separadamente.</p>
           </div>
           <div style={{ display: "flex", gap: "10px" }}>
             <input
-              placeholder="ðŸ” Buscar BOU ou Noticiado..."
+              placeholder="🔍 Buscar BOU ou Noticiado..."
               value={busca}
               onChange={(e)=>setBusca(e.target.value)}
               style={{ padding: "10px", border: "1px solid #cbd5e1", borderRadius: "8px", width: "250px" }}
@@ -122,7 +122,7 @@ export default function CofreView() {
               transition: "all 0.2s"
             }}
           >
-            ðŸ ENTORPECENTES (DROGAS)
+            💊 ENTORPECENTES (DROGAS)
           </button>
           <button 
             onClick={() => setAbaAtiva("OBJETOS")}
@@ -133,7 +133,7 @@ export default function CofreView() {
               transition: "all 0.2s"
             }}
           >
-            ðŸ”Š OBJETOS DIVERSOS (SOM/EQUIP.)
+            📢 OBJETOS DIVERSOS (SOM/EQUIP.)
           </button>
         </div>
       </div>
@@ -149,7 +149,7 @@ export default function CofreView() {
                 <th>Qtd/Peso</th>
                 <th style={{ textAlign: "center" }}>OBS.</th>
                 <th>Documentos</th>
-                <th style={{ textAlign: "right" }}>AÃ§Ãµes de Fluxo</th>
+                <th style={{ textAlign: "right" }}>AÇÕES DE FLUXO</th>
               </tr>
             </thead>
             <tbody>
@@ -184,10 +184,10 @@ export default function CofreView() {
                     </td>
                     <td>
                       {hasPDF ? (
-                        <a href={pdfUrl} target="_blank" rel="noreferrer" style={{ fontSize: "11px", color: "#10b981", fontWeight: "700", textDecoration: "none" }}>ðŸ“„ VER PDF</a>
+                        <a href={pdfUrl} target="_blank" rel="noreferrer" style={{ fontSize: "11px", color: "#10b981", fontWeight: "700", textDecoration: "none" }}>📄 VER PDF</a>
                       ) : (
                         <label style={{ cursor: "pointer", color: "#3b82f6", fontSize: "11px", fontWeight: "700" }}>
-                          ðŸ“Ž ANEXAR
+                          📎 ANEXAR
                           <input type="file" accept="application/pdf" style={{ display: "none" }} onChange={(e) => handleFileUpload(item.id, e.target.files[0])} />
                         </label>
                       )}
@@ -200,7 +200,7 @@ export default function CofreView() {
                           disabled={!hasPDF}
                           style={{ background: hasPDF ? "#8b5cf6" : "#cbd5e1", fontSize: "11px" }}
                         >
-                          ðŸ”¥ INCINERAÃ‡ÃƒO
+                          🔥 INCINERAÇÃO
                         </button>
                       ) : (
                         <button 
@@ -208,7 +208,7 @@ export default function CofreView() {
                           onClick={() => liberarObjeto(item.id)}
                           style={{ background: "#2563eb", fontSize: "11px" }}
                         >
-                          ðŸ“¦ LIBERAR / DAR BAIXA
+                          📦 LIBERAR / DAR BAIXA
                         </button>
                       )}
                     </td>

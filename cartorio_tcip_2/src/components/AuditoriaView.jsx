@@ -37,8 +37,10 @@ export default function AuditoriaView() {
     // eslint-disable-next-line
   }, []);
 
-  const formatarPesoDisplay = (gramas) => {
-    if (!gramas) return "-";
+  const formatarPesoDisplay = (valor, unidade) => {
+    if (unidade === "Unid") return `${valor} Unid.`;
+    const gramas = parseFloat(String(valor).replace(",", ".")) || 0;
+    if (!gramas) return "0,00 g";
     if (gramas >= 1000) return `${(gramas / 1000).toFixed(3).replace(".", ",")} Kg`;
     return `${gramas.toFixed(2).replace(".", ",")} g`;
   };
@@ -86,7 +88,7 @@ export default function AuditoriaView() {
       item.bou || "S/N",
       item.processo || "S/N",
       item.substancia || "-",
-      formatarPesoDisplay(item.peso),
+      formatarPesoDisplay(item.peso, item.unidade),
       item.status_label || item.status
     ]);
 
@@ -118,15 +120,14 @@ export default function AuditoriaView() {
       margin: { left: marginX, right: marginX }
     });
 
-    // FOOTER DE TOTAIS (Conforme modelo)
+    // FOOTER DE TOTAIS
     const totalItens = data.detalhado.length;
-    const pesoTotal = data.detalhado.reduce((acc, item) => acc + Number(item.weight || item.peso || 0), 0);
-
+    
     autoTable(doc, {
       startY: doc.lastAutoTable.finalY,
       body: [[
         `TOTAL ITENS: ${String(totalItens).padStart(2, '0')}`,
-        `PESO TOTAL: ${formatarPesoDisplay(pesoTotal)}`
+        `RELATÓRIO GERADO POR OPERADOR: ${getUsuario()?.username?.toUpperCase() || 'SISTEMA'}`
       ]],
       theme: "grid",
       styles: {
@@ -172,7 +173,7 @@ export default function AuditoriaView() {
         </div>
       </div>
 
-      {/* FILTROS (MECANISMO DE BUSCA AVANÇADA) */}
+      {/* FILTROS */}
       <div className="card" style={{ marginBottom: "20px" }}>
         <h3 style={{ fontSize: "14px", fontWeight: "600", color: "#334155", marginBottom: "15px" }}>Filtros de Garimpo (Opcionais)</h3>
         
@@ -195,6 +196,7 @@ export default function AuditoriaView() {
               <option value="incineracao">Lotes (Em Formação)</option>
               <option value="queima_pronta">Já Incinerados</option>
               <option value="excluido">Excluídos / Cancelados</option>
+              <option value="arquivado">Arquivados (Diversos / Ameaça)</option>
             </select>
           </div>
 
@@ -267,7 +269,7 @@ export default function AuditoriaView() {
                 <tr>
                   <th>Natureza</th>
                   <th>Nº Processo | BOU</th>
-                  <th>Autor/Réu</th>
+                  <th>Autor / Réu</th>
                   <th>Substância / Objeto</th>
                   <th>Localização (Status)</th>
                   <th>Vara</th>
@@ -313,7 +315,7 @@ export default function AuditoriaView() {
                           </div>
                         </td>
                         <td>
-                          <span className={`badge ${item.status_label.includes('Excluído') ? 'red' : item.status_label === 'No Cofre' ? 'blue' : item.status_label === 'Incinerado' ? 'green' : 'gray'}`}>
+                          <span className={`badge ${item.status_label.includes('Excluído') ? 'red' : item.status_label === 'No Cofre' ? 'blue' : (item.status_label === 'Incinerado' || item.status === 'queima_pronta') ? 'green' : 'gray'}`}>
                             {item.status_label}
                           </span>
                           {item.motivo_exclusao && (
@@ -335,10 +337,9 @@ export default function AuditoriaView() {
                     <td colSpan="2" style={{ padding: "15px", textAlign: "left", fontSize: "14px", color: "#1e293b" }}>
                       TOTAL DE PROCESSOS: {String(data.detalhado.length).padStart(2, '0')}
                     </td>
-                    <td colSpan="2" style={{ padding: "15px", textAlign: "left", fontSize: "14px", color: "#1e293b" }}>
-                      PESO TOTAL: {formatarPesoDisplay(data.detalhado.reduce((acc, item) => acc + Number(item.peso || 0), 0))}
+                    <td colSpan="5" style={{ padding: "15px", textAlign: "left", fontSize: "12px", color: "#64748b" }}>
+                        * Relatórios de peso total devem ser consultados individualmente por natureza de crime.
                     </td>
-                    <td colSpan="2"></td>
                   </tr>
                 </tfoot>
               )}
