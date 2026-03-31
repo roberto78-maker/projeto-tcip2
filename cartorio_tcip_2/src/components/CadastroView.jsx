@@ -158,7 +158,7 @@ export default function CadastroView() {
 
      const materiaisComApreensao = materiais.filter(m => m.substancia && m.substancia.trim() !== "");
  
-    if (drogasSelecionadas.length > 0 || materiaisComApreensao.length > 0) {
+    if (materiaisComApreensao.length > 0) {
          const bodyTable = materiaisComApreensao.map((item, index) => [
           `1.${index + 1}`,
           item.reu || "NÃO IDENTIFICADO",
@@ -239,7 +239,9 @@ export default function CadastroView() {
       });
 
       await Promise.all(promises);
-      await gerarPDF({ processo, bou, materiais, vara, patente, policial, rg, unidadeOrigem, natureza, crimesSelecionados, fielDepositario });
+      const temAlgumaDroga = materiais.some(m => m.tipo === "DROGA");
+      const naturezaGeral = temAlgumaDroga ? "DROGAS" : "OUTROS";
+      await gerarPDF({ processo, bou, materiais, vara, patente, policial, rg, unidadeOrigem, natureza: naturezaGeral, crimesSelecionados, fielDepositario });
 
        alert("Procedimento registrado com sucesso!");
       setProcesso("");
