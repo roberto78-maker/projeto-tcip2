@@ -26,8 +26,7 @@ const inputStyle = {
 
 export default function CadastroView() {
    const [natureza, setNatureza] = useState("GERAL");
-  const [crimesSelecionados, setCrimesSelecionados] = useState([]);
-  const [drogasSelecionadas, setDrogasSelecionadas] = useState([]);
+   const [crimesSelecionados, setCrimesSelecionados] = useState([]);
   const [fielDepositario, setFielDepositario] = useState(false);
   
   const [dataFato, setDataFato] = useState("");
@@ -41,7 +40,7 @@ export default function CadastroView() {
   const [rg, setRg] = useState("");
 
    const [materiais, setMateriais] = useState([
-    { id: Date.now(), reu: "", substancia: "", peso: "0", unidadePeso: "Unid", lacre: "" }
+    { id: Date.now(), reu: "", tipo: "OBJETO", substancia: "", peso: "1", unidadePeso: "Unid", lacre: "" }
   ]);
 
   const [salvando, setSalvando] = useState(false);
@@ -49,7 +48,7 @@ export default function CadastroView() {
   const upper = (t) => t.toUpperCase();
 
    const adicionarMaterial = () => {
-    setMateriais([...materiais, { id: Date.now(), reu: "", substancia: "", peso: "0", unidadePeso: "Unid", lacre: "" }]);
+    setMateriais([...materiais, { id: Date.now(), reu: "", tipo: "OBJETO", substancia: "", peso: "1", unidadePeso: "Unid", lacre: "" }]);
   };
 
   const removerMaterial = (id) => {
@@ -162,7 +161,7 @@ export default function CadastroView() {
          const bodyTable = materiaisComApreensao.map((item, index) => [
           `1.${index + 1}`,
           item.reu || "NÃO IDENTIFICADO",
-          item.substancia || "N/A",
+          `${item.tipo === 'DROGA' ? '💊 ' : item.tipo === 'SOM' ? '🔊 ' : '⚙️ '}${item.substancia}`,
           formatarPesoDisplay(item.peso, item.unidadePeso),
           item.lacre || "N/A"
         ]);
@@ -224,16 +223,16 @@ export default function CadastroView() {
           processo,
           bou,
           reu: m.reu || "NÃO IDENTIFICADO",
-          natureza: drogasSelecionadas.length > 0 ? "DROGAS" : "OUTROS",
+          natureza: m.tipo === "DROGA" ? "DROGAS" : (m.tipo === "SOM" ? "SOM" : "OUTROS"),
           substancia: m.substancia, 
-          descricao: [...crimesSelecionados, ...drogasSelecionadas].join(', ') || "TERMO GERAL",
+          descricao: crimesSelecionados.join(', ') || "TERMO GERAL",
           peso: isNaN(p) ? 0 : p,
           unidade: m.unidadePeso,
-          status: (drogasSelecionadas.length === 0 && (!m.substancia || fielDepositario)) ? "arquivado" : "conferencia",
+          status: (m.tipo !== "DROGA" && (!m.substancia || fielDepositario)) ? "arquivado" : "conferencia",
           lacre: m.lacre || "",
           vara: vara || "",
           policial: `${patente} ${policial}`,
-          tem_apreensao: (drogasSelecionadas.length > 0 || (m.substancia && !fielDepositario))
+          tem_apreensao: (m.tipo === "DROGA" || (m.substancia && !fielDepositario))
         };
         return addApreensao(payload);
       });
@@ -245,10 +244,9 @@ export default function CadastroView() {
       setProcesso("");
       setRg("");
       setPolicial("");
-      // Reset checklists
+       // Reset checklists
       setCrimesSelecionados([]);
-      setDrogasSelecionadas([]);
-      setMateriais([{ id: Date.now(), reu: "", substancia: "", peso: "0", unidadePeso: "Unid", lacre: "" }]);
+      setMateriais([{ id: Date.now(), reu: "", tipo: "OBJETO", substancia: "", peso: "1", unidadePeso: "Unid", lacre: "" }]);
     } catch (err) {
       console.error(err);
       alert("Erro ao salvar: " + err.message);
@@ -260,16 +258,13 @@ export default function CadastroView() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       
-       {/* 🚀 SUPER PAINEL DE SELEÇÃO UNIFICADO */}
+       {/* 🚀 SUPER PAINEL DE CRIMES (SÉRIE A) */}
       <div className="card" style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "20px", background: "#fff", border: "1px solid #e2e8f0" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
-            
-            {/* Quadro de Crimes Gerais */}
             <div style={{ padding: "15px", background: "#f8fafc", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
                 <label style={{ fontSize: "14px", fontWeight: "700", color: "#1e3a8a", display: "block", marginBottom: "15px", borderBottom: "1px solid #cbd5e1", paddingBottom: "10px" }}>
-                  ⚖️ CRIMES E INFRAÇÕES (GERAL):
+                  ⚖️ SELECIONE OS CRIMES DESTE REGISTRO (MÚLTIPLA ESCOLHA):
                 </label>
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px", maxHeight: "300px", overflowY: "auto", paddingRight: "10px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "8px", maxHeight: "250px", overflowY: "auto", paddingRight: "10px" }}>
                     {CRIMES_GERAIS.map(cr => (
                         <label key={cr} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "12px", color: "#475569", cursor: "pointer", padding: "6px", borderRadius: "6px", background: crimesSelecionados.includes(cr) ? "#eff6ff" : "transparent" }}>
                             <input type="checkbox" checked={crimesSelecionados.includes(cr)} onChange={(e) => {
@@ -281,25 +276,6 @@ export default function CadastroView() {
                     ))}
                 </div>
             </div>
-
-            {/* Quadro de Entorpecentes */}
-            <div style={{ padding: "15px", background: "#fffefe", borderRadius: "12px", border: "1px solid #fee2e2" }}>
-                <label style={{ fontSize: "14px", fontWeight: "700", color: "#b91c1c", display: "block", marginBottom: "15px", borderBottom: "1px solid #fecaca", paddingBottom: "10px" }}>
-                  💊 ENTORPECENTES (DROGAS):
-                </label>
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px", maxHeight: "300px", overflowY: "auto", paddingRight: "10px" }}>
-                    {SUBSTANCIAS.map(s => (
-                        <label key={s} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "12px", color: "#475569", cursor: "pointer", padding: "6px", borderRadius: "6px", background: drogasSelecionadas.includes(s) ? "#fef2f2" : "transparent" }}>
-                            <input type="checkbox" checked={drogasSelecionadas.includes(s)} onChange={(e) => {
-                                if (e.target.checked) setDrogasSelecionadas([...drogasSelecionadas, s]);
-                                else setDrogasSelecionadas(drogasSelecionadas.filter(item => item !== s));
-                            }} />
-                            {s}
-                        </label>
-                    ))}
-                </div>
-            </div>
-        </div>
 
         <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
             <label style={{ display: "flex", alignItems: "center", gap: "10px", background: fielDepositario ? "#fef2f2" : "#f8fafc", padding: "12px 25px", borderRadius: "12px", border: fielDepositario ? "1px solid #fecaca" : "1px solid #e2e8f0", cursor: "pointer" }}>
@@ -369,9 +345,10 @@ export default function CadastroView() {
           <button className="btn-blue" onClick={adicionarMaterial} style={{ fontSize: "12px" }}>+ Adicionar Pessoa</button>
         </div>
 
-         <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1.5fr 100px 100px 120px 40px", gap: "12px", marginBottom: "10px", padding: "0 10px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1.5fr 100px 100px 120px 40px", gap: "12px", marginBottom: "10px", padding: "0 10px" }}>
             <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>NOTICIADO / AUTOR</label>
-            <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>OBJETO APREENDIDO (OPCIONAL)</label>
+            <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>TIPO</label>
+            <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>APREENSÃO / DROGA</label>
             <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>QUANT. / PESO</label>
             <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>UNID.</label>
             <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>Nº LACRE</label>
@@ -379,38 +356,55 @@ export default function CadastroView() {
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          {materiais.map((m, idx) => (
+           {materiais.map((m, idx) => (
             <div key={m.id} style={{ 
                 display: "grid", 
-                gridTemplateColumns: "1.5fr 1.5fr 100px 100px 120px 40px", 
+                gridTemplateColumns: "1.5fr 1fr 1.5fr 100px 100px 120px 40px", 
                 gap: "12px", 
                 alignItems: "center", 
                 background: "#f8fafc", 
                 padding: "8px 10px", 
                 borderRadius: "8px", 
-                borderLeft: (drogasSelecionadas.length > 0 ? "4px solid #10b981" : "4px solid #3b82f6") 
+                borderLeft: (m.tipo === 'DROGA' ? "4px solid #10b981" : m.tipo === 'SOM' ? "4px solid #f59e0b" : "4px solid #3b82f6") 
             }}>
                  <AutocompleteInput
                   historyKey="hist_noticiado"
                   value={m.reu}
                   onChange={e => updateMaterial(m.id, "reu", upper(e.target.value))}
                   style={{ ...inputStyle, padding: "8px" }}
-                  placeholder="Nome do Noticiado..."
+                  placeholder="Nome..."
                 />
 
-                <input 
-                  type="text" 
-                  style={{ ...inputStyle, padding: "8px" }} 
-                  value={m.substancia} 
-                  onChange={e => updateMaterial(m.id, "substancia", upper(e.target.value))} 
-                  placeholder="Ex: Faca, Celular, Maconha..." 
-                />
+                <select style={{ ...inputStyle, padding: "8px" }} value={m.tipo} onChange={e => {
+                    const tipo = e.target.value;
+                    const substancia = tipo === "DROGA" ? "Maconha" : (tipo === "SOM" ? "Caixa de Som" : "");
+                    const unidade = (tipo === "OBJETO" || tipo === "SOM") ? "Unid" : "g";
+                    setMateriais(materiais.map(item => item.id === m.id ? { ...item, tipo, substancia, unidadePeso: unidade } : item));
+                }}>
+                    <option value="OBJETO">⚙️ OBJETO</option>
+                    <option value="DROGA">💊 DROGA</option>
+                    <option value="SOM">🔊 SOM</option>
+                </select>
+
+                {m.tipo === "DROGA" ? (
+                    <select style={{ ...inputStyle, padding: "8px" }} value={m.substancia} onChange={e => updateMaterial(m.id, "substancia", e.target.value)}>
+                        {SUBSTANCIAS.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                ) : (
+                    <input 
+                      type="text" 
+                      style={{ ...inputStyle, padding: "8px" }} 
+                      value={m.substancia} 
+                      onChange={e => updateMaterial(m.id, "substancia", upper(e.target.value))} 
+                      placeholder="Descrição..." 
+                    />
+                )}
 
                 <input 
                   type="text" 
                   style={{ ...inputStyle, padding: "8px" }} 
                   value={m.peso} 
-                  onChange={e => updateMaterial(m.id, "peso", formatarPeso(e.target.value))} 
+                  onChange={e => updateMaterial(m.id, "peso", m.tipo === 'DROGA' ? formatarPeso(e.target.value) : e.target.value)} 
                   placeholder="0,00"
                 />
 
@@ -440,7 +434,7 @@ export default function CadastroView() {
         disabled={salvando}
         style={{ width: "100%", padding: "16px", fontWeight: "800", opacity: salvando ? 0.7 : 1, cursor: salvando ? "not-allowed" : "pointer" }}
       >
-         {salvando ? "PROCESSANDO..." : (drogasSelecionadas.length > 0 ? "FINALIZAR REGISTRO E GERAR RECIBO" : "REGISTRAR TCIP E GERAR RECIBO")}
+         {salvando ? "PROCESSANDO..." : "FINALIZAR CADASTRO E GERAR RECIBO"}
       </button>
     </div>
   );
