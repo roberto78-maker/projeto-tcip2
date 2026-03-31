@@ -148,8 +148,7 @@ export default function CadastroView() {
     doc.setFont("helvetica", "normal"); doc.text(vara || "", marginX + 13, currY); currY += 12;
 
     // ✍️ CERTIFICAÇÃO E NATUREZA
-    const listaDrogasNoGrid = materiais.filter(m => m.tipo === "DROGA").map(m => m.substancia);
-    const listaCrimesEDrogas = [...new Set([...crimesSelecionados, ...listaDrogasNoGrid])];
+    const listaCrimesCalculada = [...new Set(crimesSelecionados)];
     const acaoCustoia = fielDepositario ? "nomeado FIEL DEPOSITÁRIO (Objeto permanece com proprietário)" : "a custódia";
     const textoBase = `Certifico para os devidos fins que, na data de hoje, recebi do(a) ${patente} ${policial}, RG ${rg}, pertencente à unidade policial ${unidadeOrigem}, ${acaoCustoia} dos itens listados abaixo conforme a natureza constatada:`;
     
@@ -158,9 +157,9 @@ export default function CadastroView() {
     doc.text(textoBase, marginX, currY, { align: "justify", maxWidth: contentWidth });
     currY += (splitText.length * 5) + 5;
 
-    // ⚡ LISTA DE NATUREZAS (Fonte normal, sem espaçamento extra)
-    doc.setFont("helvetica", "normal"); doc.setFontSize(9);
-    listaCrimesEDrogas.forEach(crime => {
+    // ⚡ LISTA DE NATUREZAS (Apenas crimes, Fonte 10pt para combinar)
+    doc.setFont("helvetica", "normal"); doc.setFontSize(10);
+    listaCrimesCalculada.forEach(crime => {
         doc.text(`✓ ${crime}`, marginX + 5, currY);
         currY += 4;
     });
@@ -251,7 +250,7 @@ export default function CadastroView() {
           lacre: m.lacre || "",
           vara: vara || "",
           policial: `${patente} ${policial}`,
-          tem_apreensao: (m.tipo === "DROGA" || (m.substancia && !fielDepositario))
+          tem_apreensao: !!(m.tipo === "DROGA" || (m.substancia && !fielDepositario))
         };
         return addApreensao(payload);
       });
