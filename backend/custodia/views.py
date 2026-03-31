@@ -288,25 +288,22 @@ class RelatorioIncineracaoView(APIView):
         if reu:
             qs = qs.filter(reu__icontains=reu)
 
-        detalhado = (
-            qs.values(
-                "id",
-                "bou",
-                "natureza",
-                "substancia",
-                "peso",
-                "unidade",
-                "vara",
-                "data_criacao",
-                "status",
-                "processo",
-                "reu",
-                "motivo_exclusao",
-                "lote_incineracao__numero",
-                "lote_incineracao__data_criacao",
-            )
-            .order_by("-data_criacao")[:500]
-        )
+        detalhado = qs.values(
+            "id",
+            "bou",
+            "natureza",
+            "substancia",
+            "peso",
+            "unidade",
+            "vara",
+            "data_criacao",
+            "status",
+            "processo",
+            "reu",
+            "motivo_exclusao",
+            "lote_incineracao__numero",
+            "lote_incineracao__data_criacao",
+        ).order_by("-data_criacao")[:500]
 
         status_labels = {
             "conferencia": "Aguardando Balança",

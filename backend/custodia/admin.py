@@ -44,7 +44,14 @@ class ApreensaoAdmin(admin.ModelAdmin):
         ),
         (
             "📦 Custódia",
-            {"fields": ("status", "lote_incineracao", "observacao_cofre", "autorizacao")},
+            {
+                "fields": (
+                    "status",
+                    "lote_incineracao",
+                    "observacao_cofre",
+                    "autorizacao",
+                )
+            },
         ),
         (
             "❌ Exclusão",
@@ -58,6 +65,7 @@ class ApreensaoAdmin(admin.ModelAdmin):
 
     def peso_formatado(self, obj):
         return f"{obj.peso} {obj.unidade}"
+
     peso_formatado.short_description = "Peso"
 
     def status_badge(self, obj):
@@ -83,6 +91,7 @@ class ApreensaoAdmin(admin.ModelAdmin):
             cor,
             label,
         )
+
     status_badge.short_description = "Status"
 
     def has_add_permission(self, request):
@@ -95,7 +104,14 @@ class ApreensaoAdmin(admin.ModelAdmin):
 
 @admin.register(LoteIncineracao)
 class LoteIncineracaoAdmin(admin.ModelAdmin):
-    list_display = ("protocolo", "numero", "ano", "origem", "total_itens", "data_criacao")
+    list_display = (
+        "protocolo",
+        "numero",
+        "ano",
+        "origem",
+        "total_itens",
+        "data_criacao",
+    )
     readonly_fields = ("data_criacao", "protocolo")
     search_fields = ("protocolo", "origem")
     list_filter = ("ano", "origem")
@@ -103,6 +119,7 @@ class LoteIncineracaoAdmin(admin.ModelAdmin):
 
     def total_itens(self, obj):
         return obj.apreensoes.count()
+
     total_itens.short_description = "Itens"
 
     def has_add_permission(self, request):

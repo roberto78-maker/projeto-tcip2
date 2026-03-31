@@ -9,67 +9,129 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('custodia', '0006_apreensao_motivo_exclusao'),
+        ("custodia", "0006_apreensao_motivo_exclusao"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='HistoricalApreensao',
+            name="HistoricalApreensao",
             fields=[
-                ('id', models.BigIntegerField(auto_created=True, blank=True, db_index=True, verbose_name='ID')),
-                ('processo', models.CharField(max_length=100)),
-                ('bou', models.CharField(max_length=100)),
-                ('reu', models.CharField(max_length=200)),
-                ('substancia', models.CharField(max_length=100)),
-                ('peso', models.FloatField()),
-                ('unidade', models.CharField(max_length=50)),
-                ('lacre', models.CharField(blank=True, max_length=100, null=True)),
-                ('policial', models.CharField(blank=True, max_length=200, null=True)),
-                ('vara', models.CharField(blank=True, max_length=200, null=True)),
-                ('descricao', models.TextField(blank=True, null=True)),
-                ('status', models.CharField(db_index=True, default='conferencia', max_length=50)),
-                ('autorizacao', models.TextField(blank=True, null=True)),
-                ('observacao_cofre', models.TextField(blank=True, null=True)),
-                ('arquivo_pdf', models.TextField(blank=True, max_length=100, null=True)),
-                ('arquivo_pdf_url', models.URLField(blank=True, max_length=500, null=True)),
-                ('motivo_exclusao', models.TextField(blank=True, null=True)),
-                ('data_criacao', models.DateTimeField(blank=True, db_index=True, editable=False)),
-                ('history_id', models.AutoField(primary_key=True, serialize=False)),
-                ('history_date', models.DateTimeField(db_index=True)),
-                ('history_change_reason', models.CharField(max_length=100, null=True)),
-                ('history_type', models.CharField(choices=[('+', 'Created'), ('~', 'Changed'), ('-', 'Deleted')], max_length=1)),
-                ('history_user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
-                ('lote_incineracao', models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='custodia.loteincineracao')),
+                (
+                    "id",
+                    models.BigIntegerField(
+                        auto_created=True, blank=True, db_index=True, verbose_name="ID"
+                    ),
+                ),
+                ("processo", models.CharField(max_length=100)),
+                ("bou", models.CharField(max_length=100)),
+                ("reu", models.CharField(max_length=200)),
+                ("substancia", models.CharField(max_length=100)),
+                ("peso", models.FloatField()),
+                ("unidade", models.CharField(max_length=50)),
+                ("lacre", models.CharField(blank=True, max_length=100, null=True)),
+                ("policial", models.CharField(blank=True, max_length=200, null=True)),
+                ("vara", models.CharField(blank=True, max_length=200, null=True)),
+                ("descricao", models.TextField(blank=True, null=True)),
+                (
+                    "status",
+                    models.CharField(
+                        db_index=True, default="conferencia", max_length=50
+                    ),
+                ),
+                ("autorizacao", models.TextField(blank=True, null=True)),
+                ("observacao_cofre", models.TextField(blank=True, null=True)),
+                (
+                    "arquivo_pdf",
+                    models.TextField(blank=True, max_length=100, null=True),
+                ),
+                (
+                    "arquivo_pdf_url",
+                    models.URLField(blank=True, max_length=500, null=True),
+                ),
+                ("motivo_exclusao", models.TextField(blank=True, null=True)),
+                (
+                    "data_criacao",
+                    models.DateTimeField(blank=True, db_index=True, editable=False),
+                ),
+                ("history_id", models.AutoField(primary_key=True, serialize=False)),
+                ("history_date", models.DateTimeField(db_index=True)),
+                ("history_change_reason", models.CharField(max_length=100, null=True)),
+                (
+                    "history_type",
+                    models.CharField(
+                        choices=[("+", "Created"), ("~", "Changed"), ("-", "Deleted")],
+                        max_length=1,
+                    ),
+                ),
+                (
+                    "history_user",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "lote_incineracao",
+                    models.ForeignKey(
+                        blank=True,
+                        db_constraint=False,
+                        null=True,
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        related_name="+",
+                        to="custodia.loteincineracao",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'historical apreensao',
-                'verbose_name_plural': 'historical apreensaos',
-                'ordering': ('-history_date', '-history_id'),
-                'get_latest_by': ('history_date', 'history_id'),
+                "verbose_name": "historical apreensao",
+                "verbose_name_plural": "historical apreensaos",
+                "ordering": ("-history_date", "-history_id"),
+                "get_latest_by": ("history_date", "history_id"),
             },
             bases=(simple_history.models.HistoricalChanges, models.Model),
         ),
         migrations.CreateModel(
-            name='HistoricalLoteIncineracao',
+            name="HistoricalLoteIncineracao",
             fields=[
-                ('id', models.BigIntegerField(auto_created=True, blank=True, db_index=True, verbose_name='ID')),
-                ('numero', models.IntegerField()),
-                ('ano', models.IntegerField()),
-                ('protocolo', models.CharField(db_index=True, max_length=100)),
-                ('origem', models.CharField(default='1ºCART6BPM', max_length=50)),
-                ('data_criacao', models.DateTimeField(blank=True, editable=False)),
-                ('history_id', models.AutoField(primary_key=True, serialize=False)),
-                ('history_date', models.DateTimeField(db_index=True)),
-                ('history_change_reason', models.CharField(max_length=100, null=True)),
-                ('history_type', models.CharField(choices=[('+', 'Created'), ('~', 'Changed'), ('-', 'Deleted')], max_length=1)),
-                ('history_user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigIntegerField(
+                        auto_created=True, blank=True, db_index=True, verbose_name="ID"
+                    ),
+                ),
+                ("numero", models.IntegerField()),
+                ("ano", models.IntegerField()),
+                ("protocolo", models.CharField(db_index=True, max_length=100)),
+                ("origem", models.CharField(default="1ºCART6BPM", max_length=50)),
+                ("data_criacao", models.DateTimeField(blank=True, editable=False)),
+                ("history_id", models.AutoField(primary_key=True, serialize=False)),
+                ("history_date", models.DateTimeField(db_index=True)),
+                ("history_change_reason", models.CharField(max_length=100, null=True)),
+                (
+                    "history_type",
+                    models.CharField(
+                        choices=[("+", "Created"), ("~", "Changed"), ("-", "Deleted")],
+                        max_length=1,
+                    ),
+                ),
+                (
+                    "history_user",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'historical lote incineracao',
-                'verbose_name_plural': 'historical lote incineracaos',
-                'ordering': ('-history_date', '-history_id'),
-                'get_latest_by': ('history_date', 'history_id'),
+                "verbose_name": "historical lote incineracao",
+                "verbose_name_plural": "historical lote incineracaos",
+                "ordering": ("-history_date", "-history_id"),
+                "get_latest_by": ("history_date", "history_id"),
             },
             bases=(simple_history.models.HistoricalChanges, models.Model),
         ),

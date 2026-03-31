@@ -6,58 +6,78 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('custodia', '0007_historicalapreensao_historicalloteincineracao'),
+        ("custodia", "0007_historicalapreensao_historicalloteincineracao"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='apreensao',
-            name='natureza',
-            field=models.CharField(choices=[('DROGAS', 'Tráfico / Posse de Drogas'), ('AMEACA', 'Ameaça / Desobediência / Injúria'), ('SOM', 'Perturbação do Sossego (Som)'), ('OUTROS', 'Outros Tipos de Termos')], db_index=True, default='DROGAS', max_length=50),
+            model_name="apreensao",
+            name="natureza",
+            field=models.CharField(
+                choices=[
+                    ("DROGAS", "Tráfico / Posse de Drogas"),
+                    ("AMEACA", "Ameaça / Desobediência / Injúria"),
+                    ("SOM", "Perturbação do Sossego (Som)"),
+                    ("OUTROS", "Outros Tipos de Termos"),
+                ],
+                db_index=True,
+                default="DROGAS",
+                max_length=50,
+            ),
         ),
         migrations.AddField(
-            model_name='apreensao',
-            name='tem_apreensao',
+            model_name="apreensao",
+            name="tem_apreensao",
             field=models.BooleanField(default=True),
         ),
         migrations.AddField(
-            model_name='historicalapreensao',
-            name='natureza',
-            field=models.CharField(choices=[('DROGAS', 'Tráfico / Posse de Drogas'), ('AMEACA', 'Ameaça / Desobediência / Injúria'), ('SOM', 'Perturbação do Sossego (Som)'), ('OUTROS', 'Outros Tipos de Termos')], db_index=True, default='DROGAS', max_length=50),
+            model_name="historicalapreensao",
+            name="natureza",
+            field=models.CharField(
+                choices=[
+                    ("DROGAS", "Tráfico / Posse de Drogas"),
+                    ("AMEACA", "Ameaça / Desobediência / Injúria"),
+                    ("SOM", "Perturbação do Sossego (Som)"),
+                    ("OUTROS", "Outros Tipos de Termos"),
+                ],
+                db_index=True,
+                default="DROGAS",
+                max_length=50,
+            ),
         ),
         migrations.AddField(
-            model_name='historicalapreensao',
-            name='tem_apreensao',
+            model_name="historicalapreensao",
+            name="tem_apreensao",
             field=models.BooleanField(default=True),
         ),
         migrations.AlterField(
-            model_name='apreensao',
-            name='peso',
+            model_name="apreensao",
+            name="peso",
             field=models.FloatField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='apreensao',
-            name='substancia',
+            model_name="apreensao",
+            name="substancia",
             field=models.CharField(blank=True, max_length=100, null=True),
         ),
         migrations.AlterField(
-            model_name='apreensao',
-            name='unidade',
+            model_name="apreensao",
+            name="unidade",
             field=models.CharField(blank=True, max_length=50, null=True),
         ),
         migrations.AlterField(
-            model_name='historicalapreensao',
-            name='peso',
+            model_name="historicalapreensao",
+            name="peso",
             field=models.FloatField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='historicalapreensao',
-            name='substancia',
+            model_name="historicalapreensao",
+            name="substancia",
             field=models.CharField(blank=True, max_length=100, null=True),
         ),
         migrations.AlterField(
-            model_name='historicalapreensao',
-            name='unidade',
+            model_name="historicalapreensao",
+            name="unidade",
             field=models.CharField(blank=True, max_length=50, null=True),
         ),
     ]

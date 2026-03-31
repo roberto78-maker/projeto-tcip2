@@ -8,7 +8,7 @@ class LoteIncineracao(models.Model):
     protocolo = models.CharField(max_length=100, unique=True)
     origem = models.CharField(max_length=50, default="1ºCART6BPM")
     data_criacao = models.DateTimeField(auto_now_add=True)
-    
+
     history = HistoricalRecords()
 
     def save(self, *args, **kwargs):
@@ -70,7 +70,7 @@ class Apreensao(models.Model):
     motivo_exclusao = models.TextField(blank=True, null=True)
 
     data_criacao = models.DateTimeField(auto_now_add=True, db_index=True)
-    
+
     history = HistoricalRecords()
 
     def __str__(self):
