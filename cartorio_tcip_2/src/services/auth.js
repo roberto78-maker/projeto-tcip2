@@ -43,3 +43,30 @@ export function isAdmin() {
   const user = getUsuario();
   return user?.role === "admin";
 }
+
+export async function refrescarToken() {
+  const user = getUsuario();
+  if (!user || !user.refresh) return false;
+
+  try {
+    const res = await fetch(`${BASE_URL}/api/token/refresh/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh: user.refresh })
+    });
+
+    if (!res.ok) {
+      logout();
+      return false;
+    }
+
+    const data = await res.json();
+    user.access = data.access;
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    return true;
+  } catch (err) {
+    console.error("Erro Refresh:", err);
+    logout();
+    return false;
+  }
+}

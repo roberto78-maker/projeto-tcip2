@@ -1,3 +1,10 @@
+export const NATUREZAS = [
+  { id: "DROGAS", label: "💊 ENTORPECENTES (DROGAS)", temApreensao: true },
+  { id: "AMEACA", label: "⚖️ AMEAÇA / INJÚRIA / DESACATO", temApreensao: false },
+  { id: "SOM", label: "🔊 PERTURBAÇÃO DO SOSSEGO (SOM)", temApreensao: true },
+  { id: "OUTROS", label: "📝 OUTROS TERMOS (GERAL)", temApreensao: false }
+];
+
 export const VARAS = [
   "1ª VARA ESPECIAL CRIMINAL",
   "2ª VARA ESPECIAL CRIMINAL",

@@ -265,9 +265,10 @@ export default function AuditoriaView() {
             <table className="tcip-table">
               <thead>
                 <tr>
+                  <th>Natureza</th>
                   <th>Nº Processo | BOU</th>
                   <th>Autor/Réu</th>
-                  <th>Substância | Peso</th>
+                  <th>Substância / Objeto</th>
                   <th>Localização (Status)</th>
                   <th>Vara</th>
                   <th>Data Registro</th>
@@ -276,42 +277,56 @@ export default function AuditoriaView() {
               <tbody>
                 {data.detalhado.length === 0 ? (
                   <tr>
-                    <td colSpan="6" style={{ textAlign: "center", padding: "40px", color: "#94a3b8" }}>
+                    <td colSpan="7" style={{ textAlign: "center", padding: "40px", color: "#94a3b8" }}>
                       Ops, nenhum processo encontrado com as exatas informações pesquisadas acima.
                     </td>
                   </tr>
                 ) : (
-                  data.detalhado.map((item) => (
-                    <tr key={item.id}>
-                      <td>
-                        <div style={{ fontWeight: "700", color: "#0f172a", fontSize: "14px" }}>Pr: {item.processo || "S/N"}</div>
-                        <div style={{ fontSize: "12px", color: "#475569", marginTop: "2px" }}>BOU: {item.bou || "S/N"}</div>
-                      </td>
-                      <td style={{ fontSize: "13px", color: "#475569" }}>
-                        {item.reu || "-"}
-                      </td>
-                      <td>
-                        <span className="badge amber" style={{ display: "inline-block", marginBottom: "4px" }}>
-                          {item.substancia || "-"}
-                        </span>
-                        <div style={{ fontWeight: "600", color: "#1e293b", fontSize: "13px" }}>
-                          {formatarPesoDisplay(item.peso)}
-                        </div>
-                      </td>
-                      <td>
-                        <span className={`badge ${item.status_label.includes('Excluído') ? 'red' : item.status_label === 'No Cofre' ? 'blue' : item.status_label === 'Incinerado' ? 'green' : 'gray'}`}>
-                          {item.status_label}
-                        </span>
-                        {item.motivo_exclusao && (
-                          <div style={{ marginTop: "5px", fontSize: "11px", color: "#ef4444", fontWeight: "bold", background: "#fef2f2", padding: "4px", borderRadius: "4px", maxWidth: "200px" }}>
-                            Motivo: {item.motivo_exclusao}
+                  data.detalhado.map((item) => {
+                    const natMap = {
+                        "DROGAS": { label: "💊 DROGAS", color: "#10b981" },
+                        "SOM": { label: "🔊 SOM", color: "#3b82f6" },
+                        "AMEACA": { label: "⚖️ TCIP", color: "#64748b" }
+                    };
+                    const natInfo = natMap[item.natureza] || { label: "📝 OUTROS", color: "#94a3b8" };
+
+                    return (
+                      <tr key={item.id}>
+                        <td>
+                           <span className="badge" style={{ background: natInfo.color, color: "white", fontSize: "10px" }}>
+                             {natInfo.label}
+                           </span>
+                        </td>
+                        <td>
+                          <div style={{ fontWeight: "700", color: "#0f172a", fontSize: "14px" }}>Pr: {item.processo || "S/N"}</div>
+                          <div style={{ fontSize: "12px", color: "#475569", marginTop: "2px" }}>BOU: {item.bou || "S/N"}</div>
+                        </td>
+                        <td style={{ fontSize: "13px", color: "#475569", textTransform: "uppercase" }}>
+                          {item.reu || "-"}
+                        </td>
+                        <td>
+                          <span className="badge amber" style={{ display: "inline-block", marginBottom: "4px" }}>
+                            {item.substancia || "-"}
+                          </span>
+                          <div style={{ fontWeight: "600", color: "#1e293b", fontSize: "13px" }}>
+                            {item.natureza === 'AMEACA' ? "Sem Apreensão" : formatarPesoDisplay(item.peso, item.unidade)}
                           </div>
-                        )}
-                      </td>
-                      <td style={{ fontSize: "13px", color: "#475569" }}>{item.vara || "-"}</td>
-                      <td style={{ fontSize: "13px", color: "#475569" }}>{item.data ? item.data.split("-").reverse().join("/") : "-"}</td>
-                    </tr>
-                  ))
+                        </td>
+                        <td>
+                          <span className={`badge ${item.status_label.includes('Excluído') ? 'red' : item.status_label === 'No Cofre' ? 'blue' : item.status_label === 'Incinerado' ? 'green' : 'gray'}`}>
+                            {item.status_label}
+                          </span>
+                          {item.motivo_exclusao && (
+                            <div style={{ marginTop: "5px", fontSize: "11px", color: "#ef4444", fontWeight: "bold", background: "#fef2f2", padding: "4px", borderRadius: "4px", maxWidth: "200px" }}>
+                              Motivo: {item.motivo_exclusao}
+                            </div>
+                          )}
+                        </td>
+                        <td style={{ fontSize: "13px", color: "#475569" }}>{item.vara || "-"}</td>
+                        <td style={{ fontSize: "13px", color: "#475569" }}>{item.data ? item.data.split("-").reverse().join("/") : "-"}</td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
               {data && data.detalhado.length > 0 && (

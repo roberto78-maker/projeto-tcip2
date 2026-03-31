@@ -44,8 +44,8 @@ export default function ProntoQueimaView() {
     }
   }
 
-  // Filtrar apenas o que já está em status incineracao
-  const itensParaIncinerar = apreensoes.filter(a => a.status === "incineracao");
+  // Filtrar apenas o que já está em status incineracao e que seja DROGAS
+  const itensParaIncinerar = apreensoes.filter(a => a.status === "incineracao" && a.natureza === "DROGAS");
 
   // Agrupar itens por lote_incineracao (ID)
   const lotesAgrupados = lotes.map(lote => ({

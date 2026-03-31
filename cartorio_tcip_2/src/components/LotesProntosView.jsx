@@ -43,8 +43,8 @@ export default function LotesProntosView() {
     }
   }
 
-  // Filtrar apenas status "queima_pronta"
-  const itensProntos = apreensoes.filter(a => a.status === "queima_pronta");
+  // Filtrar apenas status "queima_pronta" e que seja DROGAS
+  const itensProntos = apreensoes.filter(a => a.status === "queima_pronta" && a.natureza === "DROGAS");
 
   // Agrupar por lote
   const lotesAgrupados = lotes.map(lote => ({
