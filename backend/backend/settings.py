@@ -11,6 +11,20 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-temp-key")
 
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
+# 🛡️ HEADERS DE SEGURANÇA HTTP (ativos em produção)
+if not DEBUG:
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = "DENY"
+    SECURE_HSTS_SECONDS = 31536000          # 1 ano
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_SSL_REDIRECT = False             # Render já cuida do HTTPS
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+else:
+    X_FRAME_OPTIONS = "SAMEORIGIN"
+
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
@@ -40,6 +54,7 @@ INSTALLED_APPS = [
     "django_filters",
     "drf_yasg",
     "custodia",
+    "simple_history",
 ]
 
 # 🧱 MIDDLEWARE
@@ -53,6 +68,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "simple_history.middleware.HistoryRequestMiddleware",
 ]
 
 ROOT_URLCONF = "backend.urls"
@@ -75,32 +91,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "backend.wsgi.application"
 
-# 🗄️ BANCO
+import dj_database_url
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    "default": dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+        ssl_require=os.environ.get("DATABASE_URL", "").startswith("postgres") and not DEBUG
+    )
 }
 
-DATABASE_URL = os.environ.get("DATABASE_URL")
-if DATABASE_URL:
-    # Parseia a URL do PostgreSQL
-    parsed = urllib.parse.urlparse(DATABASE_URL)
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": parsed.path[1:],  # Remove a barra inicial
-            "USER": parsed.username,
-            "PASSWORD": parsed.password,
-            "HOST": parsed.hostname,
-            "PORT": parsed.port or 5432,
-            "OPTIONS": {
-                "sslmode": "require",
-            },
-        }
-    }
 # 🔐 SENHAS
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -188,6 +188,7 @@ if FRONTEND_URL:
     if FRONTEND_URL not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
     CORS_ALLOWED_ORIGINS = [FRONTEND_URL]
+    CORS_ALLOW_CREDENTIALS = True
 else:
     # Apenas localhost para desenvolvimento local. NUNCA abrir para todos em produção.
     CORS_ALLOWED_ORIGINS = [
@@ -195,6 +196,21 @@ else:
         "http://127.0.0.1:5173",
         "http://localhost:3000",
     ]
+    CORS_ALLOW_CREDENTIALS = True
+
+# 🚫 Bloquear métodos HTTP não utilizados pela aplicação
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
+
+# 🔒 Admin — apenas superusers têm acesso
+# A URL foi movida para /tcip-painel-restrito/ (veja urls.py)
+ADMIN_URL = os.environ.get("ADMIN_URL", "tcip-painel-restrito")
 
 # 🔌 REST FRAMEWORK
 REST_FRAMEWORK = {

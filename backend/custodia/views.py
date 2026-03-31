@@ -97,9 +97,15 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
     def destinar_incineracao(self, request, pk=None):
         apreensao = self.get_object()
 
+        if apreensao.natureza != "DROGAS":
+            return Response(
+                {"error": "Somente entorpecentes podem ser destinados à incineração."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         if not apreensao.arquivo_pdf:
             return Response(
-                {"error": "Arquivo PDF nao encontrado."},
+                {"error": "Arquivo PDF nao encontrado (Laudo/Certidão obrigatório)."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -282,20 +288,25 @@ class RelatorioIncineracaoView(APIView):
         if reu:
             qs = qs.filter(reu__icontains=reu)
 
-        detalhado = qs.values(
-            "id",
-            "bou",
-            "substancia",
-            "peso",
-            "vara",
-            "data_criacao",
-            "status",
-            "processo",
-            "reu",
-            "motivo_exclusao",
-            "lote_incineracao__numero",
-            "lote_incineracao__data_criacao",
-        ).order_by("-data_criacao")[:500]
+        detalhado = (
+            qs.values(
+                "id",
+                "bou",
+                "natureza",
+                "substancia",
+                "peso",
+                "unidade",
+                "vara",
+                "data_criacao",
+                "status",
+                "processo",
+                "reu",
+                "motivo_exclusao",
+                "lote_incineracao__numero",
+                "lote_incineracao__data_criacao",
+            )
+            .order_by("-data_criacao")[:500]
+        )
 
         status_labels = {
             "conferencia": "Aguardando Balança",

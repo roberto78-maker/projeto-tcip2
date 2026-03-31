@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: tcip_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=tcip_db
+      - POSTGRES_USER=tcip_user
+      - POSTGRES_PASSWORD=tcip_pass
+    ports:
+      - "5432:5432"
+
+  backend:
+    build: .
+    container_name: tcip_backend
+    volumes:
+      - .:/app
+    environment:
+      - DEBUG=True
+      - DATABASE_URL=postgres://tcip_user:tcip_pass@db:5432/tcip_db
+      - SECRET_KEY=dev-secret-key-tcip-12345
+      - ALLOWED_HOSTS=localhost,127.0.0.1,backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ../cartorio_tcip_2
+      dockerfile: Dockerfile.dev
+    container_name: tcip_frontend
+    volumes:
+      - ../cartorio_tcip_2:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

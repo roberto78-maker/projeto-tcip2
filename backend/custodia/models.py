@@ -1,4 +1,5 @@
 from django.db import models
+from simple_history.models import HistoricalRecords
 
 
 class LoteIncineracao(models.Model):
@@ -7,6 +8,8 @@ class LoteIncineracao(models.Model):
     protocolo = models.CharField(max_length=100, unique=True)
     origem = models.CharField(max_length=50, default="1ºCART6BPM")
     data_criacao = models.DateTimeField(auto_now_add=True)
+    
+    history = HistoricalRecords()
 
     def save(self, *args, **kwargs):
         if not self.protocolo:
@@ -19,21 +22,39 @@ class LoteIncineracao(models.Model):
 
 
 class Apreensao(models.Model):
+    # Tipos de Natureza (Define o Fluxo)
+    NATUREZA_CHOICES = [
+        ("DROGAS", "Tráfico / Posse de Drogas"),
+        ("AMEACA", "Ameaça / Desobediência / Injúria"),
+        ("SOM", "Perturbação do Sossego (Som)"),
+        ("OUTROS", "Outros Tipos de Termos"),
+    ]
+
     processo = models.CharField(max_length=100)
     bou = models.CharField(max_length=100)
     reu = models.CharField(max_length=200)
 
-    substancia = models.CharField(max_length=100)
-    peso = models.FloatField()
-    unidade = models.CharField(max_length=50)
+    # Agora natureza define se é droga ou não
+    natureza = models.CharField(
+        max_length=50, choices=NATUREZA_CHOICES, default="DROGAS", db_index=True
+    )
+
+    # Tornamos estes campos opcionais (Podem ser Nulos para crimes sem apreensão)
+    substancia = models.CharField(max_length=100, blank=True, null=True)
+    peso = models.FloatField(blank=True, null=True)
+    unidade = models.CharField(max_length=50, blank=True, null=True)
 
     lacre = models.CharField(max_length=100, blank=True, null=True)
     policial = models.CharField(max_length=200, blank=True, null=True)
     vara = models.CharField(max_length=200, blank=True, null=True)
     descricao = models.TextField(blank=True, null=True)
 
+    # Status permanece, mas o fluxo mudará via código
     status = models.CharField(max_length=50, default="conferencia", db_index=True)
     autorizacao = models.TextField(blank=True, null=True)
+
+    # Identificação se houve ou não apreensão física
+    tem_apreensao = models.BooleanField(default=True)
 
     # Novos campos para o fluxo de incineração
     observacao_cofre = models.TextField(blank=True, null=True)
@@ -49,6 +70,8 @@ class Apreensao(models.Model):
     motivo_exclusao = models.TextField(blank=True, null=True)
 
     data_criacao = models.DateTimeField(auto_now_add=True, db_index=True)
+    
+    history = HistoricalRecords()
 
     def __str__(self):
         return f"{self.bou} - {self.substancia}"
