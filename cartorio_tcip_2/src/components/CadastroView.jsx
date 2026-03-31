@@ -26,7 +26,7 @@ const inputStyle = {
 
 export default function CadastroView() {
   const [natureza, setNatureza] = useState("DROGAS");
-  const [crimeGeral, setCrimeGeral] = useState("");
+  const [crimesSelecionados, setCrimesSelecionados] = useState([]);
   
   const [dataFato, setDataFato] = useState("");
   const [bou, setBou] = useState(`${new Date().getFullYear()}/`);
@@ -48,7 +48,7 @@ export default function CadastroView() {
 
   const handleNaturezaChange = (novaId) => {
     setNatureza(novaId);
-    setCrimeGeral(""); // Reseta o crime específico ao mudar de aba
+    setCrimesSelecionados([]); // Reseta os crimes selecionados ao mudar de aba
     // Se for Ameaça, limpa os materiais ou deixa apenas um placeholder
     if (novaId === "AMEACA" || novaId === "OUTROS") {
         setMateriais([{ id: Date.now(), reu: "", substancia: "APENAS REGISTRO", peso: "0,00", unidadePeso: "g", lacre: "" }]);
@@ -160,7 +160,7 @@ export default function CadastroView() {
     doc.setFont("helvetica", "bold"); doc.text("VARA:", marginX, currY);
     doc.setFont("helvetica", "normal"); doc.text(dados.vara || "", marginX + 13, currY); currY += 12;
 
-    const nomeExibicaoNatureza = natureza === "OUTROS" ? (dados.crimeGeral || "TERMO GERAL") : natureza;
+    const nomeExibicaoNatureza = natureza === "OUTROS" ? (dados.crimesSelecionados?.join(', ') || "TERMO GERAL") : natureza;
     const textoBase = `Certifico para os devidos fins que, na data de hoje, recebi do(a) ${dados.patente} ${dados.policial}, RG ${dados.rg}, pertencente à unidade policial ${dados.unidadeOrigem}, a custódia dos itens listados abaixo conforme natureza "${nomeExibicaoNatureza}", para fins de registro e destinação legal.`;
     
     const splitText = doc.splitTextToSize(textoBase, contentWidth);
@@ -234,7 +234,7 @@ export default function CadastroView() {
           bou,
           reu: m.reu || "NÃO IDENTIFICADO",
           natureza: natureza,
-          substancia: natureza === "OUTROS" ? (crimeGeral || "TERMO GERAL") : m.substancia,
+          substancia: natureza === "OUTROS" ? (crimesSelecionados.join(', ') || "TERMO GERAL") : m.substancia,
           peso: isNaN(p) ? 0 : p,
           unidade: m.unidadePeso,
           status: (natureza === "AMEACA" || natureza === "OUTROS") ? "arquivado" : "conferencia",
@@ -247,7 +247,7 @@ export default function CadastroView() {
       });
 
       await Promise.all(promises);
-      await gerarPDF({ processo, bou, materiais, vara, patente, policial, rg, unidadeOrigem, natureza, crimeGeral });
+      await gerarPDF({ processo, bou, materiais, vara, patente, policial, rg, unidadeOrigem, natureza, crimesSelecionados });
 
       alert("Procedimento registrado com sucesso!");
       setProcesso("");
@@ -293,35 +293,60 @@ export default function CadastroView() {
           ))}
         </div>
 
-        {/*Dropdown de Crimes para Natureza 'OUTROS' */}
+        {/* Lista de Checkboxes para Natureza 'OUTROS' */}
         {natureza === "OUTROS" && (
             <div style={{ 
                 width: "100%", 
-                maxWidth: "600px", 
+                maxWidth: "100%", 
                 marginTop: "10px", 
-                padding: "15px", 
-                background: "#f0f9ff", 
-                borderRadius: "8px", 
-                border: "1px solid #bae6fd",
+                padding: "20px", 
+                background: "#f8fafc", 
+                borderRadius: "12px", 
+                border: "1px solid #e2e8f0",
                 animation: "slideDown 0.3s ease-out" 
             }}>
-                <FormGroup label="⚖️ Escolha o Crime Específico do Termo:">
-                    <select 
-                        style={{ ...inputStyle, border: "1px solid #3b82f6" }} 
-                        value={crimeGeral} 
-                        onChange={(e) => setCrimeGeral(e.target.value)}
-                    >
-                        <option value="">Selecione o Crime...</option>
-                        {CRIMES_GERAIS.map(cr => <option key={cr} value={cr}>{cr}</option>)}
-                    </select>
-                </FormGroup>
+                <label style={{ fontSize: "14px", fontWeight: "700", color: "#1e3a8a", display: "block", marginBottom: "15px", borderBottom: "1px solid #cbd5e1", paddingBottom: "10px" }}>
+                  ⚖️ SELECIONE OS CRIMES DESTE REGISTRO (MÚLTIPLA ESCOLHA):
+                </label>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "10px" }}>
+                    {CRIMES_GERAIS.map(cr => (
+                        <label key={cr} style={{ 
+                            display: "flex", 
+                            alignItems: "center", 
+                            gap: "10px", 
+                            fontSize: "12px", 
+                            color: "#475569", 
+                            cursor: "pointer",
+                            padding: "8px",
+                            borderRadius: "6px",
+                            background: crimesSelecionados.includes(cr) ? "#eff6ff" : "transparent",
+                            border: crimesSelecionados.includes(cr) ? "1px solid #3b82f6" : "1px solid transparent",
+                            transition: "all 0.2s"
+                        }}>
+                            <input 
+                                type="checkbox" 
+                                checked={crimesSelecionados.includes(cr)} 
+                                onChange={(e) => {
+                                    if (e.target.checked) {
+                                        setCrimesSelecionados([...crimesSelecionados, cr]);
+                                    } else {
+                                        setCrimesSelecionados(crimesSelecionados.filter(item => item !== cr));
+                                    }
+                                }} 
+                            />
+                            {cr}
+                        </label>
+                    ))}
+                </div>
             </div>
         )}
       </div>
 
       <div className="card" style={{ padding: "25px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px", borderBottom: "1px solid #e2e8f0", paddingBottom: "15px" }}>
-          <h2 style={{ fontSize: "16px", color: "#1e3a8a", margin: 0 }}>🛡️ 1. DADOS DA OCORRÊNCIA ({natureza})</h2>
+          <h2 style={{ fontSize: "16px", color: "#1e3a8a", margin: 0 }}>
+             🛡️ 1. DADOS DA OCORRÊNCIA ({natureza === 'OUTROS' ? (crimesSelecionados.length > 0 ? crimesSelecionados.join(', ') : 'GERAL') : natureza})
+          </h2>
           <span className="badge" style={{ background: "#1e293b", color: "white" }}>OPERADOR: {getUsuario()?.username?.toUpperCase()}</span>
         </div>
 
