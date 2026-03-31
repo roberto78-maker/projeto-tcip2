@@ -1,5 +1,5 @@
 import os
-import urllib.parse
+import dj_database_url
 import cloudinary
 from datetime import timedelta
 from pathlib import Path
@@ -91,7 +91,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "backend.wsgi.application"
 
-import dj_database_url
+
 
 DATABASES = {
     "default": dj_database_url.config(
