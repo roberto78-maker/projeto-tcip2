@@ -84,6 +84,15 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
         filters.OrderingFilter,
     ]
 
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except Exception as e:
+            logger.error(f"ERRO CRÍTICO ao criar apreensão: {str(e)}")
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
     def update(self, request, *args, **kwargs):
         try:
             return super().update(request, *args, **kwargs)
