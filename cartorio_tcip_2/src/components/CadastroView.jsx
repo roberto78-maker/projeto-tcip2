@@ -3,7 +3,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { addApreensao } from "../services/api.js";
 import { getUsuario } from "../services/auth.js";
-import { VARAS, SUBSTANCIAS, UNIDADES_PM, PATENTES, NATUREZAS } from "../constants/options.js";
+import { VARAS, SUBSTANCIAS, UNIDADES_PM, PATENTES, NATUREZAS, CRIMES_GERAIS } from "../constants/options.js";
 import logoBpm from "../assets/brasao.png";
 import AutocompleteInput, { saveHistory } from "./AutocompleteInput.jsx";
 
@@ -26,6 +26,7 @@ const inputStyle = {
 
 export default function CadastroView() {
   const [natureza, setNatureza] = useState("DROGAS");
+  const [crimeGeral, setCrimeGeral] = useState("");
   
   const [dataFato, setDataFato] = useState("");
   const [bou, setBou] = useState(`${new Date().getFullYear()}/`);
@@ -47,6 +48,7 @@ export default function CadastroView() {
 
   const handleNaturezaChange = (novaId) => {
     setNatureza(novaId);
+    setCrimeGeral(""); // Reseta o crime específico ao mudar de aba
     // Se for Ameaça, limpa os materiais ou deixa apenas um placeholder
     if (novaId === "AMEACA" || novaId === "OUTROS") {
         setMateriais([{ id: Date.now(), reu: "", substancia: "APENAS REGISTRO", peso: "0,00", unidadePeso: "g", lacre: "" }]);
@@ -158,7 +160,8 @@ export default function CadastroView() {
     doc.setFont("helvetica", "bold"); doc.text("VARA:", marginX, currY);
     doc.setFont("helvetica", "normal"); doc.text(dados.vara || "", marginX + 13, currY); currY += 12;
 
-    const textoBase = `Certifico para os devidos fins que, na data de hoje, recebi do(a) ${dados.patente} ${dados.policial}, RG ${dados.rg}, pertencente à unidade policial ${dados.unidadeOrigem}, a custódia dos itens listados abaixo conforme natureza "${natureza}", para fins de registro e destinaçãão legal.`;
+    const nomeExibicaoNatureza = natureza === "OUTROS" ? (dados.crimeGeral || "TERMO GERAL") : natureza;
+    const textoBase = `Certifico para os devidos fins que, na data de hoje, recebi do(a) ${dados.patente} ${dados.policial}, RG ${dados.rg}, pertencente à unidade policial ${dados.unidadeOrigem}, a custódia dos itens listados abaixo conforme natureza "${nomeExibicaoNatureza}", para fins de registro e destinação legal.`;
     
     const splitText = doc.splitTextToSize(textoBase, contentWidth);
     doc.text(textoBase, marginX, currY, { align: "justify", maxWidth: contentWidth });
@@ -231,7 +234,7 @@ export default function CadastroView() {
           bou,
           reu: m.reu || "NÃO IDENTIFICADO",
           natureza: natureza,
-          substancia: m.substancia,
+          substancia: natureza === "OUTROS" ? (crimeGeral || "TERMO GERAL") : m.substancia,
           peso: isNaN(p) ? 0 : p,
           unidade: m.unidadePeso,
           status: (natureza === "AMEACA" || natureza === "OUTROS") ? "arquivado" : "conferencia",
@@ -244,7 +247,7 @@ export default function CadastroView() {
       });
 
       await Promise.all(promises);
-      await gerarPDF({ processo, bou, materiais, vara, patente, policial, rg, unidadeOrigem, natureza });
+      await gerarPDF({ processo, bou, materiais, vara, patente, policial, rg, unidadeOrigem, natureza, crimeGeral });
 
       alert("Procedimento registrado com sucesso!");
       setProcesso("");
@@ -262,28 +265,58 @@ export default function CadastroView() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       
-      {/* 🚀 SELEÇÃO DE NATUREZA DO FATO */}
-      <div className="card" style={{ padding: "20px", display: "flex", justifyContent: "center", gap: "10px", background: "#f1f5f9" }}>
-        {NATUREZAS.map(n => (
-          <button 
-            key={n.id}
-            onClick={() => handleNaturezaChange(n.id)}
-            style={{
-                padding: "12px 20px",
-                borderRadius: "8px",
-                border: "2px solid",
-                borderColor: natureza === n.id ? "#1e3a8a" : "transparent",
-                background: natureza === n.id ? "#1e3a8a" : "#fff",
-                color: natureza === n.id ? "#fff" : "#475569",
-                fontWeight: "700",
-                fontSize: "12px",
-                cursor: "pointer",
-                transition: "all 0.2s"
-            }}
-          >
-            {n.label}
-          </button>
-        ))}
+      {/* 🚀 SELEÇÃO DE NATUREZA DO FATO CENTRALIZADA */}
+      <div className="card" style={{ padding: "15px", display: "flex", flexDirection: "column", alignItems: "center", gap: "10px", background: "#fff", border: "1px solid #e2e8f0", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)" }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: "5px", width: "100%" }}>
+          {NATUREZAS.map(n => (
+            <button 
+              key={n.id}
+              onClick={() => handleNaturezaChange(n.id)}
+              style={{
+                  padding: "10px 20px",
+                  borderRadius: "8px",
+                  border: "none",
+                  background: natureza === n.id ? "#1e3a8a" : "#fff",
+                  color: natureza === n.id ? "#fff" : "#64748b",
+                  fontWeight: "700",
+                  fontSize: "11px",
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  boxShadow: natureza === n.id ? "0 4px 12px rgba(30, 58, 138, 0.3)" : "none"
+              }}
+            >
+              {n.label}
+            </button>
+          ))}
+        </div>
+
+        {/*Dropdown de Crimes para Natureza 'OUTROS' */}
+        {natureza === "OUTROS" && (
+            <div style={{ 
+                width: "100%", 
+                maxWidth: "600px", 
+                marginTop: "10px", 
+                padding: "15px", 
+                background: "#f0f9ff", 
+                borderRadius: "8px", 
+                border: "1px solid #bae6fd",
+                animation: "slideDown 0.3s ease-out" 
+            }}>
+                <FormGroup label="⚖️ Escolha o Crime Específico do Termo:">
+                    <select 
+                        style={{ ...inputStyle, border: "1px solid #3b82f6" }} 
+                        value={crimeGeral} 
+                        onChange={(e) => setCrimeGeral(e.target.value)}
+                    >
+                        <option value="">Selecione o Crime...</option>
+                        {CRIMES_GERAIS.map(cr => <option key={cr} value={cr}>{cr}</option>)}
+                    </select>
+                </FormGroup>
+            </div>
+        )}
       </div>
 
       <div className="card" style={{ padding: "25px" }}>

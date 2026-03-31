@@ -1,8 +1,23 @@
 export const NATUREZAS = [
   { id: "DROGAS", label: "💊 ENTORPECENTES (DROGAS)", temApreensao: true },
-  { id: "AMEACA", label: "⚖️ AMEAÇA / INJÚRIA / DESACATO", temApreensao: false },
   { id: "SOM", label: "🔊 PERTURBAÇÃO DO SOSSEGO (SOM)", temApreensao: true },
-  { id: "OUTROS", label: "📝 OUTROS TERMOS (GERAL)", temApreensao: false }
+  { id: "OUTROS", label: "⚖️ OUTROS TERMOS (GERAL)", temApreensao: false }
+];
+
+export const CRIMES_GERAIS = [
+  "Ameaça: Artigo 147 do CP",
+  "Lesão Corporal Leve: Artigo 129 do CP",
+  "Calúnia: Artigo 138 do CP",
+  "Difamação: Artigo 139 do CP",
+  "Injúria: Artigo 140 do CP",
+  "Dano Simples: Artigo 163 do CP",
+  "Outras Fraudes: Artigo 176 do CP",
+  "Resistência: Artigo 329 do CP",
+  "Desobediência: Artigo 330 do CP",
+  "Desacato: Artigo 331 do CP",
+  "Exercício Arbitrário das Próprias Razões: Artigo 345",
+  "Omissão de Cautela na Guarda de Animais: Artigo 31 do LCP",
+  "Conduzir Veículo sem Habilitação: Artigo 309 do CTB"
 ];
 
 export const VARAS = [
