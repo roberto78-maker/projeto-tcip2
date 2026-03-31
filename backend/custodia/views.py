@@ -182,7 +182,9 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
 
             if arquivo:
                 # ☁️ FAZ O UPLOAD UMA ÚNICA VEZ para o Cloudinary
-                logger.info(f"Iniciando upload único ao Cloudinary para o lote {lote.protocolo}...")
+                logger.info(
+                    f"Iniciando upload único ao Cloudinary para o lote {lote.protocolo}..."
+                )
                 arquivo.seek(0)
                 upload_result = cloudinary.uploader.upload(
                     arquivo,
