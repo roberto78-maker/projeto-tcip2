@@ -17,7 +17,9 @@ export const CRIMES_GERAIS = [
   "Desacato: Artigo 331 do CP",
   "Exercício Arbitrário das Próprias Razões: Artigo 345",
   "Omissão de Cautela na Guarda de Animais: Artigo 31 do LCP",
-  "Conduzir Veículo sem Habilitação: Artigo 309 do CTB"
+  "Conduzir Veículo sem Habilitação: Artigo 309 do CTB",
+  "Perturbação do Sossego: Artigo 42 da LCP",
+  "Drogas para Consumo Pessoal: Artigo 28 da Lei 11.343/06"
 ];
 
 export const VARAS = [
