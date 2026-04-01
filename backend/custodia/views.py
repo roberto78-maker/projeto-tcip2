@@ -287,7 +287,10 @@ class RelatorioIncineracaoView(APIView):
             qs = qs.filter(data_criacao__lte=data_fim)
         if vara:
             qs = qs.filter(vara__icontains=vara)
-        if substancia:
+        if substancia == "__NENHUMA__":
+            # Sentinela: excluir todos os itens de natureza DROGAS
+            qs = qs.exclude(natureza="DROGAS")
+        elif substancia:
             qs = qs.filter(substancia__icontains=substancia)
         if natureza:
             qs = qs.filter(natureza=natureza)
@@ -385,7 +388,10 @@ class RelatorioIncineracaoPDFView(APIView):
             qs = qs.filter(data_criacao__lte=data_fim)
         if vara:
             qs = qs.filter(vara__icontains=vara)
-        if substancia:
+        if substancia == "__NENHUMA__":
+            # Sentinela: excluir todos os itens de natureza DROGAS
+            qs = qs.exclude(natureza="DROGAS")
+        elif substancia:
             qs = qs.filter(substancia__icontains=substancia)
         if natureza:
             qs = qs.filter(natureza=natureza)
