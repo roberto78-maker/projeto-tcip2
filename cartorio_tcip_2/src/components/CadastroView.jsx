@@ -278,6 +278,11 @@ export default function CadastroView() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       
+      {/* TÍTULO ORGANIZACIONAL */}
+      <div style={{ textAlign: "center", marginBottom: "10px" }}>
+        <h1 style={{ fontSize: "22px", fontWeight: "800", color: "#1e293b", margin: "0", letterSpacing: "1px" }}>GESTÃO DE CARTÓRIO - TCIP</h1>
+      </div>
+
        {/* 🚀 SUPER PAINEL DE CRIMES (SÉRIE A) */}
       <div className="card" style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "20px", background: "#fff", border: "1px solid #e2e8f0" }}>
             <div style={{ padding: "15px", background: "#f8fafc", borderRadius: "12px", border: "1px solid #e2e8f0" }}>

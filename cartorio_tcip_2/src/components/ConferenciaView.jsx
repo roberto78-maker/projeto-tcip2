@@ -23,9 +23,9 @@ const ModalDespacho = ({ item, onConfirm, onClose }) => {
       background: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000
     }}>
       <div style={{ background: "white", padding: "30px", borderRadius: "12px", width: "450px", boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)" }}>
-        <h3 style={{ marginBottom: "15px", color: "#1e3a8a" }}>📦 Confirmar Entrada no Cofre</h3>
+        <h3 style={{ marginBottom: "15px", color: "#1e3a8a" }}>📦 Confirmar Entrada no Depósito</h3>
         <p style={{ fontSize: "14px", color: "#64748b", marginBottom: "20px" }}>
-          Você está confirmando a entrada do material do <strong>BOU {item.bou}</strong> no cofre de custódia.
+          Você está confirmando a entrada do material do <strong>BOU {item.bou}</strong> no depósito de custódia.
         </p>
         
         <div style={{ marginBottom: "20px" }}>
@@ -42,7 +42,7 @@ const ModalDespacho = ({ item, onConfirm, onClose }) => {
 
         <div style={{ display: "flex", gap: "12px" }}>
           <button className="btn-green" style={{ flex: 1 }} onClick={() => onConfirm(obs)}>
-            CONFIRME DESPACHO PARA O COFRE
+            CONFIRME DESPACHO PARA O DEPÓSITO
           </button>
           <button className="btn-blue" style={{ background: "#94a3b8" }} onClick={onClose}>
             CANCELAR
@@ -178,10 +178,10 @@ export default function ConferenciaView() {
       )}
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-        <h2 className="card-title">Conferência e Entrada no Cofre</h2>
+        <h2 className="card-title">Triagem e Entrada no Depósito</h2>
         <span className="badge" style={{ background: "#ef4444", color: "white" }}>{itensConferencia.length} ITENS PENDENTES</span>
       </div>
-      <p className="card-subtitle">Materiais aguardando pesagem oficial e armazenamento físico.</p>
+      <p className="card-title-sub" style={{ fontSize: "14px", color: "#64748b", marginBottom: "20px" }}>Materiais aguardando triagem oficial e armazenamento físico.</p>
 
       <div style={{ marginBottom: "20px" }}>
         <input
@@ -208,7 +208,7 @@ export default function ConferenciaView() {
             {itensConferencia.length === 0 && (
               <tr>
                 <td colSpan="6" style={{ textAlign: "center", padding: "30px", color: "#64748b" }}>
-                  Nenhum material pendente de conferência.
+                  Nenhum material pendente de triagem.
                 </td>
               </tr>
             )}
@@ -226,7 +226,7 @@ export default function ConferenciaView() {
                 <td style={{ textAlign: "right" }}>
                   <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
                     <button className="btn-green" onClick={() => setItemSelecionado(item)}>
-                      📦 CONFERIR
+                      📦 TRIAR
                     </button>
                     <button 
                       className="btn-outline-red" 

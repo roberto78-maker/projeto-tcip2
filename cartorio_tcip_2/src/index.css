@@ -114,6 +114,7 @@ body {
   padding: 40px;
   background-color: transparent;
   overflow-y: auto;
+  position: relative;
 }
 
 /* Component Styling */

@@ -12,6 +12,26 @@ import brasao from "./assets/brasao.png";
 
 import { isAutenticado, logout, getUsuario } from "./services/auth.js";
 
+const RelogioDigital = () => {
+  const [hora, setHora] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setHora(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const dataExtenso = hora.toLocaleDateString("pt-BR", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const dataFormatada = dataExtenso.charAt(0).toUpperCase() + dataExtenso.slice(1);
+
+  return (
+    <div style={{ position: "absolute", top: "20px", left: "40px", color: "#64748b", fontSize: "12px", display: "flex", alignItems: "center", gap: "8px", fontWeight: "600", zIndex: 10 }}>
+      <span style={{ fontSize: "16px" }}>🕒</span>
+      {dataFormatada} • {hora.toLocaleTimeString("pt-BR")}
+    </div>
+  );
+};
+
+
 export default function App() {
   const [view, setView] = useState(() => {
     // Inicializa a view a partir do hash da URL, caso exista
@@ -91,10 +111,11 @@ export default function App() {
         <div className="sidebar-header">
           <img src={brasao} alt="Brasão 6º BPM" />
           <h2>6º BPM - CASCAVEL</h2>
+          <h3 style={{ margin: "5px 0 0 0", color: "#94a3b8", fontSize: "12px", fontWeight: "600", letterSpacing: "0.5px" }}>PRIMEIRO CARTÓRIO - TCIP</h3>
         </div>
 
         {/* 👤 Usuário logado */}
-        <div style={{ padding: "10px 20px", fontSize: "12px", color: "#94a3b8", textAlign: "center" }}>
+        <div style={{ padding: "10px 20px", fontSize: "12px", color: "#e2e8f0", textAlign: "center", fontStyle: "italic", background: "rgba(0,0,0,0.2)" }}>
           Operador: {usuario?.username}
         </div>
 
@@ -118,7 +139,7 @@ export default function App() {
           className={`sidebar-btn ${view === 'conferencia' ? 'active' : ''}`}
           onClick={() => changeView("conferencia")}
         >
-          <span style={{ fontSize: "16px" }}>⚖️</span> Conferir Pesagem
+          <span style={{ fontSize: "16px" }}>⚖️</span> Triagem
         </button>
 
         <div className="sidebar-section">COFRE</div>
@@ -127,7 +148,7 @@ export default function App() {
           className={`sidebar-btn ${view === 'deposito' ? 'active' : ''}`}
           onClick={() => changeView("deposito")}
         >
-          <span style={{ fontSize: "16px" }}>🗄️</span> Itens no Cofre
+          <span style={{ fontSize: "16px" }}>🗄️</span> Depósito
         </button>
 
         <div className="sidebar-section">INCINERAÇÃO</div>
@@ -169,6 +190,7 @@ export default function App() {
 
       {/* TELA */}
       <div className="main-content">
+        <RelogioDigital />
         {renderView()}
       </div>
 
