@@ -285,7 +285,7 @@ export default function AuditoriaView() {
             <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>Localização / Status atual:</label>
             <select name="status" value={filtros.status} onChange={handleFiltroChange} className="input-tcip">
               <option value="">Todos os Locais</option>
-              <option value="conferencia">Aguardando Balança</option>
+              <option value="conferencia">Aguardando Conferência</option>
               <option value="cofre">No Cofre</option>
               <option value="incineracao">Lotes (Em Formação)</option>
               <option value="queima_pronta">Já Incinerados</option>

@@ -199,7 +199,7 @@ export default function DashboardView() {
         {/* Summary row */}
         <div style={{ display: "flex", gap: "15px", marginBottom: "30px", background: "#f8fafc", padding: "15px", borderRadius: "8px" }}>
           <BorderCard
-            title="AGUARDANDO TRIAGEM"
+            title="AGUARDANDO CONFERÊNCIA"
             value={stats.count_conferencia}
             subtitle="itens"
             color="#eab308"
