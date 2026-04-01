@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { getRelatorioIncineracao } from "../services/api";
+import { getUsuario } from "../services/auth";
 import logoBpm from "../assets/brasao.png";
 import { VARAS, SUBSTANCIAS } from "../constants/options.js";
 
@@ -13,6 +14,7 @@ export default function AuditoriaView() {
     data_fim: "",
     vara: "",
     substancia: "",
+    natureza: "",
     status: "",
     bou: "",
     processo: "",
@@ -123,22 +125,56 @@ export default function AuditoriaView() {
     // FOOTER DE TOTAIS
     const totalItens = data.detalhado.length;
     
+    // Calcula Quantidade de Pessoas Detidas Únicas
+    const nomesDetidos = data.detalhado.map(i => i.reu).filter(r => r && r.trim() !== "" && r.trim() !== "-");
+    const reusUnicos = new Set(nomesDetidos.map(nome => nome.toUpperCase().trim())).size;
+
+    // Calcula Totais por Categoria
+    const countSom = data.detalhado.filter(i => i.natureza === "SOM").length;
+    const countArmas = data.detalhado.filter(i => i.natureza === "OUTROS" && i.substancia && (i.substancia.toLowerCase().includes("faca") || i.substancia.toLowerCase().includes("facão"))).length;
+    const countOutros = data.detalhado.filter(i => i.natureza === "OUTROS").length - countArmas;
+    const countDrogas = data.detalhado.filter(i => i.natureza === "DROGAS").length;
+
+    // Calcula Peso Total de Drogas
+    let pesoTotalDrogasG = 0;
+    data.detalhado.filter(i => i.natureza === "DROGAS").forEach(i => {
+       if (i.unidade === "Unid") return;
+       const p = parseFloat(String(i.peso).replace(",", ".")) || 0;
+       pesoTotalDrogasG += p;
+    });
+
+    const resumos = [
+      [`TOTAL ITENS ENCONTRADOS NO RADAR: ${String(totalItens).padStart(2, '0')}`],
+      [`PESSOAS DETIDAS / ENVOLVIDOS IDENTIFICADOS: ${String(reusUnicos).padStart(2, '0')}`]
+    ];
+
+    if (countDrogas > 0) resumos.push([`TOTAL DROGAS: ${String(countDrogas).padStart(2, '0')} (PESO TOTAL: ${formatarPesoDisplay(pesoTotalDrogasG, "g")})`]);
+    if (countSom > 0) resumos.push([`CAIXAS / APARELHOS DE SOM: ${String(countSom).padStart(2, '0')} Unidades`]);
+    if (countArmas > 0) resumos.push([`FACAS / ARMAS BRANCAS: ${String(countArmas).padStart(2, '0')} Unidades`]);
+    if (countOutros > 0) resumos.push([`OUTROS DIVERSOS: ${String(countOutros).padStart(2, '0')} Unidades`]);
+
+    resumos.push([`RELATÓRIO GERADO POR OPERADOR: ${getUsuario()?.username?.toUpperCase() || 'SISTEMA'}`]);
+
     autoTable(doc, {
-      startY: doc.lastAutoTable.finalY,
-      body: [[
-        `TOTAL ITENS: ${String(totalItens).padStart(2, '0')}`,
-        `RELATÓRIO GERADO POR OPERADOR: ${getUsuario()?.username?.toUpperCase() || 'SISTEMA'}`
-      ]],
+      startY: doc.lastAutoTable.finalY + 5,
+      head: [["RESUMO DAS APREENSÕES DESTA BUSCA"]],
+      body: resumos,
       theme: "grid",
+      headStyles: {
+        fillColor: [30, 41, 59], // Slate 800
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+        halign: "center"
+      },
       styles: {
         fontSize: 10,
         fontStyle: "bold",
-        cellPadding: 5,
+        cellPadding: 4,
         lineColor: [0, 0, 0],
         lineWidth: 0.1,
         halign: "center",
         valign: "middle",
-        fillColor: [255, 255, 255],
+        fillColor: [248, 250, 252],
         textColor: [0, 0, 0]
       },
       margin: { left: marginX, right: marginX }
@@ -157,7 +193,7 @@ export default function AuditoriaView() {
 
   const handleLimparFiltros = () => {
     setFiltros({
-      data_inicio: "", data_fim: "", vara: "", substancia: "",
+      data_inicio: "", data_fim: "", vara: "", substancia: "", natureza: "",
       status: "", bou: "", processo: "", reu: ""
     });
   };
@@ -180,7 +216,18 @@ export default function AuditoriaView() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "15px", marginBottom: "20px" }}>
           
           <div>
-            <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>Droga / Substância:</label>
+            <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>Natureza / Tipo:</label>
+            <select name="natureza" value={filtros.natureza} onChange={handleFiltroChange} className="input-tcip">
+              <option value="">Todas</option>
+              <option value="DROGAS">💊 Somente Drogas</option>
+              <option value="SOM">🔊 Aparelhos de Som</option>
+              <option value="OUTROS">⚙️ Outros Objetos (Facas, etc)</option>
+              <option value="AMEACA">⚖️ Sem Apreensão (Ameaça/TCIP)</option>
+            </select>
+          </div>
+
+          <div>
+            <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>Droga / Substância Específica:</label>
             <select name="substancia" value={filtros.substancia} onChange={handleFiltroChange} className="input-tcip">
               <option value="">Todas as Drogas</option>
               {SUBSTANCIAS.map(s => <option key={s} value={s}>{s}</option>)}

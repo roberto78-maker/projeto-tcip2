@@ -176,6 +176,7 @@ export async function getRelatorioIncineracao(filtros = {}) {
   if (filtros.data_fim) queryParams.append("data_fim", filtros.data_fim);
   if (filtros.vara) queryParams.append("vara", filtros.vara);
   if (filtros.substancia) queryParams.append("substancia", filtros.substancia);
+  if (filtros.natureza) queryParams.append("natureza", filtros.natureza);
   if (filtros.status) queryParams.append("status", filtros.status);
   if (filtros.bou) queryParams.append("bou", filtros.bou);
   if (filtros.processo) queryParams.append("processo", filtros.processo);
@@ -194,6 +195,7 @@ export async function downloadRelatorioPdf(filtros = {}) {
   if (filtros.data_fim) queryParams.append("data_fim", filtros.data_fim);
   if (filtros.vara) queryParams.append("vara", filtros.vara);
   if (filtros.substancia) queryParams.append("substancia", filtros.substancia);
+  if (filtros.natureza) queryParams.append("natureza", filtros.natureza);
   if (filtros.status) queryParams.append("status", filtros.status);
   if (filtros.bou) queryParams.append("bou", filtros.bou);
   if (filtros.processo) queryParams.append("processo", filtros.processo);
