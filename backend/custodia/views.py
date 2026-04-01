@@ -487,21 +487,23 @@ class RelatorioIncineracaoPDFView(APIView):
         total_itens = qs.count()
         processos_unicos = qs.values("processo").distinct().count()
         reus_unicos = qs.values("reu").distinct().count()
-        
+
         peso_total = 0
         count_som = 0
         count_facas = 0
-        
+
         for item in qs:
             if item.natureza == "DROGAS" and item.unidade != "Unid":
                 peso_total += item.peso or 0
             if item.natureza == "SOM":
                 count_som += 1
-            if item.substancia and ("faca" in item.substancia.lower() or "facão" in item.substancia.lower()):
+            if item.substancia and (
+                "faca" in item.substancia.lower() or "facão" in item.substancia.lower()
+            ):
                 count_facas += 1
 
         elements.append(Spacer(1, 10))
-        
+
         # Tabela de Resumo Estatístico
         resumo_data = [
             [Paragraph("<b>RESUMO ESTATÍSTICO</b>", title_style)],
@@ -509,10 +511,12 @@ class RelatorioIncineracaoPDFView(APIView):
             [f"Pessoas Identificadas: {str(reus_unicos).zfill(2)}"],
             [f"Total de Itens: {str(total_itens).zfill(2)}"],
         ]
-        
+
         if peso_total > 0:
-            resumo_data.append([f"Peso Estimado (Drogas): {peso_total:.2f}g".replace(".", ",")])
-        
+            resumo_data.append(
+                [f"Peso Estimado (Drogas): {peso_total:.2f}g".replace(".", ",")]
+            )
+
         if count_som > 0 or count_facas > 0:
             objetos_str = []
             if count_som > 0:
@@ -522,16 +526,20 @@ class RelatorioIncineracaoPDFView(APIView):
             resumo_data.append([f"Objetos: {' | '.join(objetos_str)}"])
 
         resumo_tab = Table(resumo_data, colWidths=[6 * inch])
-        resumo_tab.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#1e293b")),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-            ('FONTSIZE', (0, 1), (-1, -1), 9),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-            ('TOPPADDING', (0, 0), (-1, -1), 5),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.whitesmoke),
-        ]))
+        resumo_tab.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1e293b")),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                    ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                    ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                    ("FONTSIZE", (0, 1), (-1, -1), 9),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+                    ("TOPPADDING", (0, 0), (-1, -1), 5),
+                    ("BACKGROUND", (0, 1), (-1, -1), colors.whitesmoke),
+                ]
+            )
+        )
         elements.append(resumo_tab)
         elements.append(Spacer(1, 20))
 
@@ -652,18 +660,25 @@ class RelatorioIncineracaoPDFView(APIView):
         # Header/Footer Page Numbering & Protocol
         import random
         import string
-        protocolo_hash = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6)) + "-" + timezone.now().strftime("%H%M")
-        
+
+        protocolo_hash = (
+            "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
+            + "-"
+            + timezone.now().strftime("%H%M")
+        )
+
         def add_footer(canvas, doc):
             canvas.saveState()
-            canvas.setFont('Helvetica-Oblique', 8)
+            canvas.setFont("Helvetica-Oblique", 8)
             canvas.setStrokeColor(colors.grey)
-            canvas.line(30, 45, 565, 45) # Linha horizontal
-            
+            canvas.line(30, 45, 565, 45)  # Linha horizontal
+
             usuario = request.user.username.upper() if request.user else "SISTEMA"
             data_hora = timezone.now().strftime("%d/%m/%Y %H:%M")
-            footer_text = f"Gerado por {usuario} em {data_hora} | Protocolo: AUD-{protocolo_hash}"
-            
+            footer_text = (
+                f"Gerado por {usuario} em {data_hora} | Protocolo: AUD-{protocolo_hash}"
+            )
+
             canvas.drawString(30, 33, footer_text)
             canvas.drawRightString(565, 33, f"Página {doc.page}")
             canvas.restoreState()
