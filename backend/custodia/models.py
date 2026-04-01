@@ -67,7 +67,7 @@ class Apreensao(models.Model):
         upload_to="laudos_pdf/",
         blank=True,
         null=True,
-        editable=False,   # ← hidden from ModelForm / DRF serializers by default
+        editable=False,  # ← hidden from ModelForm / DRF serializers by default
     )
     arquivo_pdf_url = models.URLField(max_length=500, blank=True, null=True)
     lote_incineracao = models.ForeignKey(

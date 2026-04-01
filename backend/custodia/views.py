@@ -58,28 +58,26 @@ class DashboardStatsView(APIView):
 
         # ── Lot counts (em formação / incinerados) — 2 lightweight queries ────
         lotes_em_formacao = (
-            Apreensao.objects
-            .filter(status="incineracao", lote_incineracao__isnull=False)
+            Apreensao.objects.filter(
+                status="incineracao", lote_incineracao__isnull=False
+            )
             .values("lote_incineracao")
             .distinct()
             .count()
         )
         lotes_incinerados = (
-            Apreensao.objects
-            .filter(status="queima_pronta", lote_incineracao__isnull=False)
+            Apreensao.objects.filter(
+                status="queima_pronta", lote_incineracao__isnull=False
+            )
             .values("lote_incineracao")
             .distinct()
             .count()
         )
 
         # ── Knife count via DB LIKE — avoids pulling all objects to Python ────
-        count_facas = (
-            Apreensao.objects
-            .filter(
-                Q(substancia__icontains="faca") | Q(substancia__icontains="facão")
-            )
-            .count()
-        )
+        count_facas = Apreensao.objects.filter(
+            Q(substancia__icontains="faca") | Q(substancia__icontains="facão")
+        ).count()
 
         return Response(
             {
@@ -152,8 +150,14 @@ class ApreensaoFilter(django_filters.FilterSet):
     class Meta:
         model = Apreensao
         fields = [
-            "status", "substancia", "reu", "bou", "processo",
-            "natureza", "excluir_natureza", "tem_apreensao",
+            "status",
+            "substancia",
+            "reu",
+            "bou",
+            "processo",
+            "natureza",
+            "excluir_natureza",
+            "tem_apreensao",
         ]
 
 
