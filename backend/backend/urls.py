@@ -10,6 +10,7 @@ from custodia.views import (
     LoteIncineracaoViewSet,
     RelatorioIncineracaoView,
     RelatorioIncineracaoPDFView,
+    DashboardStatsView,
 )
 
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -57,6 +58,12 @@ urlpatterns = [
         "api/relatorios/incineracao/pdf/",
         RelatorioIncineracaoPDFView.as_view(),
         name="relatorio_incineracao_pdf",
+    ),
+    # 📈 Dashboard — aggregated stats (single DB query, replaces fetchAll)
+    path(
+        "api/dashboard/stats/",
+        DashboardStatsView.as_view(),
+        name="dashboard_stats",
     ),
     # 🌐 Frontend SPA — captura tudo que não é API
     re_path(

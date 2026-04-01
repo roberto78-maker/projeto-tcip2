@@ -7,6 +7,7 @@ from rest_framework import filters, permissions
 from django.http import HttpResponse
 from django_filters import rest_framework as django_filters
 from django.utils import timezone
+from django.db.models import Sum, Count, Q
 from .models import Apreensao, LoteIncineracao
 from .serializers import ApreensaoSerializer, LoteIncineracaoSerializer
 import cloudinary.uploader
@@ -19,6 +20,75 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 
 logger = logging.getLogger(__name__)
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# 📊 DASHBOARD STATS — single DB round-trip, replaces full fetchAll download
+# ──────────────────────────────────────────────────────────────────────────────
+class DashboardStatsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        """
+        Returns all aggregated stats needed by the Dashboard in a single query.
+        Replaces the previous pattern of downloading all records and filtering
+        on the frontend.
+        """
+        stats = Apreensao.objects.aggregate(
+            # ── Counts by status ──────────────────────────────────────────────
+            total=Count("id"),
+            count_conferencia=Count("id", filter=Q(status="conferencia")),
+            count_cofre=Count("id", filter=Q(status="cofre")),
+            count_incineracao=Count("id", filter=Q(status="incineracao")),
+            count_queima_pronta=Count("id", filter=Q(status="queima_pronta")),
+            count_excluido=Count("id", filter=Q(status="excluido")),
+            # ── Weights by status (grams) — NULL-safe via Sum default=0 ───────
+            peso_cofre=Sum("peso", filter=Q(status="cofre")),
+            peso_incineracao=Sum("peso", filter=Q(status="incineracao")),
+            peso_queima_pronta=Sum("peso", filter=Q(status="queima_pronta")),
+            # ── Special item types ────────────────────────────────────────────
+            count_som=Count("id", filter=Q(natureza="SOM")),
+            count_outros=Count("id", filter=Q(natureza="OUTROS")),
+        )
+
+        # Sum returns None when there are no matching rows — normalise to 0
+        stats["peso_cofre"] = float(stats["peso_cofre"] or 0)
+        stats["peso_incineracao"] = float(stats["peso_incineracao"] or 0)
+        stats["peso_queima_pronta"] = float(stats["peso_queima_pronta"] or 0)
+
+        # ── Lot counts (em formação / incinerados) — 2 lightweight queries ────
+        lotes_em_formacao = (
+            Apreensao.objects
+            .filter(status="incineracao", lote_incineracao__isnull=False)
+            .values("lote_incineracao")
+            .distinct()
+            .count()
+        )
+        lotes_incinerados = (
+            Apreensao.objects
+            .filter(status="queima_pronta", lote_incineracao__isnull=False)
+            .values("lote_incineracao")
+            .distinct()
+            .count()
+        )
+
+        # ── Knife count via DB LIKE — avoids pulling all objects to Python ────
+        count_facas = (
+            Apreensao.objects
+            .filter(
+                Q(substancia__icontains="faca") | Q(substancia__icontains="facão")
+            )
+            .count()
+        )
+
+        return Response(
+            {
+                **stats,
+                "lotes_em_formacao": lotes_em_formacao,
+                "lotes_incinerados": lotes_incinerados,
+                "count_facas": count_facas,
+            }
+        )
 
 
 class LoteIncineracaoFilter(django_filters.FilterSet):
@@ -62,9 +132,29 @@ class ApreensaoFilter(django_filters.FilterSet):
         field_name="data_criacao", lookup_expr="lte"
     )
 
+    # ── Natureza filters ───────────────────────────────────────────────────
+    # ?natureza=DROGAS  →  exact match (used by DROGAS tab)
+    natureza = django_filters.CharFilter(field_name="natureza")
+
+    # ?excluir_natureza=DROGAS  →  exclude records of that natureza
+    # Used by the OBJETOS tab so the frontend never has to filter locally.
+    excluir_natureza = django_filters.CharFilter(method="filter_excluir_natureza")
+
+    # ?tem_apreensao=true  →  boolean filter for physical custody
+    tem_apreensao = django_filters.BooleanFilter(field_name="tem_apreensao")
+
+    def filter_excluir_natureza(self, queryset, name, value):
+        """Excludes records whose natureza matches `value`."""
+        if value:
+            return queryset.exclude(natureza=value)
+        return queryset
+
     class Meta:
         model = Apreensao
-        fields = ["status", "substancia", "reu", "bou", "processo"]
+        fields = [
+            "status", "substancia", "reu", "bou", "processo",
+            "natureza", "excluir_natureza", "tem_apreensao",
+        ]
 
 
 class ApreensaoViewSet(viewsets.ModelViewSet):
@@ -263,6 +353,58 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
         logger.info(f"Apreensão {apreensao.id} excluída. Motivo: {motivo}")
 
         return Response(ApreensaoSerializer(apreensao).data)
+
+    @action(detail=True, methods=["post"])
+    def upload_pdf(self, request, pk=None):
+        """
+        Uploads a PDF/image to Cloudinary for an individual Apreensao record.
+        Stores the resulting secure_url in arquivo_pdf_url (plain URL string).
+        Never writes to the deprecated arquivo_pdf FileField.
+
+        This is the ONLY place that calls Cloudinary for a single record upload.
+        It is invoked explicitly, NEVER during list serialization.
+        """
+        apreensao = self.get_object()
+        arquivo = request.FILES.get("arquivo_pdf")
+
+        if not arquivo:
+            return Response(
+                {"error": "Nenhum arquivo enviado."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if arquivo.size > 5 * 1024 * 1024:
+            return Response(
+                {"error": "Arquivo muito grande. Limite: 5MB."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            safe_bou = apreensao.bou.replace("/", "_").replace(" ", "_")
+            public_id = f"laudos_pdf/{apreensao.id}_{safe_bou}"
+            upload_result = cloudinary.uploader.upload(
+                arquivo,
+                resource_type="auto",
+                folder="laudos_pdf",
+                public_id=public_id,
+                overwrite=True,
+            )
+            url = upload_result.get("secure_url")
+
+            # Store only the URL string — no FileField, no extra network call
+            apreensao.arquivo_pdf_url = url
+            apreensao.save(update_fields=["arquivo_pdf_url"])
+
+            logger.info(f"PDF carregado para Apreensão {apreensao.id}: {url}")
+            return Response(
+                {"arquivo_pdf_url": url, "message": "PDF carregado com sucesso."}
+            )
+        except Exception as e:
+            logger.error(f"Erro no upload do PDF para apreensão {apreensao.id}: {e}")
+            return Response(
+                {"error": f"Falha no upload: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class RelatorioIncineracaoView(APIView):

@@ -58,7 +58,17 @@ class Apreensao(models.Model):
 
     # Novos campos para o fluxo de incineração
     observacao_cofre = models.TextField(blank=True, null=True)
-    arquivo_pdf = models.FileField(upload_to="laudos_pdf/", blank=True, null=True)
+    # ─── PDF Storage ─────────────────────────────────────────────────────────
+    # DEPRECATED: arquivo_pdf (FileField) caused Cloudinary network calls on
+    # every serialization of every object in a list. It is kept in the DB schema
+    # to avoid a migration, but is excluded from all forms and serializers.
+    # All new code must read/write arquivo_pdf_url (plain URLField).
+    arquivo_pdf = models.FileField(
+        upload_to="laudos_pdf/",
+        blank=True,
+        null=True,
+        editable=False,   # ← hidden from ModelForm / DRF serializers by default
+    )
     arquivo_pdf_url = models.URLField(max_length=500, blank=True, null=True)
     lote_incineracao = models.ForeignKey(
         LoteIncineracao,
