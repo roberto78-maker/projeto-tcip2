@@ -483,7 +483,55 @@ class RelatorioIncineracaoPDFView(APIView):
 
         info = f"<b>{periodo_texto}</b><br/><b>Filtros Aplicados:</b> {filtros_str}"
         elements.append(Paragraph(info, normal_style))
-        elements.append(Spacer(1, 15))
+        # --- CÁLCULO DE ESTATÍSTICAS ---
+        total_itens = qs.count()
+        processos_unicos = qs.values("processo").distinct().count()
+        reus_unicos = qs.values("reu").distinct().count()
+        
+        peso_total = 0
+        count_som = 0
+        count_facas = 0
+        
+        for item in qs:
+            if item.natureza == "DROGAS" and item.unidade != "Unid":
+                peso_total += item.peso or 0
+            if item.natureza == "SOM":
+                count_som += 1
+            if item.substancia and ("faca" in item.substancia.lower() or "facão" in item.substancia.lower()):
+                count_facas += 1
+
+        elements.append(Spacer(1, 10))
+        
+        # Tabela de Resumo Estatístico
+        resumo_data = [
+            [Paragraph("<b>RESUMO ESTATÍSTICO</b>", title_style)],
+            [f"Total de Processos: {str(processos_unicos).zfill(2)}"],
+            [f"Pessoas Identificadas: {str(reus_unicos).zfill(2)}"],
+            [f"Total de Itens: {str(total_itens).zfill(2)}"],
+        ]
+        
+        if peso_total > 0:
+            resumo_data.append([f"Peso Estimado (Drogas): {peso_total:.2f}g".replace(".", ",")])
+        
+        if count_som > 0 or count_facas > 0:
+            objetos_str = []
+            if count_som > 0: objetos_str.append(f"{count_som} Aparelhos de Som")
+            if count_facas > 0: objetos_str.append(f"{count_facas} Armas Brancas (Facas)")
+            resumo_data.append([f"Objetos: {' | '.join(objetos_str)}"])
+
+        resumo_tab = Table(resumo_data, colWidths=[6 * inch])
+        resumo_tab.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#1e293b")),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('FONTSIZE', (0, 1), (-1, -1), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+            ('TOPPADDING', (0, 0), (-1, -1), 5),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.whitesmoke),
+        ]))
+        elements.append(resumo_tab)
+        elements.append(Spacer(1, 20))
 
         # Agrupar por mes/ano
         from collections import defaultdict
@@ -599,9 +647,29 @@ class RelatorioIncineracaoPDFView(APIView):
                 elements.append(t)
                 elements.append(Spacer(1, 10))
 
-        doc.build(elements)
+        # Header/Footer Page Numbering & Protocol
+        import random, string
+        protocolo_hash = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6)) + "-" + timezone.now().strftime("%H%M")
+        
+        def add_footer(canvas, doc):
+            canvas.saveState()
+            canvas.setFont('Helvetica-Oblique', 8)
+            canvas.setStrokeColor(colors.grey)
+            canvas.line(30, 45, 565, 45) # Linha horizontal
+            
+            usuario = request.user.username.upper() if request.user else "SISTEMA"
+            data_hora = timezone.now().strftime("%d/%m/%Y %H:%M")
+            footer_text = f"Gerado por {usuario} em {data_hora} | Protocolo: AUD-{protocolo_hash}"
+            page_num = f"Página {doc.page} de {doc.page}" # doc.page é dinâmico no draw
+            
+            canvas.drawString(30, 33, footer_text)
+            canvas.drawRightString(565, 33, f"Página {doc.page}")
+            canvas.restoreState()
+
+        doc.build(elements, onFirstPage=add_footer, onLaterPages=add_footer)
         buffer.seek(0)
 
         response = HttpResponse(buffer, content_type="application/pdf")
-        response["Content-Disposition"] = 'attachment; filename="relatorio_radar.pdf"'
+        filename = f"relatorio_radar_{protocolo_hash}.pdf"
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response
