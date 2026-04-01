@@ -275,6 +275,7 @@ class RelatorioIncineracaoView(APIView):
         data_fim = request.GET.get("data_fim")
         vara = request.GET.get("vara")
         substancia = request.GET.get("substancia")
+        natureza = request.GET.get("natureza")
         status_filter = request.GET.get("status")
         bou = request.GET.get("bou")
         processo = request.GET.get("processo")
@@ -288,6 +289,8 @@ class RelatorioIncineracaoView(APIView):
             qs = qs.filter(vara__icontains=vara)
         if substancia:
             qs = qs.filter(substancia__icontains=substancia)
+        if natureza:
+            qs = qs.filter(natureza=natureza)
         if status_filter:
             qs = qs.filter(status=status_filter)
         if bou:
@@ -344,6 +347,8 @@ class RelatorioIncineracaoView(APIView):
                     "reu": item["reu"],
                     "substancia": item["substancia"],
                     "peso": item["peso"],
+                    "unidade": item["unidade"],
+                    "natureza": item["natureza"],
                     "vara": item["vara"],
                     "status_label": status_desc,
                     "motivo_exclusao": item["motivo_exclusao"],
@@ -368,6 +373,7 @@ class RelatorioIncineracaoPDFView(APIView):
         data_fim = request.GET.get("data_fim")
         vara = request.GET.get("vara")
         substancia = request.GET.get("substancia")
+        natureza = request.GET.get("natureza")
         status_filter = request.GET.get("status")
         bou = request.GET.get("bou")
         processo = request.GET.get("processo")
@@ -381,6 +387,8 @@ class RelatorioIncineracaoPDFView(APIView):
             qs = qs.filter(vara__icontains=vara)
         if substancia:
             qs = qs.filter(substancia__icontains=substancia)
+        if natureza:
+            qs = qs.filter(natureza=natureza)
         if status_filter:
             qs = qs.filter(status=status_filter)
         if bou:
@@ -454,6 +462,8 @@ class RelatorioIncineracaoPDFView(APIView):
             filtros_usados.append(f"Vara: {vara}")
         if substancia:
             filtros_usados.append(f"Substância: {substancia}")
+        if natureza:
+            filtros_usados.append(f"Natureza: {natureza}")
         if status_filter:
             filtros_usados.append(f"Status: {status_filter}")
         if bou:
