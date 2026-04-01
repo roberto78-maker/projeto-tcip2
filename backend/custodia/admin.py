@@ -77,7 +77,7 @@ class ApreensaoAdmin(admin.ModelAdmin):
             "excluido": "#ef4444",
         }
         labels = {
-            "conferencia": "Aguardando Balança",
+            "conferencia": "Aguardando Conferência",
             "cofre": "No Cofre",
             "incineracao": "P. Queima",
             "queima_pronta": "Incinerado",

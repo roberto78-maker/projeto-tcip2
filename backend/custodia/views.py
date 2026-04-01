@@ -468,7 +468,7 @@ class RelatorioIncineracaoView(APIView):
         ).order_by("-data_criacao")[:500]
 
         status_labels = {
-            "conferencia": "Aguardando Balança",
+            "conferencia": "Aguardando Conferência",
             "cofre": "No Cofre",
             "incineracao": "Lotes (P. Queima)",
             "queima_pronta": "Incinerado",
@@ -719,7 +719,7 @@ class RelatorioIncineracaoPDFView(APIView):
             agrupado[mes_ano].append(item)
 
         status_labels = {
-            "conferencia": "Aguardando Balança",
+            "conferencia": "Aguardando Conferência",
             "cofre": "No Cofre",
             "incineracao": "Lotes",
             "queima_pronta": "Incinerado",
