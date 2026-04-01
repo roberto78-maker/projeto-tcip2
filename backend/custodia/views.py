@@ -206,7 +206,8 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if not apreensao.arquivo_pdf:
+        # Verifica o link do Cloudinary (novo padrão) ou o arquivo físico (depreciado)
+        if not (apreensao.arquivo_pdf_url or apreensao.arquivo_pdf):
             return Response(
                 {"error": "Arquivo PDF nao encontrado (Laudo/Certidão obrigatório)."},
                 status=status.HTTP_400_BAD_REQUEST,
