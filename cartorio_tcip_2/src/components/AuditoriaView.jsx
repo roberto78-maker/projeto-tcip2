@@ -62,121 +62,123 @@ export default function AuditoriaView() {
     await new Promise((resolve) => { img.onload = resolve; img.onerror = resolve; });
     try { doc.addImage(img, "PNG", marginX, currY, 20, 24); } catch (e) { }
 
-    // Header Text
+    // Header
     doc.setFont("helvetica", "bold"); doc.setFontSize(14);
     doc.text("POLÍCIA MILITAR DO PARANÁ - 6º BPM", centerX + 10, currY + 8, { align: "center" });
-    
     doc.setFontSize(10); doc.setFont("helvetica", "normal");
     doc.text("PRIMEIRO CARTÓRIO - CASCAVEL", centerX + 10, currY + 14, { align: "center" });
-
     doc.setFontSize(11); doc.setFont("helvetica", "bold");
     doc.text("RASTREAMENTO DE DADOS DO CARTÓRIO", centerX + 10, currY + 22, { align: "center" });
-
     currY += 38;
 
-    // Período
+    // Período e filtros usados
     const dtInicio = filtros.data_inicio ? filtros.data_inicio.split("-").reverse().join("/") : "Início";
     const dtFim = filtros.data_fim ? filtros.data_fim.split("-").reverse().join("/") : new Date().toLocaleDateString("pt-BR");
-    
     doc.setFontSize(11); doc.setFont("helvetica", "bold");
     doc.text("PERÍODO: ", marginX, currY);
     doc.setFont("helvetica", "normal");
     doc.text(`${dtInicio} à ${dtFim}`, marginX + 22, currY);
-    
     currY += 10;
 
-    // Tabela
-    const bodyTable = data.detalhado.map(item => [
-      item.bou || "S/N",
-      item.processo || "S/N",
-      item.substancia || "-",
-      formatarPesoDisplay(item.peso, item.unidade),
-      item.status_label || item.status
-    ]);
+    // ---- Detecta o modo do relatório ----
+    const isDrogas = filtros.natureza === "DROGAS" || (!filtros.natureza && filtros.substancia && filtros.substancia !== "__NENHUMA__");
+    const isObjetos = ["SOM", "OUTROS", "AMEACA"].includes(filtros.natureza) || filtros.substancia === "__NENHUMA__";
+
+    // ---- Coluna do PDF muda por tipo ----
+    let tableHead, tableBody;
+
+    if (isDrogas) {
+      tableHead = [["BOU", "PROCESSO", "RÉU / AUTOR", "SUBSTÂNCIA", "PESO / VOLUME", "STATUS"]];
+      tableBody = data.detalhado.map(item => [
+        item.bou || "S/N",
+        item.processo || "S/N",
+        (item.reu || "-").toUpperCase(),
+        item.substancia || "-",
+        formatarPesoDisplay(item.peso, item.unidade),
+        item.status_label || item.status
+      ]);
+    } else {
+      // Objetos: sem coluna de peso
+      tableHead = [["BOU", "PROCESSO", "RÉU / AUTOR", "OBJETO / ITEM", "QUANTIDADE", "STATUS"]];
+      tableBody = data.detalhado.map(item => [
+        item.bou || "S/N",
+        item.processo || "S/N",
+        (item.reu || "-").toUpperCase(),
+        item.substancia || item.natureza || "-",
+        `${item.peso ? item.peso : "01"} ${item.unidade || "Unid"}.`,
+        item.status_label || item.status
+      ]);
+    }
 
     autoTable(doc, {
       startY: currY,
-      head: [["BOU", "PROCESSO", "SUBSTÂNCIA", "VOLUME/PESO", "LOCAL/STATUS"]],
-      body: bodyTable,
+      head: tableHead,
+      body: tableBody,
       theme: "grid",
-      headStyles: {
-        fillColor: [198, 40, 40], // Vermelho similar ao modelo (#C62828)
-        textColor: [255, 255, 255],
-        fontStyle: "bold",
-        halign: "center"
-      },
-      styles: {
-        fontSize: 9,
-        cellPadding: 3,
-        lineColor: [0, 0, 0],
-        lineWidth: 0.1,
-        valign: "middle"
-      },
-      columnStyles: {
-        0: { halign: "center" },
-        1: { halign: "center" },
-        2: { halign: "center" },
-        3: { halign: "center" },
-        4: { halign: "center" }
-      },
+      headStyles: { fillColor: [198, 40, 40], textColor: [255, 255, 255], fontStyle: "bold", halign: "center" },
+      styles: { fontSize: 9, cellPadding: 3, lineColor: [0, 0, 0], lineWidth: 0.1, valign: "middle" },
+      columnStyles: { 0: { halign: "center" }, 1: { halign: "center" }, 2: { halign: "left" }, 3: { halign: "center" }, 4: { halign: "center" }, 5: { halign: "center" } },
       margin: { left: marginX, right: marginX }
     });
 
-    // FOOTER DE TOTAIS
+    // ---- RESUMO DINÂMICO: Drogas vs Objetos ----
     const totalItens = data.detalhado.length;
-    
-    // Calcula Quantidade de Pessoas Detidas Únicas
     const nomesDetidos = data.detalhado.map(i => i.reu).filter(r => r && r.trim() !== "" && r.trim() !== "-");
     const reusUnicos = new Set(nomesDetidos.map(nome => nome.toUpperCase().trim())).size;
+    const totalProcessos = new Set(data.detalhado.map(i => i.processo).filter(Boolean)).size;
 
-    // Calcula Totais por Categoria
-    const countSom = data.detalhado.filter(i => i.natureza === "SOM").length;
-    const countArmas = data.detalhado.filter(i => i.natureza === "OUTROS" && i.substancia && (i.substancia.toLowerCase().includes("faca") || i.substancia.toLowerCase().includes("facão"))).length;
-    const countOutros = data.detalhado.filter(i => i.natureza === "OUTROS").length - countArmas;
-    const countDrogas = data.detalhado.filter(i => i.natureza === "DROGAS").length;
+    let resumos = [];
+    let tituloResumo = "RESUMO GERAL DA BUSCA";
 
-    // Calcula Peso Total de Drogas
-    let pesoTotalDrogasG = 0;
-    data.detalhado.filter(i => i.natureza === "DROGAS").forEach(i => {
-       if (i.unidade === "Unid") return;
-       const p = parseFloat(String(i.peso).replace(",", ".")) || 0;
-       pesoTotalDrogasG += p;
-    });
+    if (isDrogas) {
+      // Peso total de drogas
+      let pesoTotal = 0;
+      data.detalhado.forEach(i => {
+        if (i.natureza !== "DROGAS" || i.unidade === "Unid") return;
+        pesoTotal += parseFloat(String(i.peso).replace(",", ".")) || 0;
+      });
+      tituloResumo = "RESUMO - ANÁLISE DE ENTORPECENTES";
+      resumos = [
+        [`TOTAL DE PROCESSOS (BOLETINS): ${String(totalProcessos).padStart(2, "0")}`],
+        [`PESSOAS DETIDAS / IDENTIFICADAS: ${String(reusUnicos).padStart(2, "0")}`],
+        [`TOTAL DROGAS APREENDIDAS: ${String(totalItens).padStart(2, "0")} registros`],
+        [`PESO TOTAL: ${formatarPesoDisplay(pesoTotal, "g")}`],
+        [`RELATÓRIO GERADO POR: ${getUsuario()?.username?.toUpperCase() || "SISTEMA"}`]
+      ];
+    } else if (isObjetos) {
+      // Objetos: sem peso, apenas contagem de volumes/unidades
+      const countSom = data.detalhado.filter(i => i.natureza === "SOM").length;
+      const countArmas = data.detalhado.filter(i => i.substancia && (i.substancia.toLowerCase().includes("faca") || i.substancia.toLowerCase().includes("facão"))).length;
+      const countOutros = totalItens - countSom - countArmas;
 
-    const resumos = [
-      [`TOTAL ITENS ENCONTRADOS NO RADAR: ${String(totalItens).padStart(2, '0')}`],
-      [`PESSOAS DETIDAS / ENVOLVIDOS IDENTIFICADOS: ${String(reusUnicos).padStart(2, '0')}`]
-    ];
-
-    if (countDrogas > 0) resumos.push([`TOTAL DROGAS: ${String(countDrogas).padStart(2, '0')} (PESO TOTAL: ${formatarPesoDisplay(pesoTotalDrogasG, "g")})`]);
-    if (countSom > 0) resumos.push([`CAIXAS / APARELHOS DE SOM: ${String(countSom).padStart(2, '0')} Unidades`]);
-    if (countArmas > 0) resumos.push([`FACAS / ARMAS BRANCAS: ${String(countArmas).padStart(2, '0')} Unidades`]);
-    if (countOutros > 0) resumos.push([`OUTROS DIVERSOS: ${String(countOutros).padStart(2, '0')} Unidades`]);
-
-    resumos.push([`RELATÓRIO GERADO POR OPERADOR: ${getUsuario()?.username?.toUpperCase() || 'SISTEMA'}`]);
+      const tipoLabel = filtros.natureza === "SOM" ? "APARELHOS DE SOM" : filtros.natureza === "OUTROS" ? "OBJETOS DIVERSOS" : "OBJETOS APREENDIDOS";
+      tituloResumo = `RESUMO - ${tipoLabel}`;
+      resumos = [
+        [`TOTAL DE PROCESSOS (BOLETINS): ${String(totalProcessos).padStart(2, "0")}`],
+        [`PESSOAS DETIDAS / IDENTIFICADAS: ${String(reusUnicos).padStart(2, "0")}`],
+        [`TOTAL DE OBJETOS APREENDIDOS: ${String(totalItens).padStart(2, "00")}`]
+      ];
+      if (countSom > 0) resumos.push([`APARELHOS / CAIXAS DE SOM: ${String(countSom).padStart(2, "0")} Unid.`]);
+      if (countArmas > 0) resumos.push([`FACAS / ARMAS BRANCAS: ${String(countArmas).padStart(2, "0")} Unid.`]);
+      if (countOutros > 0 && filtros.natureza === "OUTROS") resumos.push([`OUTROS VARIADOS: ${String(countOutros).padStart(2, "0")} Unid.`]);
+      resumos.push([`RELATÓRIO GERADO POR: ${getUsuario()?.username?.toUpperCase() || "SISTEMA"}`]);
+    } else {
+      // Geral (sem natureza definida)
+      resumos = [
+        [`TOTAL DE PROCESSOS: ${String(totalProcessos).padStart(2, "0")}`],
+        [`PESSOAS IDENTIFICADAS: ${String(reusUnicos).padStart(2, "0")}`],
+        [`TOTAL DE ITENS: ${String(totalItens).padStart(2, "0")}`],
+        [`RELATÓRIO GERADO POR: ${getUsuario()?.username?.toUpperCase() || "SISTEMA"}`]
+      ];
+    }
 
     autoTable(doc, {
       startY: doc.lastAutoTable.finalY + 5,
-      head: [["RESUMO DAS APREENSÕES DESTA BUSCA"]],
+      head: [[tituloResumo]],
       body: resumos,
       theme: "grid",
-      headStyles: {
-        fillColor: [30, 41, 59], // Slate 800
-        textColor: [255, 255, 255],
-        fontStyle: "bold",
-        halign: "center"
-      },
-      styles: {
-        fontSize: 10,
-        fontStyle: "bold",
-        cellPadding: 4,
-        lineColor: [0, 0, 0],
-        lineWidth: 0.1,
-        halign: "center",
-        valign: "middle",
-        fillColor: [248, 250, 252],
-        textColor: [0, 0, 0]
-      },
+      headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: "bold", halign: "center" },
+      styles: { fontSize: 10, fontStyle: "bold", cellPadding: 4, lineColor: [0, 0, 0], lineWidth: 0.1, halign: "center", valign: "middle", fillColor: [248, 250, 252], textColor: [0, 0, 0] },
       margin: { left: marginX, right: marginX }
     });
 
@@ -228,10 +230,23 @@ export default function AuditoriaView() {
 
           <div>
             <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>Droga / Substância Específica:</label>
-            <select name="substancia" value={filtros.substancia} onChange={handleFiltroChange} className="input-tcip">
+            <select
+              name="substancia"
+              value={filtros.substancia}
+              onChange={handleFiltroChange}
+              className="input-tcip"
+              disabled={filtros.natureza && filtros.natureza !== "DROGAS"}
+              title={filtros.natureza && filtros.natureza !== "DROGAS" ? "Filtro de droga desabilitado para este tipo" : ""}
+            >
               <option value="">Todas as Drogas</option>
+              <option value="__NENHUMA__">∅ Nenhuma (Só Objetos)</option>
               {SUBSTANCIAS.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
+            {filtros.natureza && filtros.natureza !== "DROGAS" && (
+              <p style={{ fontSize: "11px", color: "#f59e0b", margin: "4px 0 0 0" }}>
+                ⚠️ Desativado - busca por tipo de objeto ativo.
+              </p>
+            )}
           </div>
 
           <div>
