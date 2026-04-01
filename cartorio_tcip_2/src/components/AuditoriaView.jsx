@@ -182,11 +182,26 @@ export default function AuditoriaView() {
       margin: { left: marginX, right: marginX }
     });
 
-    const dataHora = new Date().toLocaleString("pt-BR").replace(',', ' -');
-    doc.setFontSize(8); doc.setFont("helvetica", "italic");
-    doc.text(`Gerado em: ${dataHora}`, pageWidth - marginX, 285, { align: "right" });
+    const totalPages = doc.internal.getNumberOfPages();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const hashProtocolo = Math.random().toString(36).substring(2, 8).toUpperCase() + "-" + new Date().getTime().toString().slice(-4);
 
-    doc.save(`Relatorio_Radar_${new Date().getTime()}.pdf`);
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "italic");
+      doc.setTextColor(100);
+      
+      const username = getUsuario()?.username?.toUpperCase() || "SISTEMA";
+      const dataHora = new Date().toLocaleString("pt-BR").replace(",", " -");
+      const footerText = `Gerado por ${username} em ${dataHora} | Protocolo: ${hashProtocolo}`;
+      const pageNum = `Página ${String(i).padStart(2, "0")} de ${String(totalPages).padStart(2, "0")}`;
+      
+      doc.text(footerText, marginX, pageHeight - 10);
+      doc.text(pageNum, pageWidth - marginX, pageHeight - 10, { align: "right" });
+    }
+
+    doc.save(`Relatorio_Radar_${hashProtocolo}.pdf`);
   };
 
   const handleFiltroChange = (e) => {
@@ -199,6 +214,28 @@ export default function AuditoriaView() {
       status: "", bou: "", processo: "", reu: ""
     });
   };
+
+  const getStats = () => {
+    if (!data || !data.detalhado) return null;
+    const det = data.detalhado;
+    const totalItens = det.length;
+    const totalProcessos = new Set(det.filter(i => i.processo).map(i => i.processo)).size;
+    const reusUnicos = new Set(det.filter(i => i.reu && i.reu !== "-").map(i => i.reu.trim().toUpperCase())).size;
+    
+    let pesoTotal = 0;
+    det.forEach(i => {
+      if (i.natureza === "DROGAS" && i.unidade !== "Unid") {
+        pesoTotal += parseFloat(String(i.peso).replace(",", ".")) || 0;
+      }
+    });
+
+    const countSom = det.filter(i => i.natureza === "SOM").length;
+    const countArmas = det.filter(i => i.substancia && (i.substancia.toLowerCase().includes("faca") || i.substancia.toLowerCase().includes("facão"))).length;
+
+    return { totalItens, totalProcessos, reusUnicos, pesoTotal, countSom, countArmas };
+  };
+
+  const stats = getStats();
 
   return (
     <div style={{ padding: "10px", paddingBottom: "50px" }}>
@@ -229,24 +266,19 @@ export default function AuditoriaView() {
           </div>
 
           <div>
-            <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>Droga / Substância Específica:</label>
-            <select
+            <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>Palavra-Chave (Substância / Objeto):</label>
+            <input
+              list="substancias-list"
               name="substancia"
               value={filtros.substancia}
               onChange={handleFiltroChange}
+              placeholder="Ex: Maconha, Faca, Caixa de Som..."
               className="input-tcip"
-              disabled={filtros.natureza && filtros.natureza !== "DROGAS"}
-              title={filtros.natureza && filtros.natureza !== "DROGAS" ? "Filtro de droga desabilitado para este tipo" : ""}
-            >
-              <option value="">Todas as Drogas</option>
+            />
+            <datalist id="substancias-list">
               <option value="__NENHUMA__">∅ Nenhuma (Só Objetos)</option>
               {SUBSTANCIAS.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-            {filtros.natureza && filtros.natureza !== "DROGAS" && (
-              <p style={{ fontSize: "11px", color: "#f59e0b", margin: "4px 0 0 0" }}>
-                ⚠️ Desativado - busca por tipo de objeto ativo.
-              </p>
-            )}
+            </datalist>
           </div>
 
           <div>
@@ -312,6 +344,39 @@ export default function AuditoriaView() {
           </button>
         </div>
       </div>
+
+      {/* RESUMO E STATS */}
+      {stats && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "15px", marginBottom: "20px" }}>
+          <div className="card" style={{ padding: "15px", backgroundColor: "#f8fafc", textAlign: "center", borderLeft: "4px solid #1e293b" }}>
+            <div style={{ fontSize: "12px", color: "#64748b", fontWeight: "600", textTransform: "uppercase" }}>Processos</div>
+            <div style={{ fontSize: "24px", fontWeight: "700", color: "#1e293b" }}>{String(stats.totalProcessos).padStart(2, '0')}</div>
+          </div>
+          <div className="card" style={{ padding: "15px", backgroundColor: "#f8fafc", textAlign: "center", borderLeft: "4px solid #3b82f6" }}>
+            <div style={{ fontSize: "12px", color: "#64748b", fontWeight: "600", textTransform: "uppercase" }}>Réus / Detidos</div>
+            <div style={{ fontSize: "24px", fontWeight: "700", color: "#1e293b" }}>{String(stats.reusUnicos).padStart(2, '0')}</div>
+          </div>
+          <div className="card" style={{ padding: "15px", backgroundColor: "#f8fafc", textAlign: "center", borderLeft: "4px solid #eab308" }}>
+            <div style={{ fontSize: "12px", color: "#64748b", fontWeight: "600", textTransform: "uppercase" }}>Total de Itens</div>
+            <div style={{ fontSize: "24px", fontWeight: "700", color: "#1e293b" }}>{String(stats.totalItens).padStart(2, '0')}</div>
+          </div>
+          {stats.pesoTotal > 0 && (
+            <div className="card" style={{ padding: "15px", backgroundColor: "#f0fdf4", textAlign: "center", borderLeft: "4px solid #10b981" }}>
+              <div style={{ fontSize: "12px", color: "#166534", fontWeight: "600", textTransform: "uppercase" }}>Peso Estimado (Drogas)</div>
+              <div style={{ fontSize: "24px", fontWeight: "700", color: "#166534" }}>{formatarPesoDisplay(stats.pesoTotal, 'g')}</div>
+            </div>
+          )}
+          {(stats.countSom > 0 || stats.countArmas > 0) && (
+            <div className="card" style={{ padding: "15px", backgroundColor: "#fffbeb", textAlign: "center", borderLeft: "4px solid #f59e0b" }}>
+              <div style={{ fontSize: "12px", color: "#92400e", fontWeight: "600", textTransform: "uppercase" }}>Objetos / Armas</div>
+              <div style={{ fontSize: "14px", fontWeight: "600", color: "#b45309" }}>
+                {stats.countSom > 0 && <span>🔊 {stats.countSom} Som </span>}
+                {stats.countArmas > 0 && <span>🔪 {stats.countArmas} Armas</span>}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* TABELA DE RESULTADOS */}
       <div className="card">
