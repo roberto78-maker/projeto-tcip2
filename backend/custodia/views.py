@@ -515,8 +515,10 @@ class RelatorioIncineracaoPDFView(APIView):
         
         if count_som > 0 or count_facas > 0:
             objetos_str = []
-            if count_som > 0: objetos_str.append(f"{count_som} Aparelhos de Som")
-            if count_facas > 0: objetos_str.append(f"{count_facas} Armas Brancas (Facas)")
+            if count_som > 0:
+                objetos_str.append(f"{count_som} Aparelhos de Som")
+            if count_facas > 0:
+                objetos_str.append(f"{count_facas} Armas Brancas (Facas)")
             resumo_data.append([f"Objetos: {' | '.join(objetos_str)}"])
 
         resumo_tab = Table(resumo_data, colWidths=[6 * inch])
@@ -648,7 +650,8 @@ class RelatorioIncineracaoPDFView(APIView):
                 elements.append(Spacer(1, 10))
 
         # Header/Footer Page Numbering & Protocol
-        import random, string
+        import random
+        import string
         protocolo_hash = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6)) + "-" + timezone.now().strftime("%H%M")
         
         def add_footer(canvas, doc):
@@ -660,7 +663,6 @@ class RelatorioIncineracaoPDFView(APIView):
             usuario = request.user.username.upper() if request.user else "SISTEMA"
             data_hora = timezone.now().strftime("%d/%m/%Y %H:%M")
             footer_text = f"Gerado por {usuario} em {data_hora} | Protocolo: AUD-{protocolo_hash}"
-            page_num = f"Página {doc.page} de {doc.page}" # doc.page é dinâmico no draw
             
             canvas.drawString(30, 33, footer_text)
             canvas.drawRightString(565, 33, f"Página {doc.page}")
