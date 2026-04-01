@@ -1,8 +1,11 @@
-// 🌐 BASE URL (AMBIENTE)
+// BASE URL (AMBIENTE)
 const BASE_URL = import.meta.env.VITE_API_URL || "";
 
-// 🔗 ENDPOINT
+// ENDPOINT
 const API_URL = `${BASE_URL}/api/apreensoes/`;
+
+// In-memory cache — see apiCache.js for TTL and invalidation strategy
+import * as apiCache from "./apiCache.js";
 
 // 🛡️ Helper para Headers com Token
 function getHeaders(isFormData = false) {
@@ -57,7 +60,62 @@ export async function getApreensoes(options = {}) {
   return allResults;
 }
 
-// ➕ CRIAR (FormData)
+// Paginated fetch — returns { results, next, count } preserving the DRF
+// envelope so callers can drive a "Load more" / append pattern.
+//
+// First page:  getApreensoesPaginado({ filters: { status: "cofre", natureza: "DROGAS" } })
+// Next pages:  getApreensoesPaginado({ nextUrl: previousPage.next })
+export async function getApreensoesPaginado({ filters = {}, nextUrl = null } = {}) {
+  let url = nextUrl;
+
+  if (!url) {
+    const params = new URLSearchParams();
+    if (filters.status)           params.append("status",           filters.status);
+    if (filters.natureza)         params.append("natureza",         filters.natureza);
+    if (filters.excluir_natureza) params.append("excluir_natureza", filters.excluir_natureza);
+    if (filters.tem_apreensao !== undefined)
+                                  params.append("tem_apreensao",    filters.tem_apreensao);
+    if (filters.search)           params.append("search",           filters.search);
+    if (filters.ordering)         params.append("ordering",         filters.ordering);
+    const qs = params.toString();
+    url = qs ? `${API_URL}?${qs}` : API_URL;
+  }
+
+  // ── Cache check ──────────────────────────────────────────────────────────
+  // The resolved URL (with all params + DRF page cursors) is the cache key.
+  // Same filters + same page → instant return, no network.
+  const cached = apiCache.get(url);
+  if (cached) {
+    return cached;
+  }
+
+  const res = await fetch(url, { headers: getHeaders() });
+  if (!res.ok) {
+    const erro = await res.text();
+    console.error("Erro GET paginado:", erro);
+    throw new Error("Erro ao buscar apreensoes");
+  }
+  const data = await res.json();
+  const result = {
+    results: data.results || data,
+    next:    data.next    || null,
+    count:   data.count   ?? null,
+  };
+
+  // Store with default 2-minute TTL
+  apiCache.set(url, result);
+
+  return result;
+}
+
+// Call this after any mutation (upload, status change, excluir, liberar).
+// Clears all cached pages for the apreensoes endpoint so the next read
+// always fetches fresh data.
+export function invalidateApreensaoCache() {
+  const cleared = apiCache.invalidatePrefix(API_URL);
+  console.debug(`[cache] Invalidated ${cleared} apreensao cache entries.`);
+}
+
 export async function addApreensao(data) {
   const formData = new FormData();
 
@@ -115,6 +173,15 @@ export async function getLotes() {
   if (!res.ok) throw new Error("Erro ao buscar lotes");
   const data = await res.json();
   return data.results || data;
+}
+
+// 📈 DASHBOARD STATS — single request, all aggregation done server-side
+export async function getDashboardStats() {
+  const res = await fetch(`${BASE_URL}/api/dashboard/stats/`, {
+    headers: getHeaders()
+  });
+  if (!res.ok) throw new Error("Erro ao buscar estatísticas do dashboard");
+  return await res.json();
 }
 
 // 🚀 DESTINAR INCINERAÇÃO (Action específica)

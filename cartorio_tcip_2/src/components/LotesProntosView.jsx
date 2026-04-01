@@ -193,13 +193,9 @@ export default function LotesProntosView() {
                 const dataFormatada = dataObj.toLocaleDateString("pt-BR");
                 const horaFormatada = dataObj.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
                 
-                // Pega o arquivo do primeiro item do lote
-                const arqRaw = lote.itens[0]?.arquivo_pdf_url || lote.itens[0]?.arquivo_pdf;
-                let arquivoUrl = arqRaw ? (arqRaw.startsWith('http') ? arqRaw : `${MEDIA_URL.endsWith('/') ? MEDIA_URL.slice(0, -1) : MEDIA_URL}${arqRaw.startsWith('/') ? '' : '/'}${arqRaw}`) : null;
-
-                if (arquivoUrl && arquivoUrl.includes('cloudinary.com') && !arquivoUrl.toLowerCase().endsWith('.pdf') && !arquivoUrl.toLowerCase().endsWith('.jpg') && !arquivoUrl.toLowerCase().endsWith('.jpeg')) {
-                  arquivoUrl = `${arquivoUrl}.pdf`;
-                }
+                // arquivo_pdf_url is a plain Cloudinary URL string stored in the DB.
+                // The deprecated arquivo_pdf FileField is no longer populated.
+                const arquivoUrl = lote.itens[0]?.arquivo_pdf_url || null;
 
                 return (
                   <tr key={lote.id} style={{ borderBottom: "1px solid #f1f5f9", transition: "all 0.2s" }} className="table-row-hover">
