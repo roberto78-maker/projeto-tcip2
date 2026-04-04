@@ -4,7 +4,7 @@ import autoTable from "jspdf-autotable";
 import { getRelatorioIncineracao } from "../services/api";
 import { getUsuario } from "../services/auth";
 import logoBpm from "../assets/brasao.png";
-import { VARAS, SUBSTANCIAS } from "../constants/options.js";
+import { VARAS, SUBSTANCIAS, CRIMES_GERAIS } from "../constants/options.js";
 
 export default function AuditoriaView() {
   const [data, setData] = useState(null);
@@ -18,7 +18,8 @@ export default function AuditoriaView() {
     status: "",
     bou: "",
     processo: "",
-    reu: ""
+    reu: "",
+    crime: ""
   });
 
   const buscarRelatorio = async () => {
@@ -211,7 +212,7 @@ export default function AuditoriaView() {
   const handleLimparFiltros = () => {
     setFiltros({
       data_inicio: "", data_fim: "", vara: "", substancia: "", natureza: "",
-      status: "", bou: "", processo: "", reu: ""
+      status: "", bou: "", processo: "", reu: "", crime: ""
     });
   };
 
@@ -263,6 +264,14 @@ export default function AuditoriaView() {
               <option value="OUTROS">⚙️ Outros Objetos (Facas, etc)</option>
               <option value="AMEACA">⚖️ Sem Apreensão (Ameaça/TCIP)</option>
             </select>
+          </div>
+
+          <div>
+             <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>⚖️ Filtrar por Crime (Artigos):</label>
+             <select name="crime" value={filtros.crime} onChange={handleFiltroChange} className="input-tcip">
+               <option value="">Todos os Crimes</option>
+               {CRIMES_GERAIS.map(cr => <option key={cr} value={cr}>{cr}</option>)}
+             </select>
           </div>
 
           <div>

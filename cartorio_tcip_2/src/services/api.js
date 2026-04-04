@@ -248,6 +248,7 @@ export async function getRelatorioIncineracao(filtros = {}) {
   if (filtros.bou) queryParams.append("bou", filtros.bou);
   if (filtros.processo) queryParams.append("processo", filtros.processo);
   if (filtros.reu) queryParams.append("reu", filtros.reu);
+  if (filtros.crime) queryParams.append("crime", filtros.crime);
 
   const res = await fetch(`${BASE_URL}/api/relatorios/incineracao/?${queryParams.toString()}`, {
     headers: getHeaders()
@@ -267,6 +268,7 @@ export async function downloadRelatorioPdf(filtros = {}) {
   if (filtros.bou) queryParams.append("bou", filtros.bou);
   if (filtros.processo) queryParams.append("processo", filtros.processo);
   if (filtros.reu) queryParams.append("reu", filtros.reu);
+  if (filtros.crime) queryParams.append("crime", filtros.crime);
 
   const res = await fetch(`${BASE_URL}/api/relatorios/incineracao/pdf/?${queryParams.toString()}`, {
     headers: getHeaders()
