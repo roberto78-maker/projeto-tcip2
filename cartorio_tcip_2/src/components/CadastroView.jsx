@@ -258,8 +258,10 @@ export default function CadastroView() {
         const itemNum = index + 1;
         if (!m.reu) return alert(`⚠️ Item ${itemNum}: Informe o NOTICIADO / AUTOR.`);
         if (!m.tipo) return alert(`⚠️ Item ${itemNum}: Selecione o TIPO.`);
-        if (m.tipo !== "NENHUM" && !m.substancia) return alert(`⚠️ Item ${itemNum}: Informe a APREENSÃO / SUBSTÂNCIA.`);
-        if (!m.peso || m.peso === "0" || m.peso === "0,00") return alert(`⚠️ Item ${itemNum}: Informe a QUANTIA / PESO.`);
+        if (m.tipo !== "NENHUM") {
+            if (!m.substancia) return alert(`⚠️ Item ${itemNum}: Informe a APREENSÃO / SUBSTÂNCIA.`);
+            if (!m.peso || m.peso === "0" || m.peso === "0,00") return alert(`⚠️ Item ${itemNum}: Informe a QUANTIA / PESO.`);
+        }
     }
 
     setSalvando(true);
