@@ -15,6 +15,7 @@ export default function AutocompleteInput({
   style = {},
   placeholder = "",
   maxHistory = 30,
+  ...props
 }) {
   const [suggestions, setSuggestions] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -115,6 +116,7 @@ export default function AutocompleteInput({
         placeholder={placeholder}
         style={style}
         autoComplete="off"
+        {...props}
       />
       {showDropdown && suggestions.length > 0 && (
         <ul

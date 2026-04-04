@@ -7,9 +7,9 @@ import { VARAS, SUBSTANCIAS, UNIDADES_PM, PATENTES, CRIMES_GERAIS } from "../con
 import logoBpm from "../assets/brasao.png";
 import AutocompleteInput, { saveHistory } from "./AutocompleteInput.jsx";
 
-const FormGroup = ({ label, children }) => (
+const FormGroup = ({ label, id, children }) => (
   <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-    <label style={{ fontSize: "12px", fontWeight: "700", color: "#475569" }}>{label}</label>
+    <label htmlFor={id} style={{ fontSize: "12px", fontWeight: "700", color: "#475569" }}>{label}</label>
     {children}
   </div>
 );
@@ -166,7 +166,7 @@ export default function CadastroView() {
     currY += 8;
 
     // 📦 TABELA DE MATERIAIS
-    const materiaisComApreensao = materiais.filter(m => m.substancia && m.substancia.trim() !== "");
+    const materiaisComApreensao = materiais.filter(m => m.tipo !== "NENHUM" && m.substancia && m.substancia.trim() !== "");
     if (materiaisComApreensao.length > 0) {
         const bodyTable = materiaisComApreensao.map((item, index) => [
             `1.${index + 1}`,
@@ -246,11 +246,11 @@ export default function CadastroView() {
           descricao: crimesSelecionados.join(', ') || "TERMO GERAL",
           peso: isNaN(p) ? 0 : p,
           unidade: m.unidadePeso,
-          status: (m.tipo !== "DROGA" && (!m.substancia || fielDepositario)) ? "arquivado" : "conferencia",
+          status: (m.tipo === "NENHUM" || (m.tipo !== "DROGA" && (!m.substancia || fielDepositario))) ? "arquivado" : "conferencia",
           lacre: m.lacre || "",
           vara: vara || "",
           policial: `${patente} ${policial}`,
-          tem_apreensao: !!(m.tipo === "DROGA" || (m.substancia && !fielDepositario))
+          tem_apreensao: m.tipo !== "NENHUM" && !!(m.tipo === "DROGA" || (m.substancia && !fielDepositario))
         };
         return addApreensao(payload);
       });
@@ -321,11 +321,11 @@ export default function CadastroView() {
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "20px", marginBottom: "20px" }}>
-          <FormGroup label="Data do Fato *"><input type="date" style={inputStyle} value={dataFato} onChange={e => setDataFato(e.target.value)} /></FormGroup>
-          <FormGroup label="Nº BOU (AAAA/Seq) *"><input type="text" style={inputStyle} value={bou} onChange={e => setBou(formatarBOU(e.target.value))} /></FormGroup>
-          <FormGroup label="PROJUDI *"><input type="text" style={inputStyle} value={processo} onChange={e => setProcesso(formatarProcesso(e.target.value))} /></FormGroup>
-          <FormGroup label="Vara Destino *">
-            <select style={inputStyle} value={vara} onChange={e => setVara(e.target.value)}>
+          <FormGroup label="Data do Fato *" id="dataFato"><input type="date" id="dataFato" name="dataFato" style={inputStyle} value={dataFato} onChange={e => setDataFato(e.target.value)} /></FormGroup>
+          <FormGroup label="Nº BOU (AAAA/Seq) *" id="bou"><input type="text" id="bou" name="bou" style={inputStyle} value={bou} onChange={e => setBou(formatarBOU(e.target.value))} /></FormGroup>
+          <FormGroup label="PROJUDI *" id="processo"><input type="text" id="processo" name="processo" style={inputStyle} value={processo} onChange={e => setProcesso(formatarProcesso(e.target.value))} /></FormGroup>
+          <FormGroup label="Vara Destino *" id="vara">
+            <select id="vara" name="vara" style={inputStyle} value={vara} onChange={e => setVara(e.target.value)}>
               <option value="">Selecione...</option>
               {VARAS.map(v => <option key={v} value={v}>{v}</option>)}
             </select>
@@ -333,18 +333,20 @@ export default function CadastroView() {
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr 1fr", gap: "20px" }}>
-          <FormGroup label="Unidade">
-            <select style={inputStyle} value={unidadeOrigem} onChange={e => setUnidadeOrigem(e.target.value)}>
+          <FormGroup label="Unidade" id="unidadeOrigem">
+            <select id="unidadeOrigem" name="unidadeOrigem" style={inputStyle} value={unidadeOrigem} onChange={e => setUnidadeOrigem(e.target.value)}>
               {UNIDADES_PM.map(u => <option key={u} value={u}>{u}</option>)}
             </select>
           </FormGroup>
-          <FormGroup label="Graduação">
-            <select style={inputStyle} value={patente} onChange={e => setPatente(e.target.value)}>
+          <FormGroup label="Graduação" id="patente">
+            <select id="patente" name="patente" style={inputStyle} value={patente} onChange={e => setPatente(e.target.value)}>
               {PATENTES.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
           </FormGroup>
-          <FormGroup label="Policial Entregador *">
+          <FormGroup label="Policial Entregador *" id="policial">
             <AutocompleteInput
+              id="policial"
+              name="policial"
               historyKey="hist_policial"
               value={policial}
               onChange={e => setPolicial(upper(e.target.value))}
@@ -352,8 +354,10 @@ export default function CadastroView() {
               placeholder="Nome do policial..."
             />
           </FormGroup>
-          <FormGroup label="RG *">
+          <FormGroup label="RG *" id="rg">
             <AutocompleteInput
+              id="rg"
+              name="rg"
               historyKey="hist_rg"
               value={rg}
               onChange={e => setRg(formatarRG(e.target.value))}
@@ -400,15 +404,34 @@ export default function CadastroView() {
                   placeholder="Nome..."
                 />
 
-                <select style={{ ...inputStyle, padding: "8px" }} value={m.tipo} onChange={e => {
+                <select 
+                  id={`tipo-${m.id}`} 
+                  name={`tipo-${m.id}`} 
+                  style={{ ...inputStyle, padding: "8px" }} 
+                  value={m.tipo} 
+                  onChange={e => {
                     const tipo = e.target.value;
-                    const substancia = tipo === "DROGA" ? "Maconha" : (tipo === "SOM" ? "Caixa de Som" : "");
-                    const unidade = (tipo === "OBJETO" || tipo === "SOM") ? "Unid" : "g";
-                    setMateriais(materiais.map(item => item.id === m.id ? { ...item, tipo, substancia, unidadePeso: unidade } : item));
+                    let substancia = "";
+                    let unidade = "Unid";
+                    let peso = m.peso;
+
+                    if (tipo === "DROGA") {
+                        substancia = "Maconha";
+                        unidade = "g";
+                    } else if (tipo === "SOM") {
+                        substancia = "Caixa de Som";
+                        unidade = "Unid";
+                    } else if (tipo === "NENHUM") {
+                        substancia = "NÃO HÁ APREENSÃO";
+                        unidade = "Unid";
+                        peso = "0";
+                    }
+                    setMateriais(materiais.map(item => item.id === m.id ? { ...item, tipo, substancia, unidadePeso: unidade, peso } : item));
                 }}>
                     <option value="OBJETO">⚙️ OBJETO</option>
                     <option value="DROGA">💊 DROGA</option>
                     <option value="SOM">🔊 SOM</option>
+                    <option value="NENHUM">🚫 NENHUM</option>
                 </select>
 
                 {m.tipo === "DROGA" ? (
