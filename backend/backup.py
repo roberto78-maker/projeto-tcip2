@@ -21,8 +21,14 @@ BACKUP_DIR.mkdir(exist_ok=True)
 
 def create_backup():
     """Cria um backup do banco de dados SQLite"""
+    # Detecta se está rodando no GitHub Actions ou em ambiente de CI
+    is_ci = os.environ.get("GITHUB_ACTIONS") == "true" or os.environ.get("CI") == "true"
+
     if not DB_PATH.exists():
-        print(f"❌ Banco de dados não encontrado em {DB_PATH}")
+        if is_ci:
+            print(f"ℹ️  Backup ignorado: Banco de dados não presente no ambiente de CI.")
+        else:
+            print(f"❌ Banco de dados não encontrado em {DB_PATH}")
         return None
 
     # Gerar nome do arquivo com data/hora
