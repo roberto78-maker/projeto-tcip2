@@ -255,7 +255,7 @@ export default function CadastroView() {
           processo,
           bou,
           reu: m.reu || "NÃO IDENTIFICADO",
-          natureza: m.tipo === "DROGA" ? "DROGAS" : (m.tipo === "SOM" ? "SOM" : "OUTROS"),
+          natureza: m.tipo === "DROGA" ? "DROGAS" : (m.tipo === "SOM" ? "SOM" : m.tipo === "NENHUM" ? "AMEACA" : "OUTROS"),
           substancia: m.substancia || (m.tipo === "NENHUM" ? "NÃO HÁ APREENSÃO" : ""), 
           descricao: (crimesSelecionados && crimesSelecionados.length > 0) ? crimesSelecionados.join(', ') : "TERMO GERAL",
           peso: isNaN(p) ? 0 : p,
