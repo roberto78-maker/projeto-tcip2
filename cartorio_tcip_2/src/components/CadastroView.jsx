@@ -190,7 +190,10 @@ export default function CadastroView() {
         const noticiados = dados.materiais.map(m => m.reu || "NÃO IDENTIFICADO").join(", ");
         doc.setFont("helvetica", "bold"); doc.text("NOTICIADO(S): ", marginX, currY);
         doc.setFont("helvetica", "normal"); doc.text(noticiados, marginX + 28, currY);
-        currY += 15;
+        currY += 8;
+        doc.setFont("helvetica", "bold"); 
+        doc.text("OBSERVAÇÃO: NÃO HOUVE OBJETOS APREENDIDOS NESTE PROCEDIMENTO.", marginX, currY);
+        currY += 12;
     }
 
     // 📝 OBSERVAÇÕES
