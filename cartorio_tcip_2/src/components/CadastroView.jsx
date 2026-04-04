@@ -234,16 +234,18 @@ export default function CadastroView() {
     }
 
     setSalvando(true);
-     try {
-      const promises = materiais.map(async (m) => {
+    try {
+      // 🔄 Salvamento Sequencial: Evita travamentos de banco (DB Locked)
+      // e garante que se um falhar, o processo pare imediatamente.
+      for (const m of materiais) {
         const p = parseFloat(String(m.peso).replace(",", "."));
-         const payload = {
+        const payload = {
           processo,
           bou,
           reu: m.reu || "NÃO IDENTIFICADO",
           natureza: m.tipo === "DROGA" ? "DROGAS" : (m.tipo === "SOM" ? "SOM" : "OUTROS"),
-          substancia: m.substancia, 
-          descricao: crimesSelecionados.join(', ') || "TERMO GERAL",
+          substancia: m.substancia || (m.tipo === "NENHUM" ? "NÃO HÁ APREENSÃO" : ""), 
+          descricao: (crimesSelecionados && crimesSelecionados.length > 0) ? crimesSelecionados.join(', ') : "TERMO GERAL",
           peso: isNaN(p) ? 0 : p,
           unidade: m.unidadePeso,
           status: (m.tipo === "NENHUM" || (m.tipo !== "DROGA" && (!m.substancia || fielDepositario))) ? "arquivado" : "conferencia",
@@ -252,15 +254,16 @@ export default function CadastroView() {
           policial: `${patente} ${policial}`,
           tem_apreensao: m.tipo !== "NENHUM" && !!(m.tipo === "DROGA" || (m.substancia && !fielDepositario))
         };
-        return addApreensao(payload);
-      });
 
-      await Promise.all(promises);
+        console.log(`📡 Salvando registro para: ${payload.reu} (${m.tipo})...`, payload);
+        await addApreensao(payload);
+      }
+
       const temAlgumaDroga = materiais.some(m => m.tipo === "DROGA");
       const naturezaGeral = temAlgumaDroga ? "DROGAS" : "OUTROS";
       await gerarPDF({ processo, bou, materiais, vara, patente, policial, rg, unidadeOrigem, natureza: naturezaGeral, crimesSelecionados, fielDepositario });
 
-       alert("Procedimento registrado com sucesso!");
+      alert("Procedimento registrado com sucesso!");
       setProcesso("");
       setRg("");
       setPolicial("");
