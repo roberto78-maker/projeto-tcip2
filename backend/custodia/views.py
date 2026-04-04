@@ -448,13 +448,15 @@ class RelatorioIncineracaoView(APIView):
             # Sentinela: excluir todos os itens de natureza DROGAS
             qs = qs.exclude(natureza="DROGAS")
         elif substancia:
-            # 🔎 Busca Ampliada: Procura o texto tanto na substância quanto na descrição dos crimes
+            # 🔎 Busca Ampliada: Procura o texto tanto na substância
+            # quanto na descrição dos crimes
             qs = qs.filter(
                 Q(substancia__icontains=substancia) | Q(descricao__icontains=substancia)
             )
         if natureza:
             if natureza == "AMEACA":
-                # 🔍 Busca Inteligente: Encontra registros novos (AMEACA) e legados (via texto)
+                # 🔍 Busca Inteligente: Encontra registros novos (AMEACA)
+                # e legados (via texto)
                 qs = qs.filter(
                     Q(natureza="AMEACA")
                     | Q(substancia__icontains="NÃO HÁ APREENSÃO")
@@ -617,9 +619,7 @@ class RelatorioIncineracaoPDFView(APIView):
         )
 
         # Cabeçalho como Certidão de Queima
-        elements.append(
-            Paragraph("POLÍCIA MILITAR DO PARANÁ - 6º BPM", title_style)
-        )
+        elements.append(Paragraph("POLÍCIA MILITAR DO PARANÁ - 6º BPM", title_style))
         elements.append(
             Paragraph("PRIMEIRO CARTÓRIO - CASCAVEL", subtitle_title_style)
         )
