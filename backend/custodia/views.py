@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import filters, permissions
+from rest_framework.pagination import PageNumberPagination
 from django.http import HttpResponse
 from django_filters import rest_framework as django_filters
 from django.utils import timezone
@@ -161,7 +162,6 @@ class ApreensaoFilter(django_filters.FilterSet):
         ]
 
 
-from rest_framework.pagination import PageNumberPagination
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
