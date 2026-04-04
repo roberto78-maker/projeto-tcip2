@@ -7,9 +7,11 @@ import { VARAS, SUBSTANCIAS, UNIDADES_PM, PATENTES, CRIMES_GERAIS } from "../con
 import logoBpm from "../assets/brasao.png";
 import AutocompleteInput, { saveHistory } from "./AutocompleteInput.jsx";
 
-const FormGroup = ({ label, id, children }) => (
+const FormGroup = ({ label, id, children, required }) => (
   <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-    <label htmlFor={id} style={{ fontSize: "12px", fontWeight: "700", color: "#475569" }}>{label}</label>
+    <label htmlFor={id} style={{ fontSize: "12px", fontWeight: "700", color: "#475569" }}>
+      {label} {required && <span style={{ color: "#ef4444" }}>*</span>}
+    </label>
     {children}
   </div>
 );
@@ -240,9 +242,24 @@ export default function CadastroView() {
   const salvar = async () => {
     if (salvando) return;
 
-    if (!processo || !bou || !policial) {
-      alert("Preencha todos os campos obrigatórios (BOU, PROJUDI, Policial).");
-      return;
+    // 🚩 Validação de Segurança (Campos Obrigatórios solicitados pelo usuário)
+    if (crimesSelecionados.length === 0) return alert("⚠️ Selecione pelo menos um CRIME para prosseguir.");
+    if (!dataFato) return alert("⚠️ Informe a DATA DO FATO.");
+    if (!bou || bou.length < 8) return alert("⚠️ Informe o Nº BOU completo.");
+    if (!processo) return alert("⚠️ Informe o Nº PROJUDI.");
+    if (!vara) return alert("⚠️ Selecione a VARA criminal.");
+    if (!unidadeOrigem) return alert("⚠️ Selecione a UNIDADE de origem.");
+    if (!patente) return alert("⚠️ Selecione a GRADUAÇÃO do policial.");
+    if (!policial) return alert("⚠️ Informe o NOME do Policial Entregador.");
+    if (!rg) return alert("⚠️ Informe o RG do policial.");
+
+    // Validação da Lista de Materiais
+    for (const [index, m] of materiais.entries()) {
+        const itemNum = index + 1;
+        if (!m.reu) return alert(`⚠️ Item ${itemNum}: Informe o NOTICIADO / AUTOR.`);
+        if (!m.tipo) return alert(`⚠️ Item ${itemNum}: Selecione o TIPO.`);
+        if (m.tipo !== "NENHUM" && !m.substancia) return alert(`⚠️ Item ${itemNum}: Informe a APREENSÃO / SUBSTÂNCIA.`);
+        if (!m.peso || m.peso === "0" || m.peso === "0,00") return alert(`⚠️ Item ${itemNum}: Informe a QUANTIA / PESO.`);
     }
 
     setSalvando(true);
@@ -266,7 +283,6 @@ export default function CadastroView() {
           policial: `${patente} ${policial}`
         };
 
-        console.log(`📡 Salvando registro para: ${payload.reu} (${m.tipo})...`, payload);
         await addApreensao(payload);
       }
 
@@ -278,7 +294,6 @@ export default function CadastroView() {
       setProcesso("");
       setRg("");
       setPolicial("");
-       // Reset checklists
       setCrimesSelecionados([]);
       setMateriais([{ id: Date.now(), reu: "", tipo: "OBJETO", substancia: "", peso: "1", unidadePeso: "Unid", lacre: "" }]);
     } catch (err) {
@@ -292,31 +307,27 @@ export default function CadastroView() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       
-      {/* TÍTULO ORGANIZACIONAL */}
       <div style={{ textAlign: "center", marginBottom: "10px" }}>
         <h1 style={{ fontSize: "22px", fontWeight: "800", color: "#1e293b", margin: "0", letterSpacing: "1px" }}>GESTÃO DE CARTÓRIO - TCIP</h1>
       </div>
 
-       {/* 🚀 SUPER PAINEL DE CRIMES (SÉRIE A) */}
-      <div className="card" style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "20px", background: "#fff", border: "1px solid #e2e8f0" }}>
-            <div style={{ padding: "15px", background: "#f8fafc", borderRadius: "12px", border: "1px solid #e2e8f0" }}>
-                <label style={{ fontSize: "14px", fontWeight: "700", color: "#1e3a8a", display: "block", marginBottom: "15px", borderBottom: "1px solid #cbd5e1", paddingBottom: "10px" }}>
-                  ⚖️ SELECIONE OS CRIMES DESTE REGISTRO (MÚLTIPLA ESCOLHA):
+      <div className="card" style={{ border: "2px solid #3b82f6", background: "#f8fafc", padding: "20px" }}>
+        <h3 style={{ margin: "0 0 15px 0", color: "#1e3a8a", fontSize: "16px", display: "flex", alignItems: "center", gap: "10px" }}>
+          ⚖️ SELECIONE A(S) NATUREZA(S) DO PROCEDIMENTO <span style={{ color: "#ef4444", fontSize: "12px" }}>(OBRIGATÓRIO *)</span>
+        </h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "8px", maxHeight: "250px", overflowY: "auto", paddingRight: "10px" }}>
+            {CRIMES_GERAIS.map(cr => (
+                <label key={cr} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "12px", color: "#475569", cursor: "pointer", padding: "6px", borderRadius: "6px", background: crimesSelecionados.includes(cr) ? "#eff6ff" : "transparent" }}>
+                    <input type="checkbox" checked={crimesSelecionados.includes(cr)} onChange={(e) => {
+                        if (e.target.checked) setCrimesSelecionados([...crimesSelecionados, cr]);
+                        else setCrimesSelecionados(crimesSelecionados.filter(item => item !== cr));
+                    }} />
+                    {cr}
                 </label>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "8px", maxHeight: "250px", overflowY: "auto", paddingRight: "10px" }}>
-                    {CRIMES_GERAIS.map(cr => (
-                        <label key={cr} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "12px", color: "#475569", cursor: "pointer", padding: "6px", borderRadius: "6px", background: crimesSelecionados.includes(cr) ? "#eff6ff" : "transparent" }}>
-                            <input type="checkbox" checked={crimesSelecionados.includes(cr)} onChange={(e) => {
-                                if (e.target.checked) setCrimesSelecionados([...crimesSelecionados, cr]);
-                                else setCrimesSelecionados(crimesSelecionados.filter(item => item !== cr));
-                            }} />
-                            {cr}
-                        </label>
-                    ))}
-                </div>
-            </div>
+            ))}
+        </div>
 
-        <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+        <div style={{ width: "100%", display: "flex", justifyContent: "center", marginTop: "15px" }}>
             <label style={{ display: "flex", alignItems: "center", gap: "10px", background: fielDepositario ? "#fef2f2" : "#f8fafc", padding: "12px 25px", borderRadius: "12px", border: fielDepositario ? "1px solid #fecaca" : "1px solid #e2e8f0", cursor: "pointer" }}>
                 <input type="checkbox" checked={fielDepositario} onChange={(e) => setFielDepositario(e.target.checked)} style={{ width: "18px", height: "18px" }} />
                 <span style={{ fontSize: "13px", fontWeight: "700", color: fielDepositario ? "#dc2626" : "#475569" }}>
@@ -334,11 +345,11 @@ export default function CadastroView() {
           <span className="badge" style={{ background: "#1e293b", color: "white" }}>OPERADOR: {getUsuario()?.username?.toUpperCase()}</span>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "20px", marginBottom: "20px" }}>
-          <FormGroup label="Data do Fato *" id="dataFato"><input type="date" id="dataFato" name="dataFato" style={inputStyle} value={dataFato} onChange={e => setDataFato(e.target.value)} /></FormGroup>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 2fr", gap: "15px", marginBottom: "20px" }}>
+          <FormGroup label="DATA DO FATO *" id="dataFato"><input type="date" id="dataFato" name="dataFato" style={inputStyle} value={dataFato} onChange={e => setDataFato(e.target.value)} /></FormGroup>
           <FormGroup label="Nº BOU (AAAA/Seq) *" id="bou"><input type="text" id="bou" name="bou" style={inputStyle} value={bou} onChange={e => setBou(formatarBOU(e.target.value))} /></FormGroup>
           <FormGroup label="PROJUDI *" id="processo"><input type="text" id="processo" name="processo" style={inputStyle} value={processo} onChange={e => setProcesso(formatarProcesso(e.target.value))} /></FormGroup>
-          <FormGroup label="Vara Destino *" id="vara">
+          <FormGroup label="VARA DESTINO *" id="vara">
             <select id="vara" name="vara" style={inputStyle} value={vara} onChange={e => setVara(e.target.value)}>
               <option value="">Selecione...</option>
               {VARAS.map(v => <option key={v} value={v}>{v}</option>)}
@@ -346,18 +357,18 @@ export default function CadastroView() {
           </FormGroup>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr 1fr", gap: "20px" }}>
-          <FormGroup label="Unidade" id="unidadeOrigem">
+        <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 2.5fr 1.5fr", gap: "15px" }}>
+          <FormGroup label="UNIDADE DE ORIGEM *" id="unidadeOrigem">
             <select id="unidadeOrigem" name="unidadeOrigem" style={inputStyle} value={unidadeOrigem} onChange={e => setUnidadeOrigem(e.target.value)}>
               {UNIDADES_PM.map(u => <option key={u} value={u}>{u}</option>)}
             </select>
           </FormGroup>
-          <FormGroup label="Graduação" id="patente">
+          <FormGroup label="GRADUAÇÃO *" id="patente">
             <select id="patente" name="patente" style={inputStyle} value={patente} onChange={e => setPatente(e.target.value)}>
               {PATENTES.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
           </FormGroup>
-          <FormGroup label="Policial Entregador *" id="policial">
+          <FormGroup label="POLICIAL ENTREGADOR *" id="policial">
             <AutocompleteInput
               id="policial"
               name="policial"
