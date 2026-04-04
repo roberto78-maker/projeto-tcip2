@@ -254,8 +254,7 @@ export default function CadastroView() {
           status: (m.tipo === "NENHUM" || (m.tipo !== "DROGA" && (!m.substancia || fielDepositario))) ? "arquivado" : "conferencia",
           lacre: m.lacre || "",
           vara: vara || "",
-          policial: `${patente} ${policial}`,
-          tem_apreensao: m.tipo !== "NENHUM" && !!(m.tipo === "DROGA" || (m.substancia && !fielDepositario))
+          policial: `${patente} ${policial}`
         };
 
         console.log(`📡 Salvando registro para: ${payload.reu} (${m.tipo})...`, payload);
