@@ -1,4 +1,5 @@
 import logging
+from collections import defaultdict
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -12,20 +13,25 @@ from django.db.models import Sum, Count, Q
 from .models import Apreensao, LoteIncineracao
 from .serializers import ApreensaoSerializer, LoteIncineracaoSerializer
 import cloudinary.uploader
-
 import io
+import random
+import string
+
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Table,
+    TableStyle,
+    Paragraph,
+    Spacer,
+)
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 
 logger = logging.getLogger(__name__)
 
 
-# ──────────────────────────────────────────────────
-# 📊 DASHBOARD STATS — single DB round-trip
-# ──────────────────────────────────────────────────
 class DashboardStatsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -36,28 +42,23 @@ class DashboardStatsView(APIView):
         on the frontend.
         """
         stats = Apreensao.objects.aggregate(
-            # ── Counts by status ───────────
             total=Count("id"),
             count_conferencia=Count("id", filter=Q(status="conferencia")),
             count_cofre=Count("id", filter=Q(status="cofre")),
             count_incineracao=Count("id", filter=Q(status="incineracao")),
             count_queima_pronta=Count("id", filter=Q(status="queima_pronta")),
             count_excluido=Count("id", filter=Q(status="excluido")),
-            # ── Weights by status (grams) ──
             peso_cofre=Sum("peso", filter=Q(status="cofre")),
             peso_incineracao=Sum("peso", filter=Q(status="incineracao")),
             peso_queima_pronta=Sum("peso", filter=Q(status="queima_pronta")),
-            # ── Special item types ─────────
             count_som=Count("id", filter=Q(natureza="SOM")),
             count_outros=Count("id", filter=Q(natureza="OUTROS")),
         )
 
-        # Sum returns None when there are no matching rows — normalise to 0
         stats["peso_cofre"] = float(stats["peso_cofre"] or 0)
         stats["peso_incineracao"] = float(stats["peso_incineracao"] or 0)
         stats["peso_queima_pronta"] = float(stats["peso_queima_pronta"] or 0)
 
-        # ── Lot counts (em formação / incinerados) — 2 lightweight queries ────
         lotes_em_formacao = (
             Apreensao.objects.filter(
                 status="incineracao", lote_incineracao__isnull=False
@@ -75,9 +76,8 @@ class DashboardStatsView(APIView):
             .count()
         )
 
-        # ── Knife count via DB LIKE — avoids pulling all objects to Python ────
         count_facas = Apreensao.objects.filter(
-            Q(substancia__icontains="faca") | Q(substancia__icontains="facão")
+            Q(substancia__icontains="faca") | Q(substancia__icontains="fac\u00e3o")
         ).count()
 
         return Response(
@@ -123,23 +123,17 @@ class ApreensaoFilter(django_filters.FilterSet):
     )
     reu = django_filters.CharFilter(field_name="reu", lookup_expr="icontains")
     bou = django_filters.CharFilter(field_name="bou", lookup_expr="icontains")
-    processo = django_filters.CharFilter(field_name="processo", lookup_expr="icontains")
+    processo = django_filters.CharFilter(
+        field_name="processo", lookup_expr="icontains"
+    )
     data_inicio = django_filters.DateTimeFilter(
         field_name="data_criacao", lookup_expr="gte"
     )
     data_fim = django_filters.DateTimeFilter(
         field_name="data_criacao", lookup_expr="lte"
     )
-
-    # ── Natureza filters ──────────────────────────────
-    # ?natureza=DROGAS  →  exact match (used by DROGAS tab)
     natureza = django_filters.CharFilter(field_name="natureza")
-
-    # ?excluir_natureza=DROGAS  →  exclude records of that natureza
-    # Used by the OBJETOS tab so the frontend never has to filter locally.
     excluir_natureza = django_filters.CharFilter(method="filter_excluir_natureza")
-
-    # ?tem_apreensao=true  →  boolean filter for physical custody
     tem_apreensao = django_filters.BooleanFilter(field_name="tem_apreensao")
 
     def filter_excluir_natureza(self, queryset, name, value):
@@ -191,7 +185,7 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
         try:
             return super().create(request, *args, **kwargs)
         except Exception as e:
-            logger.error(f"ERRO CRÍTICO ao criar apreensão: {str(e)}")
+            logger.error(f"ERRO CR\u00cdTICO ao criar apreens\u00e3o: {str(e)}")
             return Response(
                 {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
@@ -200,7 +194,7 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
         try:
             return super().update(request, *args, **kwargs)
         except Exception as e:
-            logger.error(f"Erro ao atualizar apreensão: {str(e)}")
+            logger.error(f"Erro ao atualizar apreens\u00e3o: {str(e)}")
             return Response(
                 {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
@@ -211,21 +205,28 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
 
         if apreensao.natureza != "DROGAS":
             return Response(
-                {"error": "Somente entorpecentes podem ser destinados à incineração."},
+                {
+                    "error": (
+                        "Somente entorpecentes podem ser "
+                        "destinados \u00e0 incinera\u00e7\u00e3o."
+                    )
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Verifica o link do Cloudinary (novo padrão) ou o arquivo físico (depreciado)
         if not (apreensao.arquivo_pdf_url or apreensao.arquivo_pdf):
             return Response(
-                {"error": "Arquivo PDF nao encontrado (Laudo/Certidão obrigatório)."},
+                {
+                    "error": (
+                        "Arquivo PDF nao encontrado "
+                        "(Laudo/Certid\u00e3o obrigat\u00f3rio)."
+                    )
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         agora = timezone.now()
-        from django.db.models import Count
 
-        # Busca o lote 'aberto' (status incineracao) mais antigo que ainda tenha menos de 20 itens
         lote_aberto = (
             LoteIncineracao.objects.filter(apreensoes__status="incineracao")
             .annotate(qtd=Count("apreensoes"))
@@ -237,7 +238,6 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
         if lote_aberto:
             ultimo_lote = lote_aberto
         else:
-            # Se não houver lote com espaço, busca o último número para criar um novo
             ultimo_referencia = LoteIncineracao.objects.order_by("-numero").first()
             novo_numero = (ultimo_referencia.numero + 1) if ultimo_referencia else 1
             protocolo = f"1CART6BPM-{str(novo_numero).zfill(6)}.{agora.year}"
@@ -250,7 +250,7 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
         apreensao.save()
 
         logger.info(
-            f"Apreensão {apreensao.id} destinada para incineração "
+            f"Apreens\u00e3o {apreensao.id} destinada para incinera\u00e7\u00e3o "
             f"no lote {ultimo_lote.protocolo}"
         )
 
@@ -259,16 +259,16 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["post"])
     def finalizar_lote(self, request):
         """
-        Finaliza lote: recebe lote_id e altera status das apreensões para 'queima_pronta'.
-        Pode receber um arquivo_pdf (PDF ou Imagem) para anexar a todos os itens do lote.
-        Limite de arquivo: 2MB.
+        Finaliza lote: recebe lote_id e altera status das apreensoes para
+        'queima_pronta'. Pode receber um arquivo_pdf (PDF ou Imagem) para
+        anexar a todos os itens do lote. Limite de arquivo: 2MB.
         """
         lote_id = request.data.get("lote_id")
         arquivo = request.FILES.get("arquivo_pdf")
 
         if not lote_id:
             return Response(
-                {"error": "lote_id é obrigatório"},
+                {"error": "lote_id \u00e9 obrigat\u00f3rio"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -276,13 +276,12 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
             lote = LoteIncineracao.objects.get(id=lote_id)
         except LoteIncineracao.DoesNotExist:
             return Response(
-                {"error": "Lote não encontrado"}, status=status.HTTP_404_NOT_FOUND
+                {"error": "Lote n\u00e3o encontrado"}, status=status.HTTP_404_NOT_FOUND
             )
 
-        # Validação de Tamanho (2MB Máximo)
         if arquivo and arquivo.size > 2 * 1024 * 1024:
             return Response(
-                {"error": "O arquivo é muito grande. Limite máximo: 2MB."},
+                {"error": "O arquivo \u00e9 muito grande. Limite m\u00e1ximo: 2MB."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -291,9 +290,8 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
         )
 
         if apreensoes.count() == 0:
-            error_msg = "Lote não possui itens para finalizar."
             return Response(
-                {"error": error_msg},
+                {"error": "Lote n\u00e3o possui itens para finalizar."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -301,9 +299,9 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
             url_cloudinary = None
 
             if arquivo:
-                # ☁️ FAZ O UPLOAD UMA ÚNICA VEZ para o Cloudinary
                 logger.info(
-                    f"Iniciando upload único ao Cloudinary para o lote {lote.protocolo}..."
+                    f"Iniciando upload \u00fanico ao Cloudinary "
+                    f"para o lote {lote.protocolo}..."
                 )
                 arquivo.seek(0)
                 upload_result = cloudinary.uploader.upload(
@@ -314,9 +312,8 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
                     overwrite=True,
                 )
                 url_cloudinary = upload_result.get("secure_url")
-                logger.info(f"Upload concluído. URL: {url_cloudinary}")
+                logger.info(f"Upload conclu\u00eddo. URL: {url_cloudinary}")
 
-            # ⚡ ATUALIZA TODOS OS ITENS COM UM ÚNICO COMANDO (bulk_update)
             lista_apreensoes = list(apreensoes)
             for apreensao in lista_apreensoes:
                 apreensao.status = "queima_pronta"
@@ -337,14 +334,17 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
 
             return Response(
                 {
-                    "message": f"Incineração Lote {lote.protocolo} concluída com sucesso.",
+                    "message": (
+                        f"Incinera\u00e7\u00e3o Lote {lote.protocolo} "
+                        f"conclu\u00edda com sucesso."
+                    ),
                     "itens_finalizados": count,
                     "documento_anexado": bool(url_cloudinary),
                     "url_documento": url_cloudinary,
                 }
             )
         except Exception as e:
-            logger.error(f"ERRO CRÍTICO ao finalizar lote {lote_id}: {str(e)}")
+            logger.error(f"ERRO CR\u00cdTICO ao finalizar lote {lote_id}: {str(e)}")
             return Response(
                 {"error": f"Erro interno ao finalizar lote: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -357,7 +357,7 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
 
         if not motivo:
             return Response(
-                {"error": "Motivo da exclusão é obrigatório"},
+                {"error": "Motivo da exclus\u00e3o \u00e9 obrigat\u00f3rio"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -365,7 +365,7 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
         apreensao.motivo_exclusao = motivo
         apreensao.save()
 
-        logger.info(f"Apreensão {apreensao.id} excluída. Motivo: {motivo}")
+        logger.info(f"Apreens\u00e3o {apreensao.id} exclu\u00edda. Motivo: {motivo}")
 
         return Response(ApreensaoSerializer(apreensao).data)
 
@@ -375,9 +375,6 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
         Uploads a PDF/image to Cloudinary for an individual Apreensao record.
         Stores the resulting secure_url in arquivo_pdf_url (plain URL string).
         Never writes to the deprecated arquivo_pdf FileField.
-
-        This is the ONLY place that calls Cloudinary for a single record upload.
-        It is invoked explicitly, NEVER during list serialization.
         """
         apreensao = self.get_object()
         arquivo = request.FILES.get("arquivo_pdf")
@@ -406,16 +403,17 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
             )
             url = upload_result.get("secure_url")
 
-            # Store only the URL string — no FileField, no extra network call
             apreensao.arquivo_pdf_url = url
             apreensao.save(update_fields=["arquivo_pdf_url"])
 
-            logger.info(f"PDF carregado para Apreensão {apreensao.id}: {url}")
+            logger.info(f"PDF carregado para Apreens\u00e3o {apreensao.id}: {url}")
             return Response(
                 {"arquivo_pdf_url": url, "message": "PDF carregado com sucesso."}
             )
         except Exception as e:
-            logger.error(f"Erro no upload do PDF para apreensão {apreensao.id}: {e}")
+            logger.error(
+                f"Erro no upload do PDF para apreens\u00e3o {apreensao.id}: {e}"
+            )
             return Response(
                 {"error": f"Falha no upload: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -445,21 +443,17 @@ class RelatorioIncineracaoView(APIView):
         if vara:
             qs = qs.filter(vara__icontains=vara)
         if substancia == "__NENHUMA__":
-            # Sentinela: excluir todos os itens de natureza DROGAS
             qs = qs.exclude(natureza="DROGAS")
         elif substancia:
-            # 🔎 Busca Ampliada: Procura o texto tanto na substância
-            # quanto na descrição dos crimes
             qs = qs.filter(
-                Q(substancia__icontains=substancia) | Q(descricao__icontains=substancia)
+                Q(substancia__icontains=substancia)
+                | Q(descricao__icontains=substancia)
             )
         if natureza:
             if natureza == "AMEACA":
-                # 🔍 Busca Inteligente: Encontra registros novos (AMEACA)
-                # e legados (via texto)
                 qs = qs.filter(
                     Q(natureza="AMEACA")
-                    | Q(substancia__icontains="NÃO HÁ APREENSÃO")
+                    | Q(substancia__icontains="N\u00c3O H\u00c1 APREENS\u00c3O")
                 )
             else:
                 qs = qs.filter(natureza=natureza)
@@ -474,7 +468,6 @@ class RelatorioIncineracaoView(APIView):
 
         crime = request.GET.get("crime")
         if crime:
-            # 👮‍♂️ Filtra pelo artigo específico do crime na descrição
             qs = qs.filter(descricao__icontains=crime)
 
         detalhado = qs.values(
@@ -495,18 +488,17 @@ class RelatorioIncineracaoView(APIView):
         ).order_by("-data_criacao")[:500]
 
         status_labels = {
-            "conferencia": "Aguardando Conferência",
+            "conferencia": "Aguardando Confer\u00eancia",
             "cofre": "No Cofre",
             "incineracao": "Lotes (P. Queima)",
             "queima_pronta": "Incinerado",
-            "excluido": "Excluído / Cancelado",
+            "excluido": "Exclu\u00eddo / Cancelado",
         }
 
         detalhado_formatado = []
         for item in detalhado:
             status_desc = status_labels.get(item["status"], item["status"])
 
-            # Se já está associado a um lote (seja Incinerado ou em Montagem)
             if item.get("lote_incineracao__numero"):
                 lote_num = str(item["lote_incineracao__numero"]).zfill(2)
                 lote_data = (
@@ -563,7 +555,6 @@ class RelatorioIncineracaoPDFView(APIView):
         if vara:
             qs = qs.filter(vara__icontains=vara)
         if substancia == "__NENHUMA__":
-            # Sentinela: excluir todos os itens de natureza DROGAS
             qs = qs.exclude(natureza="DROGAS")
         elif substancia:
             qs = qs.filter(substancia__icontains=substancia)
@@ -578,7 +569,7 @@ class RelatorioIncineracaoPDFView(APIView):
         if reu:
             qs = qs.filter(reu__icontains=reu)
 
-        qs = qs.order_by("data_criacao")[:1000]  # Evitar travamentos
+        qs = qs.order_by("data_criacao")[:1000]
 
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(
@@ -618,15 +609,16 @@ class RelatorioIncineracaoPDFView(APIView):
             textColor=colors.HexColor("#1e3a8a"),
         )
 
-        # Cabeçalho como Certidão de Queima
-        elements.append(Paragraph("POLÍCIA MILITAR DO PARANÁ - 6º BPM", title_style))
         elements.append(
-            Paragraph("PRIMEIRO CARTÓRIO - CASCAVEL", subtitle_title_style)
+            Paragraph("POL\u00cdCIA MILITAR DO PARAN\u00c1 - 6\u00ba BPM", title_style)
+        )
+        elements.append(
+            Paragraph("PRIMEIRO CART\u00d3RIO - CASCAVEL", subtitle_title_style)
         )
 
         elements.append(
             Paragraph(
-                "RELATÓRIO DE AUDITORIA E RASTREIO",
+                "RELAT\u00d3RIO DE AUDITORIA E RASTREIO",
                 ParagraphStyle(
                     "DocTitle",
                     parent=styles["Heading2"],
@@ -638,12 +630,14 @@ class RelatorioIncineracaoPDFView(APIView):
             )
         )
 
-        periodo_texto = f"Período: {data_inicio or 'Início'} a {data_fim or 'Hoje'}"
+        periodo_texto = (
+            f"Per\u00edodo: {data_inicio or 'In\u00edcio'} a {data_fim or 'Hoje'}"
+        )
         filtros_usados = []
         if vara:
             filtros_usados.append(f"Vara: {vara}")
         if substancia:
-            filtros_usados.append(f"Substância: {substancia}")
+            filtros_usados.append(f"Subst\u00e2ncia: {substancia}")
         if natureza:
             filtros_usados.append(f"Natureza: {natureza}")
         if status_filter:
@@ -653,13 +647,16 @@ class RelatorioIncineracaoPDFView(APIView):
         if processo:
             filtros_usados.append(f"Processo: {processo}")
         if reu:
-            filtros_usados.append(f"Réu/Autor: {reu}")
+            filtros_usados.append(f"R\u00e9u/Autor: {reu}")
 
         filtros_str = " | ".join(filtros_usados) if filtros_usados else "Nenhum"
 
-        info = f"<b>{periodo_texto}</b><br/><b>Filtros Aplicados:</b> {filtros_str}"
+        info = (
+            f"<b>{periodo_texto}</b><br/>"
+            f"<b>Filtros Aplicados:</b> {filtros_str}"
+        )
         elements.append(Paragraph(info, normal_style))
-        # --- CÁLCULO DE ESTATÍSTICAS ---
+
         total_itens = qs.count()
         processos_unicos = qs.values("processo").distinct().count()
         reus_unicos = qs.values("reu").distinct().count()
@@ -674,15 +671,15 @@ class RelatorioIncineracaoPDFView(APIView):
             if item.natureza == "SOM":
                 count_som += 1
             if item.substancia and (
-                "faca" in item.substancia.lower() or "facão" in item.substancia.lower()
+                "faca" in item.substancia.lower()
+                or "fac\u00e3o" in item.substancia.lower()
             ):
                 count_facas += 1
 
         elements.append(Spacer(1, 10))
 
-        # Tabela de Resumo Estatístico
         resumo_data = [
-            [Paragraph("<b>RESUMO ESTATÍSTICO</b>", title_style)],
+            [Paragraph("<b>RESUMO ESTAT\u00cdSTICO</b>", title_style)],
             [f"Total de Processos: {str(processos_unicos).zfill(2)}"],
             [f"Pessoas Identificadas: {str(reus_unicos).zfill(2)}"],
             [f"Total de Itens: {str(total_itens).zfill(2)}"],
@@ -719,13 +716,10 @@ class RelatorioIncineracaoPDFView(APIView):
         elements.append(resumo_tab)
         elements.append(Spacer(1, 20))
 
-        # Agrupar por mes/ano
-        from collections import defaultdict
-
         meses = {
             1: "Janeiro",
             2: "Fevereiro",
-            3: "Março",
+            3: "Mar\u00e7o",
             4: "Abril",
             5: "Maio",
             6: "Junho",
@@ -748,11 +742,11 @@ class RelatorioIncineracaoPDFView(APIView):
             agrupado[mes_ano].append(item)
 
         status_labels = {
-            "conferencia": "Aguardando Conferência",
+            "conferencia": "Aguardando Confer\u00eancia",
             "cofre": "No Cofre",
             "incineracao": "Lotes",
             "queima_pronta": "Incinerado",
-            "excluido": "Excluído",
+            "excluido": "Exclu\u00eddo",
         }
 
         if not agrupado:
@@ -769,7 +763,7 @@ class RelatorioIncineracaoPDFView(APIView):
                 data = [
                     [
                         "BOU/Processo",
-                        "Substância",
+                        "Subst\u00e2ncia",
                         "Volume/Peso",
                         "Local (Status)",
                         "Data",
@@ -788,7 +782,9 @@ class RelatorioIncineracaoPDFView(APIView):
                             if item.lote_incineracao.data_criacao
                             else "S/D"
                         )
-                        status_desc = f"{status_desc}\n(Lote {lote_num} - {lote_data})"
+                        status_desc = (
+                            f"{status_desc}\n(Lote {lote_num} - {lote_data})"
+                        )
 
                     data.append(
                         [
@@ -817,7 +813,12 @@ class RelatorioIncineracaoPDFView(APIView):
                 t.setStyle(
                     TableStyle(
                         [
-                            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#dc2626")),
+                            (
+                                "BACKGROUND",
+                                (0, 0),
+                                (-1, 0),
+                                colors.HexColor("#dc2626"),
+                            ),
                             ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
                             ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
@@ -833,10 +834,6 @@ class RelatorioIncineracaoPDFView(APIView):
                 elements.append(t)
                 elements.append(Spacer(1, 10))
 
-        # Header/Footer Page Numbering & Protocol
-        import random
-        import string
-
         protocolo_hash = (
             "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
             + "-"
@@ -847,16 +844,17 @@ class RelatorioIncineracaoPDFView(APIView):
             canvas.saveState()
             canvas.setFont("Helvetica-Oblique", 8)
             canvas.setStrokeColor(colors.grey)
-            canvas.line(30, 45, 565, 45)  # Linha horizontal
+            canvas.line(30, 45, 565, 45)
 
             usuario = request.user.username.upper() if request.user else "SISTEMA"
             data_hora = timezone.now().strftime("%d/%m/%Y %H:%M")
             footer_text = (
-                f"Gerado por {usuario} em {data_hora} | Protocolo: AUD-{protocolo_hash}"
+                f"Gerado por {usuario} em {data_hora} "
+                f"| Protocolo: AUD-{protocolo_hash}"
             )
 
             canvas.drawString(30, 33, footer_text)
-            canvas.drawRightString(565, 33, f"Página {doc.page}")
+            canvas.drawRightString(565, 33, f"P\u00e1gina {doc.page}")
             canvas.restoreState()
 
         doc.build(elements, onFirstPage=add_footer, onLaterPages=add_footer)
@@ -866,5 +864,3 @@ class RelatorioIncineracaoPDFView(APIView):
         filename = f"relatorio_radar_{protocolo_hash}.pdf"
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response
-
-
