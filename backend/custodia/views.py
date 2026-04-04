@@ -438,7 +438,8 @@ class RelatorioIncineracaoView(APIView):
             # Sentinela: excluir todos os itens de natureza DROGAS
             qs = qs.exclude(natureza="DROGAS")
         elif substancia:
-            qs = qs.filter(substancia__icontains=substancia)
+            # 🔎 Busca Ampliada: Procura o texto tanto na substância quanto na descrição dos crimes
+            qs = qs.filter(Q(substancia__icontains=substancia) | Q(descricao__icontains=substancia))
         if natureza:
             if natureza == "AMEACA":
                 # 🔍 Busca Inteligente: Encontra registros novos (AMEACA) e legados (via texto)
@@ -453,6 +454,11 @@ class RelatorioIncineracaoView(APIView):
             qs = qs.filter(processo__icontains=processo)
         if reu:
             qs = qs.filter(reu__icontains=reu)
+
+        crime = request.GET.get("crime")
+        if crime:
+            # 👮‍♂️ Filtra pelo artigo específico do crime na descrição
+            qs = qs.filter(descricao__icontains=crime)
 
         detalhado = qs.values(
             "id",
