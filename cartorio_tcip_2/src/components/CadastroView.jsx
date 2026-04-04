@@ -165,16 +165,25 @@ export default function CadastroView() {
     });
     currY += 8;
 
-    // 📦 TABELA DE MATERIAIS
-    const materiaisComApreensao = materiais.filter(m => m.tipo !== "NENHUM" && m.substancia && m.substancia.trim() !== "");
-    if (materiaisComApreensao.length > 0) {
-        const bodyTable = materiaisComApreensao.map((item, index) => [
-            `1.${index + 1}`,
-            item.reu || "NÃO IDENTIFICADO",
-            `${item.tipo === 'DROGA' ? 'DROGA - ' : item.tipo === 'SOM' ? 'SOM - ' : 'OBJETO - '}${item.substancia}`,
-            formatarPesoDisplay(item.peso, item.unidadePeso),
-            item.lacre || "N/A"
-        ]);
+    // 📦 TABELA DE MATERIAIS (Unificada - Mostra todos para auditoria)
+    if (materiais.length > 0) {
+        const bodyTable = materiais.map((item, index) => {
+            let descFinal = "";
+            if (item.tipo === "NENHUM") {
+                descFinal = "(S/ APREENSÃO FÍSICA)";
+            } else {
+                const prefixo = item.tipo === 'DROGA' ? 'DROGA - ' : item.tipo === 'SOM' ? 'SOM - ' : 'OBJETO - ';
+                descFinal = `${prefixo}${item.substancia}`;
+            }
+
+            return [
+                `1.${index + 1}`,
+                item.reu || "NÃO IDENTIFICADO",
+                descFinal,
+                item.tipo === "NENHUM" ? "0 Uni." : formatarPesoDisplay(item.peso, item.unidadePeso),
+                item.lacre || "N/A"
+            ];
+        });
 
         autoTable(doc, {
             startY: currY,
