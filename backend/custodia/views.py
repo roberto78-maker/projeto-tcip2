@@ -23,9 +23,9 @@ from reportlab.lib.units import inch
 logger = logging.getLogger(__name__)
 
 
-# ──────────────────────────────────────────────────────────────────────────────
-# 📊 DASHBOARD STATS — single DB round-trip, replaces full fetchAll download
-# ──────────────────────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────
+# 📊 DASHBOARD STATS — single DB round-trip
+# ──────────────────────────────────────────────────
 class DashboardStatsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -36,18 +36,18 @@ class DashboardStatsView(APIView):
         on the frontend.
         """
         stats = Apreensao.objects.aggregate(
-            # ── Counts by status ──────────────────────────────────────────────
+            # ── Counts by status ───────────
             total=Count("id"),
             count_conferencia=Count("id", filter=Q(status="conferencia")),
             count_cofre=Count("id", filter=Q(status="cofre")),
             count_incineracao=Count("id", filter=Q(status="incineracao")),
             count_queima_pronta=Count("id", filter=Q(status="queima_pronta")),
             count_excluido=Count("id", filter=Q(status="excluido")),
-            # ── Weights by status (grams) — NULL-safe via Sum default=0 ───────
+            # ── Weights by status (grams) ──
             peso_cofre=Sum("peso", filter=Q(status="cofre")),
             peso_incineracao=Sum("peso", filter=Q(status="incineracao")),
             peso_queima_pronta=Sum("peso", filter=Q(status="queima_pronta")),
-            # ── Special item types ────────────────────────────────────────────
+            # ── Special item types ─────────
             count_som=Count("id", filter=Q(natureza="SOM")),
             count_outros=Count("id", filter=Q(natureza="OUTROS")),
         )
@@ -131,7 +131,7 @@ class ApreensaoFilter(django_filters.FilterSet):
         field_name="data_criacao", lookup_expr="lte"
     )
 
-    # ── Natureza filters ───────────────────────────────────────────────────
+    # ── Natureza filters ──────────────────────────────
     # ?natureza=DROGAS  →  exact match (used by DROGAS tab)
     natureza = django_filters.CharFilter(field_name="natureza")
 
@@ -250,7 +250,8 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
         apreensao.save()
 
         logger.info(
-            f"Apreensão {apreensao.id} destinada para incineração no lote {ultimo_lote.protocolo}"
+            f"Apreensão {apreensao.id} destinada para incineração "
+            f"no lote {ultimo_lote.protocolo}"
         )
 
         return Response(ApreensaoSerializer(apreensao).data)
@@ -455,7 +456,8 @@ class RelatorioIncineracaoView(APIView):
             if natureza == "AMEACA":
                 # 🔍 Busca Inteligente: Encontra registros novos (AMEACA) e legados (via texto)
                 qs = qs.filter(
-                    Q(natureza="AMEACA") | Q(substancia__icontains="NÃO HÁ APREENSÃO")
+                    Q(natureza="AMEACA")
+                    | Q(substancia__icontains="NÃO HÁ APREENSÃO")
                 )
             else:
                 qs = qs.filter(natureza=natureza)
@@ -615,8 +617,12 @@ class RelatorioIncineracaoPDFView(APIView):
         )
 
         # Cabeçalho como Certidão de Queima
-        elements.append(Paragraph("POLÍCIA MILITAR DO PARANÁ - 6º BPM", title_style))
-        elements.append(Paragraph("PRIMEIRO CARTÓRIO - CASCAVEL", subtitle_title_style))
+        elements.append(
+            Paragraph("POLÍCIA MILITAR DO PARANÁ - 6º BPM", title_style)
+        )
+        elements.append(
+            Paragraph("PRIMEIRO CARTÓRIO - CASCAVEL", subtitle_title_style)
+        )
 
         elements.append(
             Paragraph(
@@ -860,4 +866,5 @@ class RelatorioIncineracaoPDFView(APIView):
         filename = f"relatorio_radar_{protocolo_hash}.pdf"
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response
+
 
