@@ -162,7 +162,6 @@ class ApreensaoFilter(django_filters.FilterSet):
         ]
 
 
-
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = "page_size"
@@ -861,3 +860,4 @@ class RelatorioIncineracaoPDFView(APIView):
         filename = f"relatorio_radar_{protocolo_hash}.pdf"
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response
+
