@@ -439,11 +439,15 @@ class RelatorioIncineracaoView(APIView):
             qs = qs.exclude(natureza="DROGAS")
         elif substancia:
             # 🔎 Busca Ampliada: Procura o texto tanto na substância quanto na descrição dos crimes
-            qs = qs.filter(Q(substancia__icontains=substancia) | Q(descricao__icontains=substancia))
+            qs = qs.filter(
+                Q(substancia__icontains=substancia) | Q(descricao__icontains=substancia)
+            )
         if natureza:
             if natureza == "AMEACA":
                 # 🔍 Busca Inteligente: Encontra registros novos (AMEACA) e legados (via texto)
-                qs = qs.filter(Q(natureza="AMEACA") | Q(substancia__icontains="NÃO HÁ APREENSÃO"))
+                qs = qs.filter(
+                    Q(natureza="AMEACA") | Q(substancia__icontains="NÃO HÁ APREENSÃO")
+                )
             else:
                 qs = qs.filter(natureza=natureza)
         if status_filter:
