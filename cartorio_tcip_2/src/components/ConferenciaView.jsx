@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { getApreensoes, updateApreensao, excluirApreensao } from "../services/api.js";
+import React, { useState, useRef, useMemo } from "react";
+import { updateApreensao, excluirApreensao } from "../services/api.js";
+import { usePagedList } from "../hooks/usePagedList.js";
 
 // Formata peso com unidade inteligente
 const formatarPesoDisplay = (valor, unidade) => {
@@ -105,24 +106,40 @@ const ModalExclusao = ({ item, onConfirm, onClose }) => {
   );
 };
 
+// ─── Build the backend filter object ────────────────────────────────────────
+function buildFilters(busca) {
+  const f = { status: "conferencia" };
+  if (busca.trim()) f.search = busca.trim();
+  return f;
+}
+
 export default function ConferenciaView() {
-  const [apreensoes, setApreensoes] = useState([]);
   const [busca, setBusca] = useState("");
   const [itemSelecionado, setItemSelecionado] = useState(null);
   const [itemParaExcluir, setItemParaExcluir] = useState(null);
+  const debounceRef = useRef(null);
 
-  useEffect(() => {
-    carregar();
-  }, []);
+  // 📝 Filtros estáveis para o Hook
+  const filters = useMemo(() => buildFilters(busca), [busca]);
 
-  async function carregar() {
-    try {
-      const data = await getApreensoes({ status: "conferencia", fetchAll: true });
-      setApreensoes(data);
-    } catch (e) {
-      console.error(e);
-    }
-  }
+  // 🔄 Hook de Paginação e Cache
+  const {
+    itens,
+    loading,
+    loadingMore,
+    hasMore,
+    totalCount,
+    erro,
+    carregarMais,
+    recarregar,
+  } = usePagedList(filters);
+
+  // 🔍 Busca Debounce (400ms)
+  const handleBuscaChange = (valor) => {
+    setBusca(valor);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setBusca(valor), 400);
+  };
 
   async function confirmarDespacho(observacao) {
     if (!itemSelecionado) return;
@@ -133,7 +150,7 @@ export default function ConferenciaView() {
         observacao_cofre: observacao
       });
       setItemSelecionado(null);
-      carregar();
+      recarregar(); // ✅ Invalida cache e recarrega
     } catch (e) {
       console.error(e);
       alert("Erro ao despachar item.");
@@ -145,19 +162,15 @@ export default function ConferenciaView() {
     try {
       await excluirApreensao(itemParaExcluir.id, motivo);
       setItemParaExcluir(null);
-      carregar();
+      recarregar(); // ✅ Invalida cache e recarrega
       alert("Registro excluído com sucesso.");
     } catch (e) {
         alert(e.message);
     }
   }
 
-  const itensConferencia = apreensoes.filter(
-    (item) =>
-      item.status === "conferencia" &&
-      item.bou &&
-      item.bou.toLowerCase().includes(busca.toLowerCase())
-  );
+  // A lógica de itensConferencia foi substituída diretamente por 'itens' do hook
+  // O filtro agora acontece no servidor via Django.
 
   return (
     <div className="card">
@@ -179,15 +192,17 @@ export default function ConferenciaView() {
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
         <h2 className="card-title">Triagem e Entrada no Depósito</h2>
-        <span className="badge" style={{ background: "#ef4444", color: "white" }}>{itensConferencia.length} ITENS PENDENTES</span>
+        <span className="badge" style={{ background: "#ef4444", color: "white" }}>
+          {totalCount !== null ? `${totalCount} ITENS PENDENTES` : "CARREGANDO..."}
+        </span>
       </div>
       <p className="card-title-sub" style={{ fontSize: "14px", color: "#64748b", marginBottom: "20px" }}>Materiais aguardando triagem oficial e armazenamento físico.</p>
 
       <div style={{ marginBottom: "20px" }}>
         <input
-          placeholder="🔍 Buscar por Nº BOU..."
-          value={busca}
-          onChange={(e)=>setBusca(e.target.value)}
+          placeholder="🔍 Buscar por Nº BOU ou Noticiado..."
+          defaultValue={busca}
+          onChange={(e)=>handleBuscaChange(e.target.value)}
           style={{ width: "100%", padding: "12px", border: "1px solid #cbd5e1", borderRadius: "6px" }}
         />
       </div>
@@ -205,18 +220,25 @@ export default function ConferenciaView() {
             </tr>
           </thead>
           <tbody>
-            {itensConferencia.length === 0 && (
+            {loading && (
+               <tr>
+                 <td colSpan="6" style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
+                   ⏳ Carregando registros...
+                 </td>
+               </tr>
+            )}
+            {!loading && itens.length === 0 && (
               <tr>
                 <td colSpan="6" style={{ textAlign: "center", padding: "30px", color: "#64748b" }}>
                   Nenhum material pendente de triagem.
                 </td>
               </tr>
             )}
-            {itensConferencia.map((item) => (
+            {!loading && itens.map((item) => (
               <tr key={item.id}>
                 <td style={{ color: "#64748b" }}>{item.dataFato || new Date(item.data_criacao).toLocaleDateString()}</td>
                 <td style={{ fontWeight: "600", color: "#0f172a" }}>{item.bou}</td>
-                <td>{item.reu || "NÃO INFORMADO"}</td>
+                <td style={{ textTransform: "uppercase" }}>{item.reu || "NÃO INFORMADO"}</td>
                 <td>
                   <span className="badge" style={{ background: "#0ea5e9", color: "white" }}>
                     {item.substancia || "Desconhecida"}
@@ -241,6 +263,25 @@ export default function ConferenciaView() {
             ))}
           </tbody>
         </table>
+
+        {/* 📄 Botão Carregar Mais */}
+        {(hasMore || loadingMore) && (
+          <div style={{ textAlign: "center", padding: "20px" }}>
+            <button
+              onClick={carregarMais}
+              disabled={loadingMore}
+              style={{
+                padding: "10px 30px", borderRadius: "8px",
+                border: "2px solid #ef4444", background: "white",
+                color: "#ef4444", fontWeight: "700",
+                cursor: loadingMore ? "not-allowed" : "pointer",
+                opacity: loadingMore ? 0.6 : 1
+              }}
+            >
+              {loadingMore ? "⏳ Carregando..." : `📄 Carregar mais itens (${totalCount - itens.length} restantes)`}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

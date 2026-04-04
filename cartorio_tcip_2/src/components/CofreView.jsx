@@ -21,7 +21,7 @@ function buildFilters(abaAtiva, busca) {
     f.natureza = "DROGAS";
   } else {
     f.excluir_natureza = "DROGAS";
-    f.tem_apreensao    = true;
+    // 🔍 Exibe todos os objetos (Som, Veículos, etc.) que não são drogas
   }
   if (busca.trim()) f.search = busca.trim();
   return f;
