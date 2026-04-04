@@ -26,7 +26,7 @@ def create_backup():
 
     if not DB_PATH.exists():
         if is_ci:
-            print(f"ℹ️  Backup ignorado: Banco de dados não presente no ambiente de CI.")
+            print("ℹ️  Backup ignorado: Banco de dados não presente no ambiente de CI.")
         else:
             print(f"❌ Banco de dados não encontrado em {DB_PATH}")
         return None
