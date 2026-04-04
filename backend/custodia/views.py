@@ -440,7 +440,11 @@ class RelatorioIncineracaoView(APIView):
         elif substancia:
             qs = qs.filter(substancia__icontains=substancia)
         if natureza:
-            qs = qs.filter(natureza=natureza)
+            if natureza == "AMEACA":
+                # 🔍 Busca Inteligente: Encontra registros novos (AMEACA) e legados (via texto)
+                qs = qs.filter(Q(natureza="AMEACA") | Q(substancia__icontains="NÃO HÁ APREENSÃO"))
+            else:
+                qs = qs.filter(natureza=natureza)
         if status_filter:
             qs = qs.filter(status=status_filter)
         if bou:
