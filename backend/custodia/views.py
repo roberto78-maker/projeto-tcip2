@@ -1,33 +1,33 @@
-import logging
-from collections import defaultdict
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework import filters, permissions
-from rest_framework.pagination import PageNumberPagination
-from django.http import HttpResponse
-from django_filters import rest_framework as django_filters
-from django.utils import timezone
-from django.db.models import Sum, Count, Q
-from .models import Apreensao, LoteIncineracao
-from .serializers import ApreensaoSerializer, LoteIncineracaoSerializer
-import cloudinary.uploader
 import io
+import logging
 import random
 import string
+from collections import defaultdict
 
-from reportlab.lib.pagesizes import A4
+import cloudinary.uploader
+from django.db.models import Count, Q, Sum
+from django.http import HttpResponse
+from django.utils import timezone
+from django_filters import rest_framework as django_filters
 from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.units import inch
 from reportlab.platypus import (
+    Paragraph,
     SimpleDocTemplate,
+    Spacer,
     Table,
     TableStyle,
-    Paragraph,
-    Spacer,
 )
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
+from rest_framework import filters, permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from .models import Apreensao, LoteIncineracao
+from .serializers import ApreensaoSerializer, LoteIncineracaoSerializer
 
 logger = logging.getLogger(__name__)
 
