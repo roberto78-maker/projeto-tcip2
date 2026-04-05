@@ -279,8 +279,8 @@ export default function CadastroView() {
           descricao: (crimesSelecionados && crimesSelecionados.length > 0) ? crimesSelecionados.join(', ') : "TERMO GERAL",
           peso: isNaN(p) ? 0 : p,
           unidade: m.unidadePeso,
-          data_fato: dataFato || null,
-          tem_apreensao: m.tipo !== "NENHUM",
+          data_fato: dataFato || null, // Incluído conforme ajuste backend
+          tem_apreensao: m.tipo !== "NENHUM", // false para procedimentos sem apreensão física
           status: (m.tipo === "NENHUM" || (m.tipo !== "DROGA" && (!m.substancia || fielDepositario))) ? "arquivado" : "conferencia",
           lacre: m.lacre || "",
           vara: vara || "",
