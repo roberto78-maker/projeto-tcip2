@@ -79,6 +79,7 @@ class Apreensao(models.Model):
     )
     motivo_exclusao = models.TextField(blank=True, null=True)
 
+    data_fato = models.DateTimeField(blank=True, null=True)
     data_criacao = models.DateTimeField(auto_now_add=True, db_index=True)
 
     history = HistoricalRecords()

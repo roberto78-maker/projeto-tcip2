@@ -2,9 +2,11 @@ import io
 import logging
 import random
 import string
+import traceback
 from collections import defaultdict
 
 import cloudinary.uploader
+from django.conf import settings
 from django.db.models import Count, Q, Sum
 from django.http import HttpResponse
 from django.utils import timezone
@@ -183,9 +185,11 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
         try:
             return super().create(request, *args, **kwargs)
         except Exception as e:
-            logger.error(f"ERRO CR\u00cdTICO ao criar apreens\u00e3o: {str(e)}")
+            tb = traceback.format_exc()
+            logger.error(f"ERRO CR\u00cdTICO ao criar apreens\u00e3o: {str(e)}\n{tb}")
             return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                {"error": str(e), "traceback": tb if settings.DEBUG else None},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
     def update(self, request, *args, **kwargs):
