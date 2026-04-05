@@ -123,9 +123,7 @@ class ApreensaoFilter(django_filters.FilterSet):
     )
     reu = django_filters.CharFilter(field_name="reu", lookup_expr="icontains")
     bou = django_filters.CharFilter(field_name="bou", lookup_expr="icontains")
-    processo = django_filters.CharFilter(
-        field_name="processo", lookup_expr="icontains"
-    )
+    processo = django_filters.CharFilter(field_name="processo", lookup_expr="icontains")
     data_inicio = django_filters.DateTimeFilter(
         field_name="data_criacao", lookup_expr="gte"
     )
@@ -446,8 +444,7 @@ class RelatorioIncineracaoView(APIView):
             qs = qs.exclude(natureza="DROGAS")
         elif substancia:
             qs = qs.filter(
-                Q(substancia__icontains=substancia)
-                | Q(descricao__icontains=substancia)
+                Q(substancia__icontains=substancia) | Q(descricao__icontains=substancia)
             )
         if natureza:
             if natureza == "AMEACA":
@@ -651,10 +648,7 @@ class RelatorioIncineracaoPDFView(APIView):
 
         filtros_str = " | ".join(filtros_usados) if filtros_usados else "Nenhum"
 
-        info = (
-            f"<b>{periodo_texto}</b><br/>"
-            f"<b>Filtros Aplicados:</b> {filtros_str}"
-        )
+        info = f"<b>{periodo_texto}</b><br/>" f"<b>Filtros Aplicados:</b> {filtros_str}"
         elements.append(Paragraph(info, normal_style))
 
         total_itens = qs.count()
@@ -782,9 +776,7 @@ class RelatorioIncineracaoPDFView(APIView):
                             if item.lote_incineracao.data_criacao
                             else "S/D"
                         )
-                        status_desc = (
-                            f"{status_desc}\n(Lote {lote_num} - {lote_data})"
-                        )
+                        status_desc = f"{status_desc}\n(Lote {lote_num} - {lote_data})"
 
                     data.append(
                         [
