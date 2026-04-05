@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('custodia', '0010_alter_apreensao_arquivo_pdf_and_more'),
+        ("custodia", "0010_alter_apreensao_arquivo_pdf_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='apreensao',
-            name='data_fato',
+            model_name="apreensao",
+            name="data_fato",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='historicalapreensao',
-            name='data_fato',
+            model_name="historicalapreensao",
+            name="data_fato",
             field=models.DateTimeField(blank=True, null=True),
         ),
     ]
