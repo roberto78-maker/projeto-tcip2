@@ -1,44 +1,33 @@
 import os
-import dj_database_url
-import cloudinary
 from datetime import timedelta
 from pathlib import Path
 
+import cloudinary
+import dj_database_url
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# 🔐 SEGURANÇA
 SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-temp-key")
 
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-# 🛡️ HEADERS DE SEGURANÇA HTTP (ativos em produção)
 if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = "DENY"
-    SECURE_HSTS_SECONDS = 31536000  # 1 ano
+    SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
-    SECURE_SSL_REDIRECT = False  # Render já cuida do HTTPS
+    SECURE_SSL_REDIRECT = False
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 else:
     X_FRAME_OPTIONS = "SAMEORIGIN"
 
-ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    ".onrender.com",
-    "backend-tcip.onrender.com",
-]
-if DEBUG:
-    ALLOWED_HOSTS.append("*")
+ALLOWED_HOSTS = ["*"]
 
 RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
-if RENDER_EXTERNAL_HOSTNAME:
-    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
-# 📦 APPS
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -57,7 +46,6 @@ INSTALLED_APPS = [
     "simple_history",
 ]
 
-# 🧱 MIDDLEWARE
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -73,7 +61,6 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "backend.urls"
 
-# 🎨 TEMPLATES
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -91,17 +78,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "backend.wsgi.application"
 
-
 DATABASES = {
     "default": dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
         conn_max_age=600,
-        ssl_require=os.environ.get("DATABASE_URL", "").startswith("postgres")
-        and not DEBUG,
+        ssl_require=os.environ.get("DATABASE_URL", "").startswith("postgres") and not DEBUG,
     )
 }
 
-# 🔐 SENHAS
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
@@ -111,13 +95,11 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-# 🌎 LOCALIZAÇÃO
 LANGUAGE_CODE = "pt-br"
 TIME_ZONE = "America/Sao_Paulo"
 USE_I18N = True
 USE_TZ = True
 
-# 📁 STATIC FILES
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 STATICFILES_DIRS = []
@@ -127,17 +109,13 @@ if DEBUG:
         BASE_DIR.parent / "cartorio_tcip_2" / "dist",
     ]
 
-# 🛠️ WHITENOISE
-# STORAGES configurado abaixo após verificar Cloudinary
-
-# 🔥 CLOUDINARY CONFIG
 CLOUDINARY_STORAGE = {
     "CLOUD_NAME": os.environ.get("CLOUD_NAME", ""),
     "API_KEY": os.environ.get("API_KEY", ""),
     "API_SECRET": os.environ.get("API_SECRET", ""),
     "SECURE": True,
 }
-# Configuração global para Cloudinary reconhecer PDFs corretamente
+
 cloudinary.config(
     cloud_name=os.environ.get("CLOUD_NAME"),
     api_key=os.environ.get("API_KEY"),
@@ -173,32 +151,18 @@ else:
     }
     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 
-# 🌐 CORS — Restrito por segurança
-# Em produção, configure a variável FRONTEND_URL no painel do Render.
-# Em desenvolvimento, localhost é sempre permitido.
-
-# 🔐 CSRF
 CSRF_TRUSTED_ORIGINS = [
     "https://backend-tcip.onrender.com",
     "https://*.vercel.app",
 ]
 
 FRONTEND_URL = os.environ.get("FRONTEND_URL")
-if FRONTEND_URL:
-    if FRONTEND_URL not in CSRF_TRUSTED_ORIGINS:
-        CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
-    CORS_ALLOWED_ORIGINS = [FRONTEND_URL]
-    CORS_ALLOW_CREDENTIALS = True
-else:
-    # Apenas localhost para desenvolvimento local. NUNCA abrir para todos em produção.
-    CORS_ALLOWED_ORIGINS = [
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:3000",
-    ]
-    CORS_ALLOW_CREDENTIALS = True
+if FRONTEND_URL and FRONTEND_URL not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
 
-# 🚫 Bloquear métodos HTTP não utilizados pela aplicação
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+
 CORS_ALLOW_METHODS = [
     "DELETE",
     "GET",
@@ -208,11 +172,8 @@ CORS_ALLOW_METHODS = [
     "PUT",
 ]
 
-# 🔒 Admin — apenas superusers têm acesso
-# A URL foi movida para /tcip-painel-restrito/ (veja urls.py)
 ADMIN_URL = os.environ.get("ADMIN_URL", "tcip-painel-restrito")
 
-# 🔌 REST FRAMEWORK
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -241,7 +202,6 @@ REST_FRAMEWORK = {
     },
 }
 
-# 🔐 JWT
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
@@ -255,11 +215,9 @@ SIMPLE_JWT = {
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# 📁 MEDIA (não será mais usado para arquivos físicos)
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-# 📝 LOGGING
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -286,7 +244,6 @@ LOGGING = {
     },
 }
 
-# 📚 SWAGGER / OPENAPI
 SWAGGER_SETTINGS = {
     "SECURITY_DEFINITIONS": {
         "Bearer": {
@@ -300,7 +257,7 @@ SWAGGER_SETTINGS = {
     "DEFAULT_MODEL_SORTING": ("name",),
     "DEFAULT_API_INFO": {
         "contact": {"email": "admin@tcip.com"},
-        "description": "API do Sistema de Gestão de Custódia TCIP",
+        "description": "API do Sistema de Gestao de Custodia TCIP",
         "license": {"name": "MIT"},
         "title": "TCIP API",
         "version": "1.0.0",
