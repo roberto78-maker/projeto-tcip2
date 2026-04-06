@@ -1,0 +1,18 @@
+# Pastas de ambiente e lixo (Recursivo)
+**/node_modules/
+**/.venv/
+**/venv/
+**/__pycache__/
+**/*.pyc
+**/dist/
+
+# Backend e Estáticos
+backend/staticfiles/
+*.sqlite3
+
+# Outros Projetos/Penetras
+PLANILHA - ERS/
+
+# Configurações
+.env
+.env.local
