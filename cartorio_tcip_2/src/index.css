@@ -269,3 +269,47 @@ body {
 .btn-dark:hover {
   background-color: #0f172a;
 }
+
+.auditoria-filtros-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+  align-items: start;
+}
+
+.auditoria-filtro-coluna {
+  min-width: 0;
+}
+
+.auditoria-filtro-coluna .input-tcip {
+  width: 100%;
+  min-width: 0;
+}
+
+.auditoria-filtro-crime {
+  max-width: 320px;
+}
+
+.auditoria-filtro-palavra {
+  min-width: min(100%, 260px);
+}
+
+.auditoria-select-crime {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 900px) {
+  .auditoria-filtros-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
+  .auditoria-filtro-crime,
+  .auditoria-filtro-palavra {
+    max-width: none;
+    min-width: 0;
+  }
+}

@@ -253,9 +253,9 @@ export default function AuditoriaView() {
       <div className="card" style={{ marginBottom: "20px" }}>
         <h3 style={{ fontSize: "14px", fontWeight: "600", color: "#334155", marginBottom: "15px" }}>Filtros de Garimpo (Opcionais)</h3>
         
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "15px", marginBottom: "20px" }}>
+        <div className="auditoria-filtros-grid">
           
-          <div>
+          <div className="auditoria-filtro-coluna">
             <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>Natureza / Tipo:</label>
             <select name="natureza" value={filtros.natureza} onChange={handleFiltroChange} className="input-tcip">
               <option value="">Todas</option>
@@ -266,15 +266,15 @@ export default function AuditoriaView() {
             </select>
           </div>
 
-          <div>
+          <div className="auditoria-filtro-coluna auditoria-filtro-crime">
              <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>⚖️ Filtrar por Crime (Artigos):</label>
-             <select name="crime" value={filtros.crime} onChange={handleFiltroChange} className="input-tcip">
+             <select name="crime" value={filtros.crime} onChange={handleFiltroChange} className="input-tcip auditoria-select-crime">
                <option value="">Todos os Crimes</option>
                {CRIMES_GERAIS.map(cr => <option key={cr} value={cr}>{cr}</option>)}
              </select>
           </div>
 
-          <div>
+          <div className="auditoria-filtro-coluna auditoria-filtro-palavra">
             <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>Palavra-Chave (Substância / Objeto):</label>
             <input
               list="substancias-list"
@@ -290,7 +290,7 @@ export default function AuditoriaView() {
             </datalist>
           </div>
 
-          <div>
+          <div className="auditoria-filtro-coluna">
             <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>Localização / Status atual:</label>
             <select name="status" value={filtros.status} onChange={handleFiltroChange} className="input-tcip">
               <option value="">Todos os Locais</option>
@@ -303,7 +303,7 @@ export default function AuditoriaView() {
             </select>
           </div>
 
-          <div>
+          <div className="auditoria-filtro-coluna">
             <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>Vara Judicial:</label>
             <select name="vara" value={filtros.vara} onChange={handleFiltroChange} className="input-tcip">
               <option value="">Todas as Varas</option>
@@ -311,27 +311,27 @@ export default function AuditoriaView() {
             </select>
           </div>
 
-          <div>
+          <div className="auditoria-filtro-coluna">
             <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>Nº do Processo:</label>
             <input type="text" name="processo" placeholder="Buscar por Processo..." value={filtros.processo} onChange={handleFiltroChange} className="input-tcip" />
           </div>
 
-          <div>
+          <div className="auditoria-filtro-coluna">
             <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>Nº Boletim (BOU):</label>
             <input type="text" name="bou" placeholder="Buscar por BOU..." value={filtros.bou} onChange={handleFiltroChange} className="input-tcip" />
           </div>
 
-          <div>
+          <div className="auditoria-filtro-coluna">
             <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>Autor / Réu:</label>
             <input type="text" name="reu" placeholder="Nome do autor..." value={filtros.reu} onChange={handleFiltroChange} className="input-tcip" />
           </div>
           
-          <div>
+          <div className="auditoria-filtro-coluna">
             <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>Registrado entre (Data Início):</label>
             <input type="date" name="data_inicio" value={filtros.data_inicio} onChange={handleFiltroChange} className="input-tcip" />
           </div>
           
-          <div>
+          <div className="auditoria-filtro-coluna">
             <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>E (Data Fim):</label>
             <input type="date" name="data_fim" value={filtros.data_fim} onChange={handleFiltroChange} className="input-tcip" />
           </div>
