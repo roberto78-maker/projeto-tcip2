@@ -82,7 +82,8 @@ DATABASES = {
     "default": dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
         conn_max_age=600,
-        ssl_require=os.environ.get("DATABASE_URL", "").startswith("postgres") and not DEBUG,
+        ssl_require=os.environ.get("DATABASE_URL", "").startswith("postgres")
+        and not DEBUG,
     )
 }
 
