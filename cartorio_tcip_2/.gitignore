@@ -1,0 +1,69 @@
+# =========================
+# NODE / REACT / VITE
+# =========================
+node_modules/
+dist/
+dist-ssr/
+*.local
+.vite/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================
+# PYTHON / DJANGO
+# =========================
+venv/
+.venv/
+env/
+bin/
+lib/
+backend/venv/
+backend/.venv/
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# SQLite (não subir banco local)
+db.sqlite3
+
+# Arquivos do Django
+*.log
+staticfiles/
+media/
+
+# =========================
+# AMBIENTE / SEGURANÇA
+# =========================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# =========================
+# SISTEMA / EDITOR
+# =========================
+.vscode/
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# =========================
+# OUTROS
+# =========================
+*.bak
+*.tmp
+*.temp
+build/
