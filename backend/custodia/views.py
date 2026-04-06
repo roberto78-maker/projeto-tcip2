@@ -7,6 +7,7 @@ from collections import defaultdict
 
 import cloudinary.uploader
 from django.conf import settings
+from django.core.files.storage import default_storage
 from django.db.models import Count, Q, Sum
 from django.http import HttpResponse
 from django.utils import timezone
@@ -32,6 +33,34 @@ from .models import Apreensao, LoteIncineracao
 from .serializers import ApreensaoSerializer, LoteIncineracaoSerializer
 
 logger = logging.getLogger(__name__)
+
+
+def upload_documento(arquivo, *, public_id, folder, request=None):
+    """
+    Uploads to Cloudinary when configured; otherwise stores locally using the
+    project's default storage and returns a browser-accessible URL.
+    """
+    if getattr(settings, "USE_CLOUDINARY", False):
+        upload_result = cloudinary.uploader.upload(
+            arquivo,
+            resource_type="auto",
+            folder=folder,
+            public_id=public_id,
+            overwrite=True,
+        )
+        return upload_result.get("secure_url")
+
+    original_name = getattr(arquivo, "name", "documento.bin")
+    filename = original_name.replace("\\", "_").replace("/", "_").replace(" ", "_")
+    storage_path = f"{folder}/{public_id}_{filename}"
+    saved_path = default_storage.save(storage_path, arquivo)
+    relative_url = default_storage.url(saved_path)
+
+    if request is not None:
+        return request.build_absolute_uri(relative_url)
+
+    media_base = getattr(settings, "MEDIA_URL", "/media/")
+    return f"{media_base.rstrip('/')}/{saved_path.lstrip('/')}"
 
 
 class DashboardStatsView(APIView):
@@ -306,14 +335,12 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
                     f"para o lote {lote.protocolo}..."
                 )
                 arquivo.seek(0)
-                upload_result = cloudinary.uploader.upload(
+                url_cloudinary = upload_documento(
                     arquivo,
-                    resource_type="auto",
                     folder="laudos_pdf",
                     public_id=f"lote_{lote.protocolo.replace('.', '_')}",
-                    overwrite=True,
+                    request=request,
                 )
-                url_cloudinary = upload_result.get("secure_url")
                 logger.info(f"Upload conclu\u00eddo. URL: {url_cloudinary}")
 
             lista_apreensoes = list(apreensoes)
@@ -395,15 +422,13 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
 
         try:
             safe_bou = apreensao.bou.replace("/", "_").replace(" ", "_")
-            public_id = f"laudos_pdf/{apreensao.id}_{safe_bou}"
-            upload_result = cloudinary.uploader.upload(
+            public_id = f"{apreensao.id}_{safe_bou}"
+            url = upload_documento(
                 arquivo,
-                resource_type="auto",
                 folder="laudos_pdf",
                 public_id=public_id,
-                overwrite=True,
+                request=request,
             )
-            url = upload_result.get("secure_url")
 
             apreensao.arquivo_pdf_url = url
             apreensao.save(update_fields=["arquivo_pdf_url"])
