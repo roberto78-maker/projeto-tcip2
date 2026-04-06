@@ -16,3 +16,4 @@ PLANILHA - ERS/
 # Configurações
 .env
 .env.local
+backend/media/
