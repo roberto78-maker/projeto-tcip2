@@ -1,18 +1,7 @@
-import React, { useState } from "react";
-import { getUsuario } from "../services/auth.js";
+import React from "react";
 import { VARAS, SUBSTANCIAS, UNIDADES_PM, PATENTES, CRIMES_GERAIS } from "../constants/options.js";
+import { useCadastroForm } from "../hooks/useCadastroForm.js";
 import AutocompleteInput from "./AutocompleteInput.jsx";
-import {
-  atualizarMaterialPorTipo,
-  criarEstadoInicialCadastro,
-  criarMaterialPadrao,
-  formatarBOU,
-  formatarPeso,
-  formatarProcesso,
-  formatarRG,
-  salvarCadastro,
-  upper,
-} from "../services/cadastroWorkflow.js";
 
 const FormGroup = ({ label, id, children, required }) => (
   <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -34,10 +23,8 @@ const inputStyle = {
 };
 
 export default function CadastroView() {
-  const [form, setForm] = useState(criarEstadoInicialCadastro);
-  const [salvando, setSalvando] = useState(false);
-
   const {
+    operador,
     crimesSelecionados,
     fielDepositario,
     dataFato,
@@ -49,73 +36,28 @@ export default function CadastroView() {
     policial,
     rg,
     materiais,
-  } = form;
-
-  const updateField = (field, value) => {
-    setForm((current) => ({ ...current, [field]: value }));
-  };
-
-  const adicionarMaterial = () => {
-    setForm((current) => ({
-      ...current,
-      materiais: [...current.materiais, criarMaterialPadrao()],
-    }));
-  };
-
-  const removerMaterial = (id) => {
-    if (materiais.length <= 1) return;
-
-    setForm((current) => ({
-      ...current,
-      materiais: current.materiais.filter((material) => material.id !== id),
-    }));
-  };
-
-  const updateMaterial = (id, field, value) => {
-    setForm((current) => ({
-      ...current,
-      materiais: current.materiais.map((material) =>
-        material.id === id ? { ...material, [field]: value } : material
-      ),
-    }));
-  };
-
-  const updateMaterialTipo = (id, tipo) => {
-    setForm((current) => ({
-      ...current,
-      materiais: current.materiais.map((material) =>
-        material.id === id ? atualizarMaterialPorTipo(material, tipo) : material
-      ),
-    }));
-  };
-
-  const toggleCrime = (crime, checked) => {
-    if (checked) {
-      updateField("crimesSelecionados", [...crimesSelecionados, crime]);
-      return;
-    }
-
-    updateField(
-      "crimesSelecionados",
-      crimesSelecionados.filter((item) => item !== crime)
-    );
-  };
-
-  const handleSalvar = async () => {
-    if (salvando) return;
-
-    setSalvando(true);
-    try {
-      const { mensagem, proximoEstado } = await salvarCadastro(form);
-      alert(mensagem);
-      setForm(proximoEstado);
-    } catch (err) {
-      console.error(err);
-      alert(`Erro ao salvar: ${err.message}`);
-    } finally {
-      setSalvando(false);
-    }
-  };
+    salvando,
+    adicionarMaterial,
+    removerMaterial,
+    toggleCrime,
+    updateMaterialTipo,
+    handleSalvar,
+    handleDataFatoChange,
+    handleBouChange,
+    handleProcessoChange,
+    handleVaraChange,
+    handleUnidadeOrigemChange,
+    handlePatenteChange,
+    handlePolicialChange,
+    handleRgChange,
+    handleFielDepositarioChange,
+    handleMaterialReuChange,
+    handleMaterialSubstanciaChange,
+    handleMaterialDescricaoChange,
+    handleMaterialPesoChange,
+    handleMaterialUnidadeChange,
+    handleMaterialLacreChange,
+  } = useCadastroForm();
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -181,7 +123,7 @@ export default function CadastroView() {
             <input
               type="checkbox"
               checked={fielDepositario}
-              onChange={(e) => updateField("fielDepositario", e.target.checked)}
+              onChange={(e) => handleFielDepositarioChange(e.target.checked)}
               style={{ width: "18px", height: "18px" }}
             />
             <span style={{ fontSize: "13px", fontWeight: "700", color: fielDepositario ? "#dc2626" : "#475569" }}>
@@ -197,32 +139,25 @@ export default function CadastroView() {
             1. DADOS DA OCORRENCIA ({crimesSelecionados.length > 0 ? crimesSelecionados.join(", ") : "GERAL"})
           </h2>
           <span className="badge" style={{ background: "#1e293b", color: "white" }}>
-            OPERADOR: {getUsuario()?.username?.toUpperCase()}
+            OPERADOR: {operador}
           </span>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 2fr", gap: "15px", marginBottom: "20px" }}>
           <FormGroup label="DATA DO FATO *" id="dataFato">
-            <input type="date" id="dataFato" name="dataFato" style={inputStyle} value={dataFato} onChange={(e) => updateField("dataFato", e.target.value)} />
+            <input type="date" id="dataFato" name="dataFato" style={inputStyle} value={dataFato} onChange={(e) => handleDataFatoChange(e.target.value)} />
           </FormGroup>
 
           <FormGroup label="No BOU (AAAA/Seq) *" id="bou">
-            <input type="text" id="bou" name="bou" style={inputStyle} value={bou} onChange={(e) => updateField("bou", formatarBOU(e.target.value))} />
+            <input type="text" id="bou" name="bou" style={inputStyle} value={bou} onChange={(e) => handleBouChange(e.target.value)} />
           </FormGroup>
 
           <FormGroup label="PROJUDI *" id="processo">
-            <input
-              type="text"
-              id="processo"
-              name="processo"
-              style={inputStyle}
-              value={processo}
-              onChange={(e) => updateField("processo", formatarProcesso(e.target.value))}
-            />
+            <input type="text" id="processo" name="processo" style={inputStyle} value={processo} onChange={(e) => handleProcessoChange(e.target.value)} />
           </FormGroup>
 
           <FormGroup label="VARA DESTINO *" id="vara">
-            <select id="vara" name="vara" style={inputStyle} value={vara} onChange={(e) => updateField("vara", e.target.value)}>
+            <select id="vara" name="vara" style={inputStyle} value={vara} onChange={(e) => handleVaraChange(e.target.value)}>
               <option value="">Selecione...</option>
               {VARAS.map((item) => (
                 <option key={item} value={item}>
@@ -240,7 +175,7 @@ export default function CadastroView() {
               name="unidadeOrigem"
               style={inputStyle}
               value={unidadeOrigem}
-              onChange={(e) => updateField("unidadeOrigem", e.target.value)}
+              onChange={(e) => handleUnidadeOrigemChange(e.target.value)}
             >
               {UNIDADES_PM.map((item) => (
                 <option key={item} value={item}>
@@ -251,7 +186,7 @@ export default function CadastroView() {
           </FormGroup>
 
           <FormGroup label="GRADUACAO *" id="patente">
-            <select id="patente" name="patente" style={inputStyle} value={patente} onChange={(e) => updateField("patente", e.target.value)}>
+            <select id="patente" name="patente" style={inputStyle} value={patente} onChange={(e) => handlePatenteChange(e.target.value)}>
               {PATENTES.map((item) => (
                 <option key={item} value={item}>
                   {item}
@@ -266,7 +201,7 @@ export default function CadastroView() {
               name="policial"
               historyKey="hist_policial"
               value={policial}
-              onChange={(e) => updateField("policial", upper(e.target.value))}
+              onChange={(e) => handlePolicialChange(e.target.value)}
               style={inputStyle}
               placeholder="Nome do policial..."
             />
@@ -278,7 +213,7 @@ export default function CadastroView() {
               name="rg"
               historyKey="hist_rg"
               value={rg}
-              onChange={(e) => updateField("rg", formatarRG(e.target.value))}
+              onChange={(e) => handleRgChange(e.target.value)}
               style={inputStyle}
               placeholder="00.000.000-0"
             />
@@ -327,7 +262,7 @@ export default function CadastroView() {
               <AutocompleteInput
                 historyKey="hist_noticiado"
                 value={material.reu}
-                onChange={(e) => updateMaterial(material.id, "reu", upper(e.target.value))}
+                onChange={(e) => handleMaterialReuChange(material.id, e.target.value)}
                 style={{ ...inputStyle, padding: "8px" }}
                 placeholder="Nome..."
               />
@@ -349,7 +284,7 @@ export default function CadastroView() {
                 <select
                   style={{ ...inputStyle, padding: "8px" }}
                   value={material.substancia}
-                  onChange={(e) => updateMaterial(material.id, "substancia", e.target.value)}
+                  onChange={(e) => handleMaterialSubstanciaChange(material.id, e.target.value)}
                 >
                   {SUBSTANCIAS.map((item) => (
                     <option key={item} value={item}>
@@ -362,7 +297,7 @@ export default function CadastroView() {
                   type="text"
                   style={{ ...inputStyle, padding: "8px" }}
                   value={material.substancia}
-                  onChange={(e) => updateMaterial(material.id, "substancia", upper(e.target.value))}
+                  onChange={(e) => handleMaterialDescricaoChange(material.id, e.target.value)}
                   placeholder="Descricao..."
                 />
               )}
@@ -371,20 +306,14 @@ export default function CadastroView() {
                 type="text"
                 style={{ ...inputStyle, padding: "8px" }}
                 value={material.peso}
-                onChange={(e) =>
-                  updateMaterial(
-                    material.id,
-                    "peso",
-                    material.tipo === "DROGA" ? formatarPeso(e.target.value) : e.target.value
-                  )
-                }
+                onChange={(e) => handleMaterialPesoChange(material.id, material.tipo, e.target.value)}
                 placeholder="0,00"
               />
 
               <select
                 style={{ ...inputStyle, padding: "8px" }}
                 value={material.unidadePeso}
-                onChange={(e) => updateMaterial(material.id, "unidadePeso", e.target.value)}
+                onChange={(e) => handleMaterialUnidadeChange(material.id, e.target.value)}
               >
                 <option value="Unid">Unid</option>
                 <option value="g">g</option>
@@ -395,7 +324,7 @@ export default function CadastroView() {
                 type="text"
                 style={{ ...inputStyle, padding: "8px" }}
                 value={material.lacre}
-                onChange={(e) => updateMaterial(material.id, "lacre", e.target.value)}
+                onChange={(e) => handleMaterialLacreChange(material.id, e.target.value)}
                 placeholder="Lacre..."
               />
 
