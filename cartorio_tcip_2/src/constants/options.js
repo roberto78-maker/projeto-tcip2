@@ -18,7 +18,8 @@ export const CRIMES_GERAIS = [
   "Omissão de Cautela na Guarda de Animais: Artigo 31 do LCP",
   "Conduzir Veículo sem Habilitação: Artigo 309 do CTB",
   "Perturbação do Sossego: Artigo 42 da LCP",
-  "Drogas para Consumo Pessoal: Artigo 28 da Lei 11.343/06"
+  "Drogas para Consumo Pessoal: Artigo 28 da Lei 11.343/06",
+  "Jogos de Azar: Artigo 50 da LCP"
 ];
 
 export const VARAS = [
@@ -28,15 +29,15 @@ export const VARAS = [
 ];
 
 export const SUBSTANCIAS = [
-  "Maconha",
-  "Crack",
-  "Cocaína",
-  "Ecstasy",
-  "Haxixe",
+  "MACONHA",
+  "CRACK",
+  "COCAÍNA",
+  "ECSTASY",
+  "HAXIXE",
   "LSD",
   "MDMA",
-  "Pé de Maconha",
-  "Outros"
+  "PÉ DE MACONHA",
+  "OUTROS"
 ];
 
 export const UNIDADES_PM = [
