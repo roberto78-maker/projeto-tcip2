@@ -8,10 +8,22 @@ https://docs.djangoproject.com/en/6.0/howto/deployment/wsgi/
 """
 
 import os
-
+import subprocess
 from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
+
+# 🚀 TAREFAS DE BOOT (Render script automatizado preventivo)
+try:
+    print("⏳ Executando migrate no boot (Fail-safe)...")
+    subprocess.run(["python", "manage.py", "migrate"], check=True)
+    print("✅ Migrate concluído.")
+
+    print("⏳ Executando collectstatic no boot (Fail-safe)...")
+    subprocess.run(["python", "manage.py", "collectstatic", "--no-input"], check=True)
+    print("✅ Collectstatic concluído.")
+except Exception as e:
+    print(f"❌ Erro nas tarefas de boot (manage.py): {e}")
 
 application = get_wsgi_application()
 
