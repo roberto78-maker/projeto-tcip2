@@ -103,7 +103,6 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-WHITENOISE_MANIFEST_STRICT = False
 STATICFILES_DIRS = []
 
 if DEBUG:
@@ -139,7 +138,7 @@ if USE_CLOUDINARY:
             "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
         },
         "staticfiles": {
-            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+            "BACKEND": "backend.storage.TolerantWhiteNoiseStorage",
         },
     }
 else:
@@ -148,7 +147,7 @@ else:
             "BACKEND": "django.core.files.storage.FileSystemStorage",
         },
         "staticfiles": {
-            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+            "BACKEND": "backend.storage.TolerantWhiteNoiseStorage",
         },
     }
     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
