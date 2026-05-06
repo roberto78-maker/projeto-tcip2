@@ -1,4 +1,7 @@
 services:
+  # ─────────────────────────────────────────────────────────────
+  # 🗄️  Banco de dados PostgreSQL
+  # ─────────────────────────────────────────────────────────────
   db:
     image: postgres:16-alpine
     container_name: tcip_db
@@ -10,12 +13,22 @@ services:
       - POSTGRES_PASSWORD=tcip_pass
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tcip_user -d tcip_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
+  # ─────────────────────────────────────────────────────────────
+  # 🐍  Backend Django (API + serve SPA em prod)
+  # ─────────────────────────────────────────────────────────────
   backend:
     build: .
     container_name: tcip_backend
     volumes:
       - .:/app
+      # Em prod, monta o dist/ do frontend para o Django servir
+      - frontend_dist:/app/../cartorio_tcip_2/dist
     environment:
       - DEBUG=True
       - DATABASE_URL=postgres://tcip_user:tcip_pass@db:5432/tcip_db
@@ -24,22 +37,49 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
-  frontend:
+  # ─────────────────────────────────────────────────────────────
+  # ⚡  Frontend — Dev Mode (Vite HMR + proxy para Django)
+  #    Uso: docker compose --profile dev up
+  # ─────────────────────────────────────────────────────────────
+  frontend-dev:
+    profiles: [dev]
     build:
       context: ../cartorio_tcip_2
       dockerfile: Dockerfile.dev
-    container_name: tcip_frontend
+    container_name: tcip_frontend_dev
     volumes:
       - ../cartorio_tcip_2:/app
       - /app/node_modules
     environment:
-      - VITE_API_URL=http://localhost:8000
+      # Proxy do Vite aponta para o Django interno do compose
+      - VITE_DJANGO_URL=http://backend:8000
+      - VITE_API_URL=
     ports:
       - "5173:5173"
     depends_on:
       - backend
 
+  # ─────────────────────────────────────────────────────────────
+  # 🏗️  Frontend — Build para Produção (gera dist/ estático)
+  #    Uso: docker compose --profile prod up
+  # ─────────────────────────────────────────────────────────────
+  frontend-build:
+    profiles: [prod]
+    build:
+      context: ../cartorio_tcip_2
+      dockerfile: Dockerfile.build
+    container_name: tcip_frontend_build
+    volumes:
+      - frontend_dist:/app/dist
+    environment:
+      - VITE_API_URL=
+    # Executa apenas uma vez (build job), depois encerra
+    restart: "no"
+
 volumes:
   postgres_data:
+  # Volume compartilhado: frontend-build escreve → backend lê
+  frontend_dist:

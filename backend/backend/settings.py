@@ -161,8 +161,23 @@ FRONTEND_URL = os.environ.get("FRONTEND_URL")
 if FRONTEND_URL and FRONTEND_URL not in CSRF_TRUSTED_ORIGINS:
     CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
 
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
+if DEBUG:
+    # Em dev: aceita o Vite dev server (localhost e IP de rede local)
+    CORS_ALLOW_ALL_ORIGINS = True   # simplifica dev com dispositivos externos
+    CORS_ALLOW_CREDENTIALS = True
+else:
+    # Em produção: Django serve o próprio frontend (mesmo domínio = sem CORS)
+    # Só libera origens externas explicitamente configuradas
+    CORS_ALLOW_ALL_ORIGINS = False
+    CORS_ALLOW_CREDENTIALS = True
+    CORS_ALLOWED_ORIGINS = [
+        "https://backend-tcip.onrender.com",
+    ]
+    # Adiciona FRONTEND_URL se configurada (ex: domínio customizado)
+    _extra_cors = os.environ.get("FRONTEND_URL")
+    if _extra_cors and _extra_cors not in CORS_ALLOWED_ORIGINS:
+        CORS_ALLOWED_ORIGINS.append(_extra_cors)
+
 
 CORS_ALLOW_METHODS = [
     "DELETE",
