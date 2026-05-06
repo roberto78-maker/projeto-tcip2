@@ -1,5 +1,5 @@
 # ============================================================
-# start-dev.ps1 — Inicia Backend + Frontend do TCIP em dev
+# start-dev.ps1 - Inicia Backend + Frontend do TCIP em dev
 # ============================================================
 # Uso: .\start-dev.ps1
 # Ctrl+C encerra ambos os servidores automaticamente
@@ -13,55 +13,49 @@ $FRONTEND   = Join-Path $ROOT "cartorio_tcip_2"
 $VENV       = Join-Path $BACKEND ".venv\Scripts\Activate.ps1"
 
 Write-Host ""
-Write-Host "╔══════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║   TCIP — Ambiente de Desenvolvimento     ║" -ForegroundColor Cyan
-Write-Host "╚══════════════════════════════════════════╝" -ForegroundColor Cyan
+Write-Host "    TCIP - Ambiente de Desenvolvimento      " -ForegroundColor Cyan
 Write-Host ""
 
-# ── Verificar pré-requisitos ──────────────────────────────────────────────────
 if (-not (Test-Path $BACKEND)) {
-    Write-Host "❌  Pasta backend não encontrada: $BACKEND" -ForegroundColor Red
+    Write-Host "ERRO: Pasta backend nao encontrada: $BACKEND" -ForegroundColor Red
     exit 1
 }
 if (-not (Test-Path $FRONTEND)) {
-    Write-Host "❌  Pasta frontend não encontrada: $FRONTEND" -ForegroundColor Red
+    Write-Host "ERRO: Pasta frontend nao encontrada: $FRONTEND" -ForegroundColor Red
     exit 1
 }
 
-# ── Detectar IP local para mostrar URLs de acesso ────────────────────────────
 $localIP = (Get-NetIPAddress -AddressFamily IPv4 |
     Where-Object { $_.IPAddress -notmatch "^(127\.|169\.)" } |
     Select-Object -First 1).IPAddress
 
-Write-Host "🌐  IP da máquina na rede local: $localIP" -ForegroundColor Yellow
+Write-Host "IP: IP da maquina na rede local: $localIP" -ForegroundColor Yellow
 Write-Host ""
-Write-Host "  📱  Acesso por dispositivos externos:" -ForegroundColor Green
+Write-Host "MOBILE: Acesso por dispositivos externos:" -ForegroundColor Green
 Write-Host "       Frontend: http://${localIP}:5173" -ForegroundColor Green
 Write-Host "       API:      http://${localIP}:8000/api/" -ForegroundColor Green
 Write-Host ""
-Write-Host "  💻  Acesso local:" -ForegroundColor Green
+Write-Host "PC: Acesso local:" -ForegroundColor Green
 Write-Host "       Frontend: http://localhost:5173" -ForegroundColor Green
 Write-Host "       API:      http://localhost:8000/api/" -ForegroundColor Green
 Write-Host "       Admin:    http://localhost:8000/tcip-painel-restrito/" -ForegroundColor Green
 Write-Host ""
-Write-Host "  ℹ️   O proxy do Vite redireciona /api/* → Django automaticamente" -ForegroundColor DarkGray
+Write-Host "INFO: O proxy do Vite redireciona /api/* -> Django automaticamente" -ForegroundColor DarkGray
 Write-Host ""
 
-# ── Iniciar Django ────────────────────────────────────────────────────────────
-Write-Host "🐍  Iniciando Django..." -ForegroundColor Cyan
+Write-Host "DJANGO: Iniciando Django..." -ForegroundColor Cyan
 
 if (Test-Path $VENV) {
-    $djangoCmd = "& '$VENV'; python manage.py runserver 0.0.0.0:8000"
+    # Forma mais segura de concatenar comandos para a nova janela do PowerShell
+    $djangoCmd = "cd '$BACKEND'; & '$VENV'; python manage.py runserver 0.0.0.0:8000"
 } else {
-    Write-Host "   (sem .venv detectado — usando Python do PATH)" -ForegroundColor DarkGray
-    $djangoCmd = "python manage.py runserver 0.0.0.0:8000"
+    Write-Host "   (sem .venv detectado - usando Python do PATH)" -ForegroundColor DarkGray
+    $djangoCmd = "cd '$BACKEND'; python manage.py runserver 0.0.0.0:8000"
 }
 
-$djangoProc = Start-Process powershell -ArgumentList `
-    "-NoExit", "-Command", "cd '$BACKEND'; $djangoCmd" `
-    -PassThru
+$djangoProc = Start-Process powershell -ArgumentList "-NoExit", "-Command", $djangoCmd -PassThru
 
-# ── Aguardar Django ficar disponível ─────────────────────────────────────────
+
 Write-Host "   Aguardando Django em http://localhost:8000 ..." -ForegroundColor DarkGray
 $retries = 0
 do {
@@ -74,29 +68,23 @@ do {
 } while ($retries -lt 15)
 
 if ($retries -ge 15) {
-    Write-Host "   ⚠️  Django demorou mais que o esperado. Continuando mesmo assim..." -ForegroundColor Yellow
+    Write-Host "   AVISO: Django demorou mais que o esperado. Continuando mesmo assim..." -ForegroundColor Yellow
 } else {
-    Write-Host "   ✅  Django disponível!" -ForegroundColor Green
+    Write-Host "   OK: Django disponivel!" -ForegroundColor Green
 }
 
-# ── Iniciar Vite ──────────────────────────────────────────────────────────────
 Write-Host ""
-Write-Host "⚡  Iniciando Vite (Frontend)..." -ForegroundColor Cyan
+Write-Host "VITE: Iniciando Vite (Frontend)..." -ForegroundColor Cyan
 
-$viteProc = Start-Process powershell -ArgumentList `
-    "-NoExit", "-Command", "cd '$FRONTEND'; npm run dev" `
-    -PassThru
+$viteProc = Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$FRONTEND'; npm run dev" -PassThru
 
-Write-Host "   ✅  Vite iniciado!" -ForegroundColor Green
+Write-Host "   OK: Vite iniciado!" -ForegroundColor Green
 Write-Host ""
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor DarkGray
-Write-Host " Pressione ENTER nesta janela para encerrar " -ForegroundColor DarkGray
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor DarkGray
+Write-Host "Pressione ENTER nesta janela para encerrar" -ForegroundColor DarkGray
 Read-Host
 
-# ── Encerrar ambos os processos ───────────────────────────────────────────────
 Write-Host ""
-Write-Host "🛑  Encerrando servidores..." -ForegroundColor Yellow
+Write-Host "STOP: Encerrando servidores..." -ForegroundColor Yellow
 
 if ($djangoProc -and !$djangoProc.HasExited) {
     Stop-Process -Id $djangoProc.Id -Force -ErrorAction SilentlyContinue
@@ -108,4 +96,4 @@ if ($viteProc -and !$viteProc.HasExited) {
 }
 
 Write-Host ""
-Write-Host "✅  Ambiente encerrado. Até logo!" -ForegroundColor Green
+Write-Host "OK: Ambiente encerrado. Ate logo!" -ForegroundColor Green
