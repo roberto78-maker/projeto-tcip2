@@ -15,15 +15,15 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
 
 # 🚀 TAREFAS DE BOOT (Render script automatizado preventivo)
 try:
-    print("⏳ Executando migrate no boot (Fail-safe)...")
+    print("[BOOT] Executando migrate no boot (Fail-safe)...")
     subprocess.run(["python", "manage.py", "migrate"], check=True)
-    print("✅ Migrate concluído.")
+    print("[OK] Migrate concluído.")
 
-    print("⏳ Executando collectstatic no boot (Fail-safe)...")
+    print("[BOOT] Executando collectstatic no boot (Fail-safe)...")
     subprocess.run(["python", "manage.py", "collectstatic", "--no-input"], check=True)
-    print("✅ Collectstatic concluído.")
+    print("[OK] Collectstatic concluído.")
 except Exception as e:
-    print(f"❌ Erro nas tarefas de boot (manage.py): {e}")
+    print(f"[ERRO] Erro nas tarefas de boot (manage.py): {e}")
 
 application = get_wsgi_application()
 
@@ -41,7 +41,7 @@ def create_superuser():
 
     if not User.objects.filter(username=username).exists():
         User.objects.create_superuser(username, email, password)
-        print("✅ Superuser criado automaticamente!")
+        print("[OK] Superuser criado automaticamente!")
 
 
 try:
