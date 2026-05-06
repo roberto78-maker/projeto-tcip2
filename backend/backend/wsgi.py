@@ -21,7 +21,9 @@ try:
     print("[OK] Migrate concluído.")
 
     print("[BOOT] Executando collectstatic no boot (Fail-safe)...")
-    subprocess.run([sys.executable, "manage.py", "collectstatic", "--no-input"], check=True)
+    subprocess.run(
+        [sys.executable, "manage.py", "collectstatic", "--no-input"], check=True
+    )
     print("[OK] Collectstatic concluído.")
 except Exception as e:
     print(f"[ERRO] Erro nas tarefas de boot (manage.py): {e}")
