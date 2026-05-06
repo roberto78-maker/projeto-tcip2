@@ -131,7 +131,7 @@ class LoteIncineracaoAdmin(admin.ModelAdmin):
 
 @admin.register(Historico)
 class HistoricoAdmin(admin.ModelAdmin):
-    list_display = ("apreensao", "acao", "data")
+    list_display = ("apreensao", "usuario", "acao", "data")
     readonly_fields = ("apreensao", "acao", "data")
     list_filter = ("data",)
     search_fields = ("apreensao__bou", "apreensao__processo", "acao")

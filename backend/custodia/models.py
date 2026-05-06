@@ -1,5 +1,7 @@
 from django.db import models
+from django.contrib.auth.models import User
 from simple_history.models import HistoricalRecords
+from simple_history import register
 
 
 class LoteIncineracao(models.Model):
@@ -93,8 +95,18 @@ class Historico(models.Model):
         Apreensao, on_delete=models.CASCADE, related_name="historico"
     )
 
+    usuario = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True
+    )
     acao = models.CharField(max_length=200)
     data = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def __str__(self):
         return f"{self.apreensao.bou} - {self.acao}"
+
+
+# Registrar o modelo User para rastreamento de histórico
+try:
+    register(User, app="custodia")
+except Exception:
+    pass

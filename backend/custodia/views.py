@@ -29,7 +29,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Apreensao, LoteIncineracao
+from .models import Apreensao, LoteIncineracao, Historico
 from .serializers import ApreensaoSerializer, LoteIncineracaoSerializer
 
 logger = logging.getLogger(__name__)
@@ -210,6 +210,22 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
         filters.OrderingFilter,
     ]
 
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        Historico.objects.create(
+            apreensao=instance,
+            usuario=self.request.user if self.request.user.is_authenticated else None,
+            acao="Criou a apreensão",
+        )
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        Historico.objects.create(
+            apreensao=instance,
+            usuario=self.request.user if self.request.user.is_authenticated else None,
+            acao="Alterou dados da apreensão",
+        )
+
     def create(self, request, *args, **kwargs):
         try:
             return super().create(request, *args, **kwargs)
@@ -279,6 +295,12 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
         apreensao.lote_incineracao = ultimo_lote
         apreensao.status = "incineracao"
         apreensao.save()
+
+        Historico.objects.create(
+            apreensao=apreensao,
+            usuario=request.user if request.user.is_authenticated else None,
+            acao=f"Destinou para incineração (Lote {ultimo_lote.protocolo})",
+        )
 
         logger.info(
             f"Apreens\u00e3o {apreensao.id} destinada para incinera\u00e7\u00e3o "
@@ -356,6 +378,13 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
             Apreensao.objects.bulk_update(lista_apreensoes, campos_atualizar)
             count = len(lista_apreensoes)
 
+            for apreensao in lista_apreensoes:
+                Historico.objects.create(
+                    apreensao=apreensao,
+                    usuario=request.user if request.user.is_authenticated else None,
+                    acao=f"Finalizou incineração (Lote {lote.protocolo})",
+                )
+
             logger.info(
                 f"Lote {lote.protocolo} finalizado com {count} registros. "
                 f"URL doc: {url_cloudinary or 'Nenhum'}"
@@ -393,6 +422,12 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
         apreensao.status = "excluido"
         apreensao.motivo_exclusao = motivo
         apreensao.save()
+
+        Historico.objects.create(
+            apreensao=apreensao,
+            usuario=request.user if request.user.is_authenticated else None,
+            acao=f"Excluiu apreensão. Motivo: {motivo}",
+        )
 
         logger.info(f"Apreens\u00e3o {apreensao.id} exclu\u00edda. Motivo: {motivo}")
 

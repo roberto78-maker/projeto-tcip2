@@ -8,7 +8,7 @@ class HistoricoSerializer(serializers.ModelSerializer):
         # Explicit list — never use __all__ on models with FileField/ImageField
         # backed by cloud storage: DRF calls .url on every instance during
         # serialization, triggering one network request per object per list call.
-        fields = ["id", "apreensao", "acao", "data"]
+        fields = ["id", "apreensao", "usuario", "acao", "data"]
 
 
 class LoteIncineracaoSerializer(serializers.ModelSerializer):
