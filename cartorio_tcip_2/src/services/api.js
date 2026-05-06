@@ -16,6 +16,17 @@ function getHeaders(isFormData = false) {
   return headers;
 }
 
+// 🛡️ Helper para manter a paginação dentro do Proxy do Vite
+function fixPaginationUrl(nextUrl) {
+  if (!nextUrl) return null;
+  // Se BASE_URL for vazio (estamos usando proxy local), removemos o domínio retornado pelo DRF
+  if (!BASE_URL && nextUrl.startsWith("http")) {
+    const urlObj = new URL(nextUrl);
+    return urlObj.pathname + urlObj.search;
+  }
+  return nextUrl;
+}
+
 // 🔍 LISTAR (suporta paginação)
 export async function getApreensoes(options = {}) {
   const { status, fetchAll = false } = options;
@@ -50,7 +61,7 @@ export async function getApreensoes(options = {}) {
     
     if (data.results) {
       allResults = [...allResults, ...data.results];
-      nextUrl = data.next; // DRF returns null when it's the last page
+      nextUrl = fixPaginationUrl(data.next); // DRF returns null when it's the last page
     } else {
       allResults = data;
       break;
@@ -98,7 +109,7 @@ export async function getApreensoesPaginado({ filters = {}, nextUrl = null } = {
   const data = await res.json();
   const result = {
     results: data.results || data,
-    next:    data.next    || null,
+    next:    fixPaginationUrl(data.next),
     count:   data.count   ?? null,
   };
 
