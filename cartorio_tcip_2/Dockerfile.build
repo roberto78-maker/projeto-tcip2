@@ -1,0 +1,26 @@
+# ── Dockerfile.build ──────────────────────────────────────────────────────────
+# Produz o bundle estático (dist/) do frontend React/Vite.
+# Usado pelo docker-compose --profile prod para gerar os assets
+# que o Django serve via WhiteNoise.
+# ─────────────────────────────────────────────────────────────────────────────
+
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copiar manifests primeiro (aproveita cache de layers do Docker)
+COPY package*.json ./
+RUN npm ci --prefer-offline
+
+# Copiar código fonte e construir
+COPY . .
+RUN npm run build
+
+# ── Estágio final: apenas o dist/ ────────────────────────────────────────────
+FROM alpine:3.19
+
+WORKDIR /dist
+COPY --from=builder /app/dist .
+
+# O entrypoint não faz nada — o volume é mapeado pelo compose
+CMD ["true"]
