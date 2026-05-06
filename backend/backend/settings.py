@@ -172,6 +172,7 @@ else:
     CORS_ALLOW_CREDENTIALS = True
     CORS_ALLOWED_ORIGINS = [
         "https://backend-tcip.onrender.com",
+        "https://projeto-tcip2.vercel.app",
     ]
     # Adiciona FRONTEND_URL se configurada (ex: domínio customizado)
     _extra_cors = os.environ.get("FRONTEND_URL")
