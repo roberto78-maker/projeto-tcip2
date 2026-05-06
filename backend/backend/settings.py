@@ -163,7 +163,7 @@ if FRONTEND_URL and FRONTEND_URL not in CSRF_TRUSTED_ORIGINS:
 
 if DEBUG:
     # Em dev: aceita o Vite dev server (localhost e IP de rede local)
-    CORS_ALLOW_ALL_ORIGINS = True   # simplifica dev com dispositivos externos
+    CORS_ALLOW_ALL_ORIGINS = True  # simplifica dev com dispositivos externos
     CORS_ALLOW_CREDENTIALS = True
 else:
     # Em produção: Django serve o próprio frontend (mesmo domínio = sem CORS)
