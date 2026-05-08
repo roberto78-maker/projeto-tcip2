@@ -19,7 +19,8 @@ export const CRIMES_GERAIS = [
   "Conduzir Veículo sem Habilitação: Artigo 309 do CTB",
   "Perturbação do Sossego: Artigo 42 da LCP",
   "Drogas para Consumo Pessoal: Artigo 28 da Lei 11.343/06",
-  "Jogos de Azar: Artigo 50 da LCP"
+  "Jogos de Azar: Artigo 50 da LCP",
+  "Porte Ilegal de Arma Branca: Artigo 19 da LCP"
 ];
 
 export const VARAS = [
