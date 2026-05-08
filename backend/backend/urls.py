@@ -67,7 +67,7 @@ urlpatterns = [
     ),
     # 🌐 Frontend SPA — captura tudo que não é API
     re_path(
-        r"^(?!api/|tcip-painel-restrito/|static/|media/|swagger/|redoc/).*",
+        r"^(?!api|tcip-painel-restrito|static|media|swagger|redoc).*",
         TemplateView.as_view(template_name="index.html"),
     ),
 ]
