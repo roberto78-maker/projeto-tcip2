@@ -24,7 +24,7 @@ class ApreensaoAdmin(admin.ModelAdmin):
     )
     list_filter = ("status", "substancia", "vara", "data_criacao")
     search_fields = ("bou", "processo", "reu", "substancia", "vara", "policial")
-    readonly_fields = ("data_criacao", "arquivo_pdf_url")
+    readonly_fields = ("data_criacao", "arquivo_pdf_url", "arquivo_pdf")
     list_per_page = 30
     ordering = ("-data_criacao",)
     inlines = [HistoricoInline]
