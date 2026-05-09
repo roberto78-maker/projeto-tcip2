@@ -19,11 +19,5 @@ else:
     print('Superusuário já existe')
 EOF
 
-# ============================================================
-# GO LIVE: Limpar dados ficticios de teste (EXECUTAR UMA UNICA VEZ)
-# REMOVER ESTE BLOCO APOS O PRIMEIRO DEPLOY BEM-SUCEDIDO!
-# ============================================================
-python manage.py go_live --confirm
-
 # Collect static files
 python manage.py collectstatic --no-input
