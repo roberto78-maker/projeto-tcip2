@@ -33,7 +33,10 @@ from custodia.models import Apreensao, Historico, LoteIncineracao
 
 
 class Command(BaseCommand):
-    help = "Inaugura o sistema: limpa todos os dados ficticios mantendo usuarios e estrutura."
+    help = (
+        "Inaugura o sistema: limpa todos os dados ficticios"
+        " mantendo usuarios e estrutura."
+    )
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -112,7 +115,9 @@ class Command(BaseCommand):
 
         # -- 2. Apagar historico automatico (simple-history) ---------
         deleted_hist_apr = Apreensao.history.all().delete()
-        self.stdout.write(f"  [OK] Historico automatico (Apreensao): {deleted_hist_apr[0]}")
+        self.stdout.write(
+            f"  [OK] Historico automatico (Apreensao): {deleted_hist_apr[0]}"
+        )
 
         deleted_hist_lote = LoteIncineracao.history.all().delete()
         self.stdout.write(f"  [OK] Historico automatico (Lote): {deleted_hist_lote[0]}")
