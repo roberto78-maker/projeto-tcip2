@@ -26,6 +26,7 @@ import shutil
 
 # pyrefly: ignore [missing-import]
 from django.conf import settings
+
 # pyrefly: ignore [missing-import]
 from django.core.management.base import BaseCommand
 
@@ -66,7 +67,8 @@ class Command(BaseCommand):
         pdf_count = 0
         if os.path.exists(pdf_dir):
             pdf_count = sum(
-                1 for f in os.listdir(pdf_dir)
+                1
+                for f in os.listdir(pdf_dir)
                 if os.path.isfile(os.path.join(pdf_dir, f))
             )
         counts["Arquivos PDF locais"] = pdf_count
@@ -90,16 +92,16 @@ class Command(BaseCommand):
         self.stdout.write("")
 
         if total == 0:
-            self.stdout.write(self.style.SUCCESS(
-                "  O sistema ja esta limpo! Nenhum dado ficticio encontrado."
-            ))
+            self.stdout.write(
+                self.style.SUCCESS(
+                    "  O sistema ja esta limpo! Nenhum dado ficticio encontrado."
+                )
+            )
             return
 
         # -- Confirmacao ---------------------------------------------
         if not options["confirm"]:
-            self.stdout.write(self.style.ERROR(
-                "  ATENCAO: Esta acao eh IRREVERSIVEL!"
-            ))
+            self.stdout.write(self.style.ERROR("  ATENCAO: Esta acao eh IRREVERSIVEL!"))
             self.stdout.write("")
             resposta = input("  Digite 'GO LIVE' para confirmar a limpeza: ")
             if resposta.strip() != "GO LIVE":
