@@ -61,6 +61,10 @@ class ApreensaoAdmin(admin.ModelAdmin):
             "📅 Datas",
             {"fields": ("data_criacao",), "classes": ("collapse",)},
         ),
+        (
+            "📄 Documentação (Ofício)",
+            {"fields": ("numero_oficio", "ano_oficio")},
+        ),
     )
 
     def peso_formatado(self, obj):

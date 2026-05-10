@@ -12,20 +12,7 @@ const MESES = [
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro",
 ];
 
-/**
- * Chave do localStorage para o contador sequencial do ofício.
- * Próximo número a usar é armazenado aqui.
- */
-const OFICIO_COUNTER_KEY = "oficio_numero_sequencial";
 
-/**
- * Obtém o próximo número sequencial do ofício e incrementa o contador.
- */
-function getProximoNumeroOficio() {
-  const atual = parseInt(localStorage.getItem(OFICIO_COUNTER_KEY) || "97", 10);
-  localStorage.setItem(OFICIO_COUNTER_KEY, String(atual + 1));
-  return atual;
-}
 
 /**
  * Carrega uma imagem e retorna uma Promise que resolve quando estiver pronta.
@@ -118,8 +105,8 @@ export async function gerarOficioEncaminhamentoPdf(item) {
   // ══════════════════════════════════════════════════════════════════════════
 
   const agora = new Date();
-  const numOficio = getProximoNumeroOficio();
-  const anoOficio = agora.getFullYear();
+  const numOficio = item.numero_oficio || 0;
+  const anoOficio = item.ano_oficio || agora.getFullYear();
   const mesExtenso = MESES[agora.getMonth()];
 
   doc.setFont("helvetica", "bold");

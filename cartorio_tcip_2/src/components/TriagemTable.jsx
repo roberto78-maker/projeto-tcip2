@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { gerarOficioEncaminhamentoPdf } from "../services/oficioPdf.js";
+import { gerarNumeroOficio, invalidateApreensaoCache } from "../services/api.js";
 
 const formatarPesoDisplay = (valor, unidade) => {
   const num = parseFloat(String(valor).replace(",", ".")) || 0;
@@ -38,7 +39,14 @@ export function TriagemTable({
   const handleGerarOficio = async (item) => {
     setGerandoOficio(item.id);
     try {
-      await gerarOficioEncaminhamentoPdf(item);
+      // 1. Garante que o item tem um número de ofício (gera no backend se necessário)
+      const itemAtualizado = await gerarNumeroOficio(item.id);
+      
+      // 2. Gera o PDF com os dados atualizados
+      await gerarOficioEncaminhamentoPdf(itemAtualizado);
+      
+      // 3. Invalida o cache para que a tabela mostre o número se o usuário atualizar
+      invalidateApreensaoCache();
     } catch (err) {
       console.error("Erro ao gerar ofício:", err);
       alert("Erro ao gerar ofício. Tente novamente.");

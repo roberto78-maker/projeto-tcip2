@@ -84,6 +84,10 @@ class Apreensao(models.Model):
     data_fato = models.DateTimeField(blank=True, null=True)
     data_criacao = models.DateTimeField(auto_now_add=True, db_index=True)
 
+    # Persistência de numeração de ofícios
+    numero_oficio = models.IntegerField(blank=True, null=True)
+    ano_oficio = models.IntegerField(blank=True, null=True)
+
     history = HistoricalRecords()
 
     def __str__(self):

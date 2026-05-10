@@ -8,7 +8,7 @@ from collections import defaultdict
 import cloudinary.uploader
 from django.conf import settings
 from django.core.files.storage import default_storage
-from django.db.models import Count, Q, Sum
+from django.db.models import Count, Max, Q, Sum
 from django.http import HttpResponse
 from django.utils import timezone
 from django_filters import rest_framework as django_filters
@@ -480,6 +480,41 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
                 {"error": f"Falha no upload: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+    @action(detail=True, methods=["post"])
+    def gerar_numero_oficio(self, request, pk=None):
+        """
+        Gera um número sequencial único de ofício para o ano atual.
+        Se a apreensão já tiver um número, retorna o mesmo.
+        """
+        apreensao = self.get_object()
+        ano_atual = timezone.now().year
+
+        # Se já tiver número e for do mesmo ano, não faz nada
+        if apreensao.numero_oficio and apreensao.ano_oficio == ano_atual:
+            return Response(ApreensaoSerializer(apreensao).data)
+
+        # Busca o maior número de ofício do ano atual
+        ultimo_oficio = Apreensao.objects.filter(ano_oficio=ano_atual).aggregate(
+            Max("numero_oficio")
+        )["numero_oficio__max"]
+
+        # Se não houver nenhum, começa do 100 (ou o valor que preferirem)
+        # O usuário mencionou que estava no 97+ no frontend. 
+        # Vamos manter uma base razoável se for o primeiro do ano.
+        novo_numero = (ultimo_oficio + 1) if ultimo_oficio else 100
+
+        apreensao.numero_oficio = novo_numero
+        apreensao.ano_oficio = ano_atual
+        apreensao.save(update_fields=["numero_oficio", "ano_oficio"])
+
+        Historico.objects.create(
+            apreensao=apreensao,
+            usuario=request.user if request.user.is_authenticated else None,
+            acao=f"Gerou número de ofício: {str(novo_numero).zfill(3)}/{ano_atual}",
+        )
+
+        return Response(ApreensaoSerializer(apreensao).data)
 
 
 class RelatorioIncineracaoView(APIView):

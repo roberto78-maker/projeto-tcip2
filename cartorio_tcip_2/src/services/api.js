@@ -326,3 +326,18 @@ export async function getUserProfile() {
   if (!res.ok) throw new Error("Erro ao buscar perfil do usuário");
   return await res.json();
 }
+
+// 🔢 GERAR NÚMERO DE OFÍCIO
+export async function gerarNumeroOficio(id) {
+  const res = await fetch(`${API_URL}${id}/gerar_numero_oficio/`, {
+    method: "POST",
+    headers: getHeaders()
+  });
+
+  if (!res.ok) {
+    const erro = await res.json();
+    throw new Error(erro.error || "Erro ao gerar número de ofício");
+  }
+
+  return await res.json();
+}
