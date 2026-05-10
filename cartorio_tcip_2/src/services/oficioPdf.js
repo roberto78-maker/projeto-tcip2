@@ -232,23 +232,72 @@ export async function gerarOficioEncaminhamentoPdf(item) {
 
   y += 20;
 
-  // Selo/Carimbo PM à direita (posicionado no mesmo nível do destinatário)
-  const seloX = pageWidth - marginX - 35;
-  const seloY = y - 5;
-  if (imgPM) {
-    try { doc.addImage(imgPM, "PNG", seloX, seloY, 30, 36); } catch {}
+  // Selo/Carimbo do Termo Circunstanciado à direita
+  const cx = pageWidth - marginX - 25; // Centro X do carimbo
+  const cy = y + 10;                   // Centro Y do carimbo
+
+  doc.setDrawColor(0);
+  doc.setLineWidth(0.4);
+  doc.circle(cx, cy, 18, "S"); // Círculo externo
+  doc.setLineWidth(0.2);
+  doc.circle(cx, cy, 12, "S"); // Círculo interno
+
+  doc.setFont("helvetica", "bold");
+  
+  // Texto central empilhado
+  doc.setFontSize(8);
+  doc.text("TERMO", cx, cy - 2, { align: "center", baseline: "middle" });
+  doc.text("CIRCUNSTANCIADO", cx, cy + 3, { align: "center", baseline: "middle" });
+
+  // Texto em arco superior: ESTADO DO PARANÁ
+  const textoTop = "ESTADO DO PARANA";
+  const raioArc = 15;
+  const anguloLetraTop = 11; // Espaçamento em graus
+  let angTop = 270 - ((textoTop.length - 1) * anguloLetraTop) / 2;
+
+  doc.setFontSize(9);
+  for (let i = 0; i < textoTop.length; i++) {
+    const rad = (angTop * Math.PI) / 180;
+    const px = cx + raioArc * Math.cos(rad);
+    const py = cy + raioArc * Math.sin(rad);
+    doc.text(textoTop[i], px, py, {
+      align: "center",
+      baseline: "middle",
+      angle: angTop + 90
+    });
+    angTop += anguloLetraTop;
+  }
+
+  // Texto em arco inferior: POLÍCIA MILITAR
+  const textoBot = "POLICIA MILITAR";
+  const anguloLetraBot = 13;
+  let angBot = 90 + ((textoBot.length - 1) * anguloLetraBot) / 2;
+
+  for (let i = 0; i < textoBot.length; i++) {
+    const rad = (angBot * Math.PI) / 180;
+    const px = cx + raioArc * Math.cos(rad);
+    const py = cy + raioArc * Math.sin(rad);
+    doc.text(textoBot[i], px, py, {
+      align: "center",
+      baseline: "middle",
+      angle: angBot - 90
+    });
+    angBot -= anguloLetraBot;
   }
 
   // Destinatário à esquerda
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
   doc.text("Exmo.(A) Sr.(A)", marginX, y);
   y += 6;
   doc.text("Juiz (A) de Direito", marginX, y);
   y += 6;
+  doc.setTextColor(220, 38, 38); // Red
   doc.text(item.vara || "Vara Especial Criminal", marginX, y);
+  doc.setTextColor(0, 0, 0); // Black
   y += 6;
-  doc.text("Cascavel – Pr.", marginX, y);
+  doc.text("Cascavel - Pr.", marginX, y);
 
   // ══════════════════════════════════════════════════════════════════════════
   // RODAPÉ — linha + endereço + contato (fundo da página)
@@ -263,13 +312,13 @@ export async function gerarOficioEncaminhamentoPdf(item) {
   doc.setFontSize(7);
   doc.setTextColor(0, 0, 0);
   doc.text(
-    "Rua Pernambuco, 2063 – Recanto Tropical – Cascavel – PR – CEP 85.810-271",
+    "Rua Flamboyant, 2659 – Recanto Tropical – Cascavel – PR – CEP 85.807-317",
     centerX,
     footerY + 5,
     { align: "center" }
   );
   doc.text(
-    "Fone/WhatsApp: (45) 3321 – 4621 | E-mail: 6bpm-1cartorio@pm.pr.gov.br",
+    "Fone/WhatsApp: (45) 3122 – 4025 | E-mail: 6bpm-1cartorio@pm.pr.gov.br",
     centerX,
     footerY + 10,
     { align: "center" }
