@@ -156,11 +156,9 @@ class ApreensaoFilter(django_filters.FilterSet):
     bou = django_filters.CharFilter(field_name="bou", lookup_expr="icontains")
     processo = django_filters.CharFilter(field_name="processo", lookup_expr="icontains")
     data_inicio = django_filters.DateTimeFilter(
-        field_name="data_criacao", lookup_expr="gte"
+        field_name="data_fato", lookup_expr="gte"
     )
-    data_fim = django_filters.DateTimeFilter(
-        field_name="data_criacao", lookup_expr="lte"
-    )
+    data_fim = django_filters.DateTimeFilter(field_name="data_fato", lookup_expr="lte")
     natureza = django_filters.CharFilter(field_name="natureza")
     excluir_natureza = django_filters.CharFilter(method="filter_excluir_natureza")
     tem_apreensao = django_filters.BooleanFilter(field_name="tem_apreensao")
@@ -534,9 +532,9 @@ class RelatorioIncineracaoView(APIView):
         reu = request.GET.get("reu")
 
         if data_inicio:
-            qs = qs.filter(data_criacao__gte=data_inicio)
+            qs = qs.filter(data_fato__gte=data_inicio)
         if data_fim:
-            qs = qs.filter(data_criacao__lte=data_fim)
+            qs = qs.filter(data_fato__lte=data_fim)
         if vara:
             qs = qs.filter(vara__icontains=vara)
         if substancia == "__NENHUMA__":
@@ -645,9 +643,9 @@ class RelatorioIncineracaoPDFView(APIView):
         reu = request.GET.get("reu")
 
         if data_inicio:
-            qs = qs.filter(data_criacao__gte=data_inicio)
+            qs = qs.filter(data_fato__gte=data_inicio)
         if data_fim:
-            qs = qs.filter(data_criacao__lte=data_fim)
+            qs = qs.filter(data_fato__lte=data_fim)
         if vara:
             qs = qs.filter(vara__icontains=vara)
         if substancia == "__NENHUMA__":
