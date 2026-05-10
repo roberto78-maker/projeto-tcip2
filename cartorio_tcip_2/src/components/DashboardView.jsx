@@ -251,7 +251,35 @@ export default function DashboardView() {
         </div>
 
         {/* Total footer */}
-        <div style={{ marginTop: "20px", paddingTop: "15px", borderTop: "1px solid #e2e8f0", display: "flex", justifyContent: "flex-end" }}>
+        <div style={{ marginTop: "20px", paddingTop: "15px", borderTop: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <button
+              onClick={async () => {
+                if (window.confirm("⚠️ ATENÇÃO: Isso apagará TODOS os dados de teste e iniciará o contador de ofícios em 100. Deseja continuar?")) {
+                  try {
+                    const { resetSystem } = await import("../services/api.js");
+                    const res = await resetSystem();
+                    alert(res.message);
+                    window.location.reload();
+                  } catch (e) {
+                    alert("Erro ao resetar: " + e.message);
+                  }
+                }
+              }}
+              style={{
+                background: "#fee2e2",
+                color: "#dc2626",
+                border: "1px solid #fecaca",
+                padding: "8px 16px",
+                borderRadius: "6px",
+                fontSize: "12px",
+                fontWeight: "600",
+                cursor: "pointer"
+              }}
+            >
+              🚀 Resetar Sistema para Produção (Inauguração)
+            </button>
+          </div>
           <span style={{ fontSize: "12px", color: "#94a3b8" }}>
             Total de registros no sistema: <strong style={{ color: "#1e293b" }}>{stats.total}</strong>
           </span>

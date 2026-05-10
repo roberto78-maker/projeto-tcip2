@@ -341,3 +341,17 @@ export async function gerarNumeroOficio(id) {
 
   return await res.json();
 }
+// ? RESET DO SISTEMA (Apenas Superusers)
+export async function resetSystem() {
+  const res = await fetch(${BASE_URL}/api/system/reset/, {
+    method: 'POST',
+    headers: getHeaders(),
+  });
+
+  if (!res.ok) {
+    const erro = await res.json();
+    throw new Error(erro.error || 'Erro ao resetar sistema');
+  }
+
+  return await res.json();
+}
