@@ -85,17 +85,17 @@ export async function gerarOficioEncaminhamentoPdf(item) {
   // CABEÇALHO (Brasões e Textos Institucionais)
   // ══════════════════════════════════════════════════════════════════════════
 
-  const headerImgWidth = 16;
-  const headerImgHeight = 20;
+  const headerImgWidth = 22;
+  const headerImgHeight = 28;
 
   // Brasão do Estado do Paraná (esquerdo)
   if (imgParana) {
-    try { doc.addImage(imgParana, "PNG", marginL, y - 5, headerImgWidth, headerImgHeight); } catch {}
+    try { doc.addImage(imgParana, "PNG", marginL, y - 8, headerImgWidth, headerImgHeight); } catch {}
   }
 
   // Brasão da PM / 6º BPM (direito)
   if (imgPM) {
-    try { doc.addImage(imgPM, "PNG", pageWidth - marginR - headerImgWidth, y - 5, headerImgWidth, headerImgHeight); } catch {}
+    try { doc.addImage(imgPM, "PNG", pageWidth - marginR - headerImgWidth, y - 8, headerImgWidth, headerImgHeight); } catch {}
   }
 
   doc.setFont("helvetica", "bold");
