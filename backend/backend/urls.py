@@ -12,7 +12,7 @@ from custodia.views import (
     RelatorioIncineracaoPDFView,
     DashboardStatsView,
     UserProfileView,
-    ResetSystemView,
+    # ResetSystemView,
 )
 
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -73,11 +73,11 @@ urlpatterns = [
         UserProfileView.as_view(),
         name="user_profile",
     ),
-    path(
-        "api/system/reset/",
-        ResetSystemView.as_view(),
-        name="system_reset",
-    ),
+    # path(
+    #     "api/system/reset/",
+    #     ResetSystemView.as_view(),
+    #     name="system_reset",
+    # ),
     # 🌐 Frontend SPA — captura tudo que não é API
     re_path(
         r"^(?!api|tcip-painel-restrito|static|media|swagger|redoc|favicon\.ico).*",

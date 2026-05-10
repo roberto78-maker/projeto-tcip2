@@ -983,28 +983,28 @@ class UserProfileView(APIView):
         )
 
 
-class ResetSystemView(APIView):
-    """
-    Temporary view to trigger the go_live command via API.
-    Required because Render Free Tier doesn't allow Shell access.
-    """
-
-    permission_classes = [permissions.IsAdminUser]
-
-    def post(self, request):
-        if not request.user.is_superuser:
-            return Response(
-                {"error": "Acesso negado"}, status=status.HTTP_403_FORBIDDEN
-            )
-
-        try:
-            # Executa o comando go_live com a flag --confirm
-            call_command("go_live", "--confirm")
-            return Response(
-                {"message": "Sistema resetado com sucesso! Pronto para uso."}
-            )
-        except Exception as e:
-            return Response(
-                {"error": f"Erro ao resetar: {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+# class ResetSystemView(APIView):
+#     """
+#     Temporary view to trigger the go_live command via API.
+#     Required because Render Free Tier doesn't allow Shell access.
+#     """
+#
+#     permission_classes = [permissions.IsAdminUser]
+#
+#     def post(self, request):
+#         if not request.user.is_superuser:
+#             return Response(
+#                 {"error": "Acesso negado"}, status=status.HTTP_403_FORBIDDEN
+#             )
+#
+#         try:
+#             # Executa o comando go_live com a flag --confirm
+#             call_command("go_live", "--confirm")
+#             return Response(
+#                 {"message": "Sistema resetado com sucesso! Pronto para uso."}
+#             )
+#         except Exception as e:
+#             return Response(
+#                 {"error": f"Erro ao resetar: {str(e)}"},
+#                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#             )
