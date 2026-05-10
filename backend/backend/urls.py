@@ -11,6 +11,7 @@ from custodia.views import (
     RelatorioIncineracaoView,
     RelatorioIncineracaoPDFView,
     DashboardStatsView,
+    UserProfileView,
 )
 
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -64,6 +65,12 @@ urlpatterns = [
         "api/dashboard/stats/",
         DashboardStatsView.as_view(),
         name="dashboard_stats",
+    ),
+    # 👤 User profile — returns operator's full name for documents
+    path(
+        "api/me/",
+        UserProfileView.as_view(),
+        name="user_profile",
     ),
     # 🌐 Frontend SPA — captura tudo que não é API
     re_path(

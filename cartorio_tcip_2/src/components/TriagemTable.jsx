@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import { gerarOficioEncaminhamentoPdf } from "../services/oficioPdf.js";
 
 const formatarPesoDisplay = (valor, unidade) => {
   const num = parseFloat(String(valor).replace(",", ".")) || 0;
@@ -32,6 +33,20 @@ export function TriagemTable({
   abrirModalDespacho,
   abrirModalExclusao,
 }) {
+  const [gerandoOficio, setGerandoOficio] = useState(null);
+
+  const handleGerarOficio = async (item) => {
+    setGerandoOficio(item.id);
+    try {
+      await gerarOficioEncaminhamentoPdf(item);
+    } catch (err) {
+      console.error("Erro ao gerar ofício:", err);
+      alert("Erro ao gerar ofício. Tente novamente.");
+    } finally {
+      setGerandoOficio(null);
+    }
+  };
+
   return (
     <div className="table-container">
       <table className="tcip-table">
@@ -78,6 +93,25 @@ export function TriagemTable({
                 </td>
                 <td style={{ textAlign: "right" }}>
                   <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+                    <button
+                      className="btn-oficio"
+                      onClick={() => handleGerarOficio(item)}
+                      disabled={gerandoOficio === item.id}
+                      style={{
+                        padding: "8px 12px",
+                        border: "none",
+                        color: "white",
+                        background: gerandoOficio === item.id ? "#9ca3af" : "#d97706",
+                        borderRadius: "6px",
+                        fontWeight: "600",
+                        cursor: gerandoOficio === item.id ? "not-allowed" : "pointer",
+                        fontSize: "12px",
+                        transition: "all 0.2s ease",
+                      }}
+                      title="Gerar Ofício de Encaminhamento"
+                    >
+                      {gerandoOficio === item.id ? "..." : "OFÍCIO"}
+                    </button>
                     <button className="btn-green" onClick={() => abrirModalDespacho(item)}>
                       TRIAR
                     </button>
@@ -128,3 +162,4 @@ export function TriagemTable({
     </div>
   );
 }
+

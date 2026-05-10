@@ -920,3 +920,25 @@ class RelatorioIncineracaoPDFView(APIView):
         filename = f"relatorio_radar_{protocolo_hash}.pdf"
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response
+
+
+class UserProfileView(APIView):
+    """
+    Returns the authenticated user's profile information.
+    Used by the frontend to display the operator's full name in documents
+    (e.g. Ofício de Encaminhamento).
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        full_name = user.get_full_name() or user.username
+        return Response(
+            {
+                "username": user.username,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "full_name": full_name,
+            }
+        )

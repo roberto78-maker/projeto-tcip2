@@ -317,3 +317,12 @@ export async function downloadRelatorioPdf(filtros = {}) {
   // Revoga a URL após um curto delay para garantir que o browser processou
   setTimeout(() => window.URL.revokeObjectURL(blobUrl), 5000);
 }
+
+// 👤 PERFIL DO USUÁRIO — retorna nome completo do operador
+export async function getUserProfile() {
+  const res = await fetch(`${BASE_URL}/api/me/`, {
+    headers: getHeaders()
+  });
+  if (!res.ok) throw new Error("Erro ao buscar perfil do usuário");
+  return await res.json();
+}
