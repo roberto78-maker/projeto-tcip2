@@ -28,7 +28,7 @@ from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.core.management import call_command
+
 
 from .models import Apreensao, LoteIncineracao, Historico
 from .serializers import ApreensaoSerializer, LoteIncineracaoSerializer
