@@ -1,7 +1,8 @@
 import jsPDF from "jspdf";
 import { getUserProfile } from "./api.js";
 import { getUsuario } from "./auth.js";
-import logoBpm from "../assets/brasao.png";
+import brasaoPM from "../assets/brasao.png";
+import brasaoParana from "../assets/brasao_parana.png";
 
 /**
  * Meses em português para composição da data por extenso
@@ -12,10 +13,39 @@ const MESES = [
 ];
 
 /**
+ * Chave do localStorage para o contador sequencial do ofício.
+ * Próximo número a usar é armazenado aqui.
+ */
+const OFICIO_COUNTER_KEY = "oficio_numero_sequencial";
+
+/**
+ * Obtém o próximo número sequencial do ofício e incrementa o contador.
+ * Se não existir, inicializa em 97 (conforme orientação do cartorário).
+ */
+function getProximoNumeroOficio() {
+  const atual = parseInt(localStorage.getItem(OFICIO_COUNTER_KEY) || "97", 10);
+  localStorage.setItem(OFICIO_COUNTER_KEY, String(atual + 1));
+  return atual;
+}
+
+/**
+ * Carrega uma imagem e retorna uma Promise que resolve quando estiver pronta.
+ */
+function carregarImagem(src) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
+
+/**
  * Gera o Ofício de Encaminhamento de Objeto Apreendido em PDF.
+ * Modelo fielmente baseado no documento oficial do 1º Cartório - TCIP / 6º BPM.
  *
  * @param {Object} item - O objeto da apreensão vindo da API (item da triagem)
- *   Campos usados: bou, processo, reu, substancia, peso, unidade, vara, descricao
+ *   Campos usados: bou, processo, reu, substancia, peso, unidade, vara
  */
 export async function gerarOficioEncaminhamentoPdf(item) {
   // ── Buscar nome completo do operador do backend ──────────────────────────
@@ -25,7 +55,6 @@ export async function gerarOficioEncaminhamentoPdf(item) {
     const perfil = await getUserProfile();
     nomeOperador = perfil.full_name || perfil.username || "OPERADOR";
   } catch {
-    // Fallback: usa o username do localStorage
     const usuario = getUsuario();
     nomeOperador = usuario?.username?.toUpperCase() || "OPERADOR";
   }
@@ -34,60 +63,68 @@ export async function gerarOficioEncaminhamentoPdf(item) {
   const userLocal = getUsuario();
   const usernameParts = (userLocal?.username || "").split("_");
   if (usernameParts.length >= 2 && nomeOperador === (userLocal?.username || "").toUpperCase()) {
-    // Se o full_name não foi configurado, monta a partir do username
     patenteOperador = usernameParts[0] + ".";
     nomeOperador = usernameParts.slice(1).join(" ");
   }
 
+  // ── Carregar ambas as imagens ──────────────────────────────────────────
+  const [imgParana, imgPM] = await Promise.all([
+    carregarImagem(brasaoParana),
+    carregarImagem(brasaoPM),
+  ]);
+
   const doc = new jsPDF();
-  const marginX = 20;
+  const marginX = 25;
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const contentWidth = pageWidth - marginX * 2;
   const centerX = pageWidth / 2;
-  let y = 20;
+  let y = 22;
 
-  // ── Carregar brasão ────────────────────────────────────────────────────
-  const img = new Image();
-  img.src = logoBpm;
-  await new Promise((resolve) => {
-    img.onload = resolve;
-    img.onerror = resolve;
-  });
+  // ══════════════════════════════════════════════════════════════════════════
+  // CABEÇALHO — Brasão do Paraná (esquerda) + Texto + Brasão PM (direita)
+  // ══════════════════════════════════════════════════════════════════════════
 
-  // ── CABEÇALHO ──────────────────────────────────────────────────────────
-  // Brasão esquerdo
-  try {
-    doc.addImage(img, "PNG", marginX + 5, y, 22, 26);
-  } catch {}
-  // Brasão direito
-  try {
-    doc.addImage(img, "PNG", pageWidth - marginX - 27, y, 22, 26);
-  } catch {}
+  // Brasão do Estado do Paraná (esquerdo)
+  if (imgParana) {
+    try { doc.addImage(imgParana, "PNG", marginX, y - 2, 20, 24); } catch {}
+  }
 
+  // Brasão da PM / 6º BPM (direito)
+  if (imgPM) {
+    try { doc.addImage(imgPM, "PNG", pageWidth - marginX - 20, y - 2, 20, 24); } catch {}
+  }
+
+  // Texto central do cabeçalho
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.text("ESTADO DO PARANA", centerX, y + 8, { align: "center" });
+  doc.setFontSize(11);
+  doc.text("ESTADO DO PARANÁ", centerX, y + 4, { align: "center" });
   doc.setFontSize(10);
-  doc.text("POLICIA MILITAR", centerX, y + 14, { align: "center" });
-  doc.text("5o COMANDO REGIONAL", centerX, y + 20, { align: "center" });
-  doc.text("SEXTO BATALHAO DE POLICIA MILITAR", centerX, y + 26, { align: "center" });
+  doc.text("POLÍCIA MILITAR", centerX, y + 9, { align: "center" });
+  doc.text("5º COMANDO REGIONAL", centerX, y + 14, { align: "center" });
+  doc.setFontSize(9);
+  doc.text("SEXTO BATALHÃO DE POLÍCIA MILITAR", centerX, y + 19, { align: "center" });
 
-  y += 36;
+  y += 28;
+
+  // Linha separadora
   doc.setDrawColor(0);
-  doc.setLineWidth(0.5);
+  doc.setLineWidth(0.4);
   doc.line(marginX, y, pageWidth - marginX, y);
   y += 10;
 
-  // ── NÚMERO DO OFÍCIO E DATA ────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════════════
+  // NÚMERO DO OFÍCIO (sequencial) + DATA POR EXTENSO
+  // ══════════════════════════════════════════════════════════════════════════
+
   const agora = new Date();
-  const numOficio = Math.floor(Math.random() * 900) + 100;
+  const numOficio = getProximoNumeroOficio();
   const anoOficio = agora.getFullYear();
   const mesExtenso = MESES[agora.getMonth()];
 
-  doc.setFont("helvetica", "normal");
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
-  doc.text(`Oficio no ${String(numOficio).padStart(3, "0")}/${anoOficio}`, marginX, y);
+  doc.text(`Ofício nº ${String(numOficio).padStart(3, "0")}/${anoOficio}`, marginX, y);
   doc.text(
     `Cascavel, ${agora.getDate()} de ${mesExtenso} de ${anoOficio}`,
     pageWidth - marginX,
@@ -97,131 +134,151 @@ export async function gerarOficioEncaminhamentoPdf(item) {
 
   y += 16;
 
-  // ── ASSUNTO ────────────────────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════════════
+  // ASSUNTO
+  // ══════════════════════════════════════════════════════════════════════════
+
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
-  doc.text("ASSUNTO: ", marginX, y);
+  doc.text("ASSUNTO:", marginX, y);
   doc.setFont("helvetica", "normal");
-  doc.text("Encaminhamento de objeto apreendido", marginX + 25, y);
+  doc.text("Encaminhamento de objeto apreendido", marginX + 24, y);
 
-  y += 12;
+  y += 14;
 
-  // ── CORPO DO OFÍCIO ────────────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════════════
+  // CORPO DO OFÍCIO
+  // ══════════════════════════════════════════════════════════════════════════
+
   doc.setFont("helvetica", "bold");
+  doc.setFontSize(10);
   doc.text("Encaminho-lhe o seguinte objeto:", marginX, y);
   y += 10;
 
-  // Descrição do objeto (substancia + peso + unidade)
-  const pesoDisplay = item.peso
-    ? `${parseFloat(String(item.peso).replace(",", ".")).toFixed(2).replace(".", ",")} ${item.unidade || ""}`
-    : "";
-  const descricaoObj = `${pesoDisplay ? pesoDisplay + " - " : ""}${(item.substancia || "NAO INFORMADO").toUpperCase()}`;
+  // Descrição do objeto
+  const pesoNum = parseFloat(String(item.peso || 0).replace(",", "."));
+  const unidade = item.unidade || "";
+  let pesoDisplay = "";
+  if (unidade === "Unid") {
+    pesoDisplay = `${Math.round(pesoNum).toString().padStart(2, "0")} Unid.`;
+  } else {
+    pesoDisplay = `${pesoNum.toFixed(2).replace(".", ",")} ${unidade}`;
+  }
+  const descricaoObj = `${pesoDisplay} - ${(item.substancia || "NAO INFORMADO").toUpperCase()}`;
 
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(220, 38, 38); // Vermelho para dados do cadastro
-  doc.setFontSize(10);
-  const descLines = doc.splitTextToSize(descricaoObj, contentWidth - 10);
-  doc.text(descLines, marginX + 10, y);
-  y += descLines.length * 6 + 6;
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(0, 0, 0);
+  const descLines = doc.splitTextToSize(descricaoObj, contentWidth - 20);
+  doc.text(descLines, marginX + 15, y);
+  y += descLines.length * 5 + 8;
 
   // BOU
-  doc.setTextColor(0, 0, 0);
   doc.setFont("helvetica", "bold");
-  doc.text("BOU: ", marginX, y);
-  doc.setTextColor(220, 38, 38);
+  doc.text("BOU:", marginX, y);
   doc.setFont("helvetica", "normal");
-  doc.text(item.bou || "", marginX + 12, y);
+  doc.text(item.bou || "", marginX + 13, y);
   y += 7;
 
   // Nº PROCESSO
-  doc.setTextColor(0, 0, 0);
   doc.setFont("helvetica", "bold");
-  doc.text("No PROCESSO: ", marginX, y);
-  doc.setTextColor(220, 38, 38);
+  doc.text("Nº PROCESSO:", marginX, y);
   doc.setFont("helvetica", "normal");
-  doc.text(item.processo || "", marginX + 34, y);
+  doc.text(item.processo || "", marginX + 36, y);
   y += 7;
 
   // AUTOR/RÉU
-  doc.setTextColor(0, 0, 0);
   doc.setFont("helvetica", "bold");
-  doc.text("AUTOR/REU: ", marginX, y);
-  doc.setTextColor(220, 38, 38);
+  doc.text("AUTOR/RÉU:", marginX, y);
   doc.setFont("helvetica", "normal");
-  doc.text((item.reu || "NAO INFORMADO").toUpperCase(), marginX + 29, y);
+  doc.text((item.reu || "NAO INFORMADO").toUpperCase(), marginX + 32, y);
 
-  doc.setTextColor(0, 0, 0); // Reset cor
+  // ══════════════════════════════════════════════════════════════════════════
+  // RESPEITOSAMENTE
+  // ══════════════════════════════════════════════════════════════════════════
 
-  y += 40;
+  y += 35;
 
-  // ── RESPEITOSAMENTE ────────────────────────────────────────────────────
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.text("Respeitosamente,", centerX, y, { align: "center" });
 
+  // ══════════════════════════════════════════════════════════════════════════
+  // ASSINATURA DO CARTORÁRIO (sem brasão abaixo)
+  // ══════════════════════════════════════════════════════════════════════════
+
   y += 30;
 
-  // ── ASSINATURA DO CARTORÁRIO ───────────────────────────────────────────
-  const lineWidth = 70;
-  const lineStartX = centerX - lineWidth / 2;
-  doc.line(lineStartX, y, lineStartX + lineWidth, y);
+  // Linha de assinatura
+  const sigLineW = 65;
+  const sigLineStartX = centerX - sigLineW / 2;
+  doc.line(sigLineStartX, y, sigLineStartX + sigLineW, y);
 
-  y += 6;
+  y += 5;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   const assinatura = patenteOperador
     ? `${patenteOperador} ${nomeOperador}`.toUpperCase()
     : nomeOperador.toUpperCase();
   doc.text(assinatura, centerX, y, { align: "center" });
+
   y += 5;
   doc.setFont("helvetica", "normal");
-  doc.text("CARTORARIO", centerX, y, { align: "center" });
+  doc.setFontSize(9);
+  doc.text("CARTORÁRIO", centerX, y, { align: "center" });
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // DESTINATÁRIO (esquerda) + SELO/CARIMBO (direita) — lado a lado
+  // ══════════════════════════════════════════════════════════════════════════
 
   y += 20;
 
-  // ── SELO / BRASÃO CENTRAL ──────────────────────────────────────────────
-  try {
-    doc.addImage(img, "PNG", centerX - 15, y, 30, 36);
-  } catch {}
+  // Selo/Carimbo PM à direita (posicionado no mesmo nível do destinatário)
+  const seloX = pageWidth - marginX - 35;
+  const seloY = y - 5;
+  if (imgPM) {
+    try { doc.addImage(imgPM, "PNG", seloX, seloY, 30, 36); } catch {}
+  }
 
-  y += 42;
-
-  // ── DESTINATÁRIO ───────────────────────────────────────────────────────
+  // Destinatário à esquerda
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.text("Exmo.(A) Sr.(A)", marginX, y);
   y += 6;
   doc.text("Juiz (A) de Direito", marginX, y);
   y += 6;
-  doc.setTextColor(220, 38, 38);
   doc.text(item.vara || "Vara Especial Criminal", marginX, y);
-  doc.setTextColor(0, 0, 0);
   y += 6;
-  doc.text("Cascavel - Pr.", marginX, y);
+  doc.text("Cascavel – Pr.", marginX, y);
 
-  // ── RODAPÉ ─────────────────────────────────────────────────────────────
-  const footerY = pageHeight - 20;
-  doc.setDrawColor(100);
+  // ══════════════════════════════════════════════════════════════════════════
+  // RODAPÉ — linha + endereço + contato (fundo da página)
+  // ══════════════════════════════════════════════════════════════════════════
+
+  const footerY = pageHeight - 22;
+  doc.setDrawColor(0);
   doc.setLineWidth(0.3);
   doc.line(marginX, footerY, pageWidth - marginX, footerY);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
-  doc.setTextColor(100, 100, 100);
+  doc.setTextColor(0, 0, 0);
   doc.text(
-    "Rua Pernambuco, 2063 - Regiao do Lago - Cascavel - PR - CEP 85.810-271",
+    "Rua Pernambuco, 2063 – Recanto Tropical – Cascavel – PR – CEP 85.810-271",
     centerX,
     footerY + 5,
     { align: "center" }
   );
   doc.text(
-    "Fone/WhatsApp: (45) 3321-4621 | Email: 6bpm-1cartorio@pm.pr.gov.br",
+    "Fone/WhatsApp: (45) 3321 – 4621 | E-mail: 6bpm-1cartorio@pm.pr.gov.br",
     centerX,
     footerY + 10,
     { align: "center" }
   );
 
-  // ── SALVAR ─────────────────────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════════════
+  // SALVAR PDF
+  // ══════════════════════════════════════════════════════════════════════════
+
   const bouFormatado = (item.bou || "SEM-BOU").replace(/\//g, "-");
   doc.save(`OFICIO_APREENSAO_${bouFormatado}.pdf`);
 }
