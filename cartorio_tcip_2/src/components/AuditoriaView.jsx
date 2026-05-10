@@ -327,7 +327,7 @@ export default function AuditoriaView() {
           </div>
           
           <div className="auditoria-filtro-coluna">
-            <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>Registrado entre (Data Início):</label>
+            <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>Ocorrido entre (Data do Fato):</label>
             <input type="date" name="data_inicio" value={filtros.data_inicio} onChange={handleFiltroChange} className="input-tcip" />
           </div>
           
@@ -409,7 +409,7 @@ export default function AuditoriaView() {
                   <th>Substância / Objeto</th>
                   <th>Localização (Status)</th>
                   <th>Vara</th>
-                  <th>Data Registro</th>
+                  <th>Data do Fato</th>
                 </tr>
               </thead>
               <tbody>

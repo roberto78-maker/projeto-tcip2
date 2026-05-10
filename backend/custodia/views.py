@@ -572,14 +572,14 @@ class RelatorioIncineracaoView(APIView):
             "peso",
             "unidade",
             "vara",
-            "data_criacao",
+            "data_fato",
             "status",
             "processo",
             "reu",
             "motivo_exclusao",
             "lote_incineracao__numero",
             "lote_incineracao__data_criacao",
-        ).order_by("-data_criacao")[:500]
+        ).order_by("-data_fato")[:500]
 
         status_labels = {
             "conferencia": "Aguardando Confer\u00eancia",
@@ -616,8 +616,8 @@ class RelatorioIncineracaoView(APIView):
                     "status_label": status_desc,
                     "motivo_exclusao": item["motivo_exclusao"],
                     "data": (
-                        item["data_criacao"].strftime("%Y-%m-%d")
-                        if item["data_criacao"]
+                        item["data_fato"].strftime("%Y-%m-%d")
+                        if item["data_fato"]
                         else None
                     ),
                 }
