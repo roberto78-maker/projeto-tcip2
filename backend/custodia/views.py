@@ -122,16 +122,14 @@ class DashboardStatsView(APIView):
 
 
 class LoteIncineracaoFilter(django_filters.FilterSet):
-    ano = django_filters.NumberFilter(field_name="ano")
+    ano = django_filters.CharFilter(field_name="ano")
     protocolo = django_filters.CharFilter(
         field_name="protocolo", lookup_expr="icontains"
     )
-    data_inicio = django_filters.DateTimeFilter(
+    data_inicio = django_filters.DateFilter(
         field_name="data_criacao", lookup_expr="gte"
     )
-    data_fim = django_filters.DateTimeFilter(
-        field_name="data_criacao", lookup_expr="lte"
-    )
+    data_fim = django_filters.DateFilter(field_name="data_criacao", lookup_expr="lte")
 
     class Meta:
         model = LoteIncineracao
@@ -155,10 +153,8 @@ class ApreensaoFilter(django_filters.FilterSet):
     reu = django_filters.CharFilter(field_name="reu", lookup_expr="icontains")
     bou = django_filters.CharFilter(field_name="bou", lookup_expr="icontains")
     processo = django_filters.CharFilter(field_name="processo", lookup_expr="icontains")
-    data_inicio = django_filters.DateTimeFilter(
-        field_name="data_fato", lookup_expr="gte"
-    )
-    data_fim = django_filters.DateTimeFilter(field_name="data_fato", lookup_expr="lte")
+    data_inicio = django_filters.DateFilter(field_name="data_fato", lookup_expr="gte")
+    data_fim = django_filters.DateFilter(field_name="data_fato", lookup_expr="lte")
     natureza = django_filters.CharFilter(field_name="natureza")
     excluir_natureza = django_filters.CharFilter(method="filter_excluir_natureza")
     tem_apreensao = django_filters.BooleanFilter(field_name="tem_apreensao")
@@ -564,29 +560,37 @@ class RelatorioIncineracaoView(APIView):
         if crime:
             qs = qs.filter(descricao__icontains=crime)
 
-        detalhado = qs.values(
-            "id",
-            "bou",
-            "natureza",
-            "substancia",
-            "peso",
-            "unidade",
-            "vara",
-            "data_fato",
-            "status",
-            "processo",
-            "reu",
-            "motivo_exclusao",
-            "lote_incineracao__numero",
-            "lote_incineracao__data_criacao",
-        ).order_by("-data_fato")[:500]
+        try:
+            detalhado = qs.values(
+                "id",
+                "bou",
+                "natureza",
+                "substancia",
+                "peso",
+                "unidade",
+                "vara",
+                "data_fato",
+                "data_criacao",
+                "status",
+                "processo",
+                "reu",
+                "motivo_exclusao",
+                "lote_incineracao__numero",
+                "lote_incineracao__data_criacao",
+            ).order_by("-data_fato", "-data_criacao")[:500]
+        except Exception as e:
+            logger.error(f"Erro ao consultar radar: {str(e)}")
+            return Response(
+                {"error": "Erro ao processar busca no radar. Verifique os filtros."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
         status_labels = {
-            "conferencia": "Aguardando Confer\u00eancia",
+            "conferencia": "Aguardando Conferência",
             "cofre": "No Cofre",
             "incineracao": "Lotes (P. Queima)",
             "queima_pronta": "Incinerado",
-            "excluido": "Exclu\u00eddo / Cancelado",
+            "excluido": "Excluído / Cancelado",
         }
 
         detalhado_formatado = []
@@ -602,6 +606,9 @@ class RelatorioIncineracaoView(APIView):
                 )
                 status_desc = f"{status_desc} (Lote {lote_num} - {lote_data})"
 
+            # Fallback para data: usa data_fato, se nulo usa data_criacao
+            data_exibicao = item.get("data_fato") or item.get("data_criacao")
+
             detalhado_formatado.append(
                 {
                     "id": item["id"],
@@ -616,8 +623,8 @@ class RelatorioIncineracaoView(APIView):
                     "status_label": status_desc,
                     "motivo_exclusao": item["motivo_exclusao"],
                     "data": (
-                        item["data_fato"].strftime("%Y-%m-%d")
-                        if item["data_fato"]
+                        data_exibicao.strftime("%Y-%m-%d")
+                        if hasattr(data_exibicao, "strftime")
                         else None
                     ),
                 }
@@ -824,10 +831,10 @@ class RelatorioIncineracaoPDFView(APIView):
 
         agrupado = defaultdict(list)
         for item in qs:
-            if item.data_criacao:
-                mes_ano = (
-                    f"{meses[item.data_criacao.month]} de {item.data_criacao.year}"
-                )
+            # Prioriza data_fato para o agrupamento mensal
+            dt_ref = item.data_fato or item.data_criacao
+            if dt_ref:
+                mes_ano = f"{meses[dt_ref.month]} de {dt_ref.year}"
             else:
                 mes_ano = "Data Desconhecida"
             agrupado[mes_ano].append(item)
@@ -875,17 +882,15 @@ class RelatorioIncineracaoPDFView(APIView):
                         )
                         status_desc = f"{status_desc}\n(Lote {lote_num} - {lote_data})"
 
+                    # Prioriza data_fato para a coluna Data do PDF
+                    dt_exibicao = item.data_fato or item.data_criacao
                     data.append(
                         [
                             linha1,
                             item.substancia or "-",
                             f"{item.peso} {item.unidade}",
                             status_desc,
-                            (
-                                item.data_criacao.strftime("%d/%m/%Y")
-                                if item.data_criacao
-                                else "-"
-                            ),
+                            dt_exibicao.strftime("%d/%m/%Y") if dt_exibicao else "-",
                         ]
                     )
 
