@@ -500,7 +500,7 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
         )["numero_oficio__max"]
 
         # Se não houver nenhum, começa do 100 (ou o valor que preferirem)
-        # O usuário mencionou que estava no 97+ no frontend. 
+        # O usuário mencionou que estava no 97+ no frontend.
         # Vamos manter uma base razoável se for o primeiro do ano.
         novo_numero = (ultimo_oficio + 1) if ultimo_oficio else 100
 
