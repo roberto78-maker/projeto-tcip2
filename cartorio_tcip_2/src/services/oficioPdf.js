@@ -228,7 +228,11 @@ export async function gerarOficioEncaminhamentoPdf(item) {
   // DESTINATÁRIO (Sem carimbo, apenas texto)
   // ══════════════════════════════════════════════════════════════════════════
 
-  y += 20;
+  // ABNT costuma ter rodapé em 10pt
+  const footerY = pageHeight - 20; 
+
+  // Colocar o destinatário próximo ao rodapé
+  y = footerY - 28;
 
   doc.setFont("helvetica", "bold");
   doc.text("Exmo.(A) Sr.(A)", marginL, y);
@@ -244,7 +248,6 @@ export async function gerarOficioEncaminhamentoPdf(item) {
   // ══════════════════════════════════════════════════════════════════════════
 
   // ABNT costuma ter rodapé em 10pt
-  const footerY = pageHeight - 20; 
 
   doc.setLineWidth(0.3);
   doc.line(marginL, footerY, pageWidth - marginR, footerY);
