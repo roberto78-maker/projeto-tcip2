@@ -109,16 +109,29 @@ export function TriagemTable({
                         padding: "8px 12px",
                         border: "none",
                         color: "white",
-                        background: gerandoOficio === item.id ? "#9ca3af" : "#d97706",
+                        background:
+                          gerandoOficio === item.id
+                            ? "#9ca3af"
+                            : item.numero_oficio
+                            ? "#10b981"
+                            : "#d97706",
                         borderRadius: "6px",
                         fontWeight: "600",
                         cursor: gerandoOficio === item.id ? "not-allowed" : "pointer",
                         fontSize: "12px",
                         transition: "all 0.2s ease",
                       }}
-                      title="Gerar Ofício de Encaminhamento"
+                      title={
+                        item.numero_oficio
+                          ? `Ofício nº ${item.numero_oficio}/${item.ano_oficio} já gerado`
+                          : "Gerar Ofício de Encaminhamento"
+                      }
                     >
-                      {gerandoOficio === item.id ? "..." : "OFÍCIO"}
+                      {gerandoOficio === item.id
+                        ? "..."
+                        : item.numero_oficio
+                        ? "OFÍCIO ✓"
+                        : "OFÍCIO"}
                     </button>
                     <button className="btn-green" onClick={() => abrirModalDespacho(item)}>
                       TRIAR
