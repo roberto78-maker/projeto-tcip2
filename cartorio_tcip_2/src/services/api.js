@@ -341,6 +341,22 @@ export async function gerarNumeroOficio(id) {
 
   return await res.json();
 }
+
+// 🔢 GERAR NÚMERO SEQUENCIAL DO RECIBO
+export async function gerarNumeroRecibo(bou) {
+  const res = await fetch(`${API_URL}gerar_numero_recibo/`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify({ bou }),
+  });
+
+  if (!res.ok) {
+    const erro = await res.json();
+    throw new Error(erro.error || "Erro ao gerar número de recibo");
+  }
+
+  return await res.json();
+}
 // ? RESET DO SISTEMA (Apenas Superusers)
 // export async function resetSystem() {
 //   const res = await fetch(`${BASE_URL}/api/system/reset/`, {

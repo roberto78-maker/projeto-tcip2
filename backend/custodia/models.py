@@ -88,6 +88,10 @@ class Apreensao(models.Model):
     numero_oficio = models.IntegerField(blank=True, null=True)
     ano_oficio = models.IntegerField(blank=True, null=True)
 
+    # Numeração sequencial do Recibo de Objetos Apreendidos (auditável)
+    numero_recibo = models.IntegerField(blank=True, null=True)
+    ano_recibo = models.IntegerField(blank=True, null=True)
+
     history = HistoricalRecords()
 
     def __str__(self):

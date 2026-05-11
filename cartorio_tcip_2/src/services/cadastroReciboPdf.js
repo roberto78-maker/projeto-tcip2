@@ -20,7 +20,7 @@ export function formatarPesoDisplay(valor, unidade) {
   return `${num.toFixed(2).replace(".", ",")} ${unidade}`;
 }
 
-export async function gerarReciboCadastroPdf(dados) {
+export async function gerarReciboCadastroPdf(dados, numeroRecibo, anoRecibo) {
   const {
     crimesSelecionados,
     materiais,
@@ -67,9 +67,10 @@ export async function gerarReciboCadastroPdf(dados) {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   const tituloDoc = "RECIBO DE OBJETOS APREENDIDOS";
-  const anoRecibo = bou.split("/")[0] || new Date().getFullYear();
-  const numAleatorio = Math.floor(Math.random() * 900) + 100;
-  doc.text(`${tituloDoc} No ${numAleatorio}/${anoRecibo}`, centerX, currY, { align: "center" });
+  // Número sequencial controlado pelo banco de dados (auditável)
+  const numRecibo = numeroRecibo || "S/N";
+  const anoRec = anoRecibo || new Date().getFullYear();
+  doc.text(`${tituloDoc} No ${numRecibo}/${anoRec}`, centerX, currY, { align: "center" });
   currY += 12;
 
   doc.setFontSize(10);
@@ -181,7 +182,7 @@ export async function gerarReciboCadastroPdf(dados) {
   doc.setFontSize(7);
   const agora = new Date();
   const dataHora = `${agora.toLocaleDateString("pt-BR")} - ${agora.toLocaleTimeString("pt-BR")}`;
-  const protocolo = `PROTOCOLADO: #${numAleatorio}/${anoRecibo}`;
+  const protocolo = `PROTOCOLADO: #${numRecibo}/${anoRec}`;
   doc.text(`Gerado em: ${dataHora} - ${protocolo}`, pageWidth - marginX, doc.internal.pageSize.getHeight() - 10, {
     align: "right",
   });

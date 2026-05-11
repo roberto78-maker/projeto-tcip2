@@ -428,6 +428,59 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
 
         return Response(ApreensaoSerializer(apreensao).data)
 
+    @action(detail=False, methods=["post"])
+    def gerar_numero_recibo(self, request):
+        """
+        Gera um número sequencial único de recibo para o ano atual.
+        Recebe o BOU no body e atribui o mesmo número a todos os registros
+        com o mesmo BOU (pois um recibo pode conter múltiplos materiais).
+        Se os registros do BOU já possuem número, retorna o existente.
+        """
+        bou = request.data.get("bou")
+        if not bou:
+            return Response(
+                {"error": "BOU é obrigatório"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        ano_atual = timezone.now().year
+
+        # Verifica se já existe um recibo para esse BOU no ano atual
+        existente = Apreensao.objects.filter(
+            bou=bou, ano_recibo=ano_atual, numero_recibo__isnull=False
+        ).first()
+
+        if existente:
+            return Response(
+                {
+                    "numero_recibo": existente.numero_recibo,
+                    "ano_recibo": existente.ano_recibo,
+                }
+            )
+
+        # Busca o maior número de recibo do ano atual
+        ultimo_recibo = Apreensao.objects.filter(ano_recibo=ano_atual).aggregate(
+            Max("numero_recibo")
+        )["numero_recibo__max"]
+
+        novo_numero = (ultimo_recibo + 1) if ultimo_recibo else 1
+
+        # Atribui o número a todos os registros desse BOU
+        registros = Apreensao.objects.filter(bou=bou, numero_recibo__isnull=True)
+        registros.update(numero_recibo=novo_numero, ano_recibo=ano_atual)
+
+        logger.info(
+            f"Recibo #{novo_numero}/{ano_atual} gerado para BOU {bou} "
+            f"({registros.count()} registros)"
+        )
+
+        return Response(
+            {
+                "numero_recibo": novo_numero,
+                "ano_recibo": ano_atual,
+            }
+        )
+
     @action(detail=True, methods=["post"])
     def upload_pdf(self, request, pk=None):
         """

@@ -1,4 +1,4 @@
-import { addApreensao } from "./api.js";
+import { addApreensao, gerarNumeroRecibo } from "./api.js";
 import { saveHistory } from "../components/AutocompleteInput.jsx";
 import { gerarReciboCadastroPdf } from "./cadastroReciboPdf.js";
 
@@ -169,7 +169,10 @@ export async function salvarCadastro(form) {
     await addApreensao(montarPayloadApreensao(form, material));
   }
 
-  await gerarReciboCadastroPdf(form);
+  // Gerar número sequencial de recibo (controlado pelo banco de dados)
+  const { numero_recibo, ano_recibo } = await gerarNumeroRecibo(form.bou);
+
+  await gerarReciboCadastroPdf(form, numero_recibo, ano_recibo);
   salvarHistoricosFormulario(form);
 
   return {
