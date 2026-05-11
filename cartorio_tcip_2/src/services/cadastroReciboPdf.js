@@ -85,9 +85,9 @@ export async function gerarReciboCadastroPdf(dados, numeroRecibo, anoRecibo) {
   currY += 7;
 
   doc.setFont("helvetica", "bold");
-  doc.text("VARA:", marginX, currY);
+  doc.text("JUIZADO:", marginX, currY);
   doc.setFont("helvetica", "normal");
-  doc.text(vara || "", marginX + 13, currY);
+  doc.text(vara || "", marginX + 20, currY);
   currY += 12;
 
   const listaCrimes = [...new Set(crimesSelecionados)];

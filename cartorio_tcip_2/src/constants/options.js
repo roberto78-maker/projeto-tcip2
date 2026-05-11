@@ -23,10 +23,10 @@ export const CRIMES_GERAIS = [
   "Porte Ilegal de Arma Branca: Artigo 19 da LCP"
 ];
 
-export const VARAS = [
-  "1ª VARA ESPECIAL CRIMINAL",
-  "2ª VARA ESPECIAL CRIMINAL",
-  "3ª VARA ESPECIAL CRIMINAL"
+export const JUIZADOS = [
+  "1º JUIZADO ESPECIAL CRIMINAL",
+  "2º JUIZADO ESPECIAL CRIMINAL",
+  "3º JUIZADO ESPECIAL CRIMINAL"
 ];
 
 export const SUBSTANCIAS = [

@@ -226,7 +226,7 @@ export async function gerarOficioEncaminhamentoPdf(item) {
   y += 6;
   doc.text("Juiz (A) de Direito", marginL, y);
   y += 6;
-  doc.text(item.vara || "Vara Especial Criminal", marginL, y);
+  doc.text(item.vara || "Juizado Especial Criminal", marginL, y);
   y += 6;
   doc.text("Cascavel - Pr.", marginL, y);
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { VARAS, SUBSTANCIAS, UNIDADES_PM, PATENTES, CRIMES_GERAIS } from "../constants/options.js";
+import { JUIZADOS, SUBSTANCIAS, UNIDADES_PM, PATENTES, CRIMES_GERAIS } from "../constants/options.js";
 import { useCadastroForm } from "../hooks/useCadastroForm.js";
 import AutocompleteInput from "./AutocompleteInput.jsx";
 
@@ -156,10 +156,10 @@ export default function CadastroView() {
             <input type="text" id="processo" name="processo" style={inputStyle} value={processo} onChange={(e) => handleProcessoChange(e.target.value)} />
           </FormGroup>
 
-          <FormGroup label="VARA DESTINO *" id="vara">
+          <FormGroup label="JUIZADO DESTINO *" id="vara">
             <select id="vara" name="vara" style={inputStyle} value={vara} onChange={(e) => handleVaraChange(e.target.value)}>
               <option value="">Selecione...</option>
-              {VARAS.map((item) => (
+              {JUIZADOS.map((item) => (
                 <option key={item} value={item}>
                   {item}
                 </option>

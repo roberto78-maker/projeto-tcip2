@@ -4,7 +4,7 @@ import autoTable from "jspdf-autotable";
 import { getRelatorioIncineracao } from "../services/api";
 import { getUsuario } from "../services/auth";
 import logoBpm from "../assets/brasao.png";
-import { VARAS, SUBSTANCIAS, CRIMES_GERAIS } from "../constants/options.js";
+import { JUIZADOS, SUBSTANCIAS, CRIMES_GERAIS } from "../constants/options.js";
 
 export default function AuditoriaView() {
   const [data, setData] = useState(null);
@@ -304,10 +304,10 @@ export default function AuditoriaView() {
           </div>
 
           <div className="auditoria-filtro-coluna">
-            <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>Vara Judicial:</label>
+            <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>Juizado:</label>
             <select name="vara" value={filtros.vara} onChange={handleFiltroChange} className="input-tcip">
-              <option value="">Todas as Varas</option>
-              {VARAS.map(v => <option key={v} value={v}>{v}</option>)}
+              <option value="">Todos os Juizados</option>
+              {JUIZADOS.map(v => <option key={v} value={v}>{v}</option>)}
             </select>
           </div>
 
@@ -408,7 +408,7 @@ export default function AuditoriaView() {
                   <th>Autor / Réu</th>
                   <th>Substância / Objeto</th>
                   <th>Localização (Status)</th>
-                  <th>Vara</th>
+                  <th>Juizado</th>
                   <th>Data do Fato</th>
                 </tr>
               </thead>
