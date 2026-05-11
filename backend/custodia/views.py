@@ -586,7 +586,13 @@ class RelatorioIncineracaoView(APIView):
         if data_fim:
             qs = qs.filter(data_fato__lte=data_fim)
         if vara:
-            qs = qs.filter(vara__icontains=vara)
+            # Busca por icontains para compatibilidade com registros antigos
+            # ("VARA") e novos ("JUIZADO"). Também tenta variação numérica.
+            qs = qs.filter(
+                Q(vara__icontains=vara)
+                | Q(vara__icontains=vara.replace("JUIZADO", "VARA").replace("º", "ª"))
+                | Q(vara__icontains=vara.replace("VARA", "JUIZADO").replace("ª", "º"))
+            )
         if substancia == "__NENHUMA__":
             qs = qs.exclude(natureza="DROGAS")
         elif substancia:
@@ -645,6 +651,7 @@ class RelatorioIncineracaoView(APIView):
             "incineracao": "Lotes (P. Queima)",
             "queima_pronta": "Incinerado",
             "excluido": "Excluído / Cancelado",
+            "arquivado": "arquivado",
         }
 
         detalhado_formatado = []
