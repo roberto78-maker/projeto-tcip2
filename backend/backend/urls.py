@@ -12,6 +12,7 @@ from custodia.views import (
     RelatorioIncineracaoPDFView,
     DashboardStatsView,
     UserProfileView,
+    FixVarasParaJuizadosView,
     # ResetSystemView,
 )
 
@@ -72,6 +73,11 @@ urlpatterns = [
         "api/me/",
         UserProfileView.as_view(),
         name="user_profile",
+    ),
+    path(
+        "api/admin/fix-varas-juizados/",
+        FixVarasParaJuizadosView.as_view(),
+        name="fix_varas_juizados",
     ),
     # path(
     #     "api/system/reset/",

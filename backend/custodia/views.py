@@ -1043,6 +1043,74 @@ class UserProfileView(APIView):
         )
 
 
+class FixVarasParaJuizadosView(APIView):
+    """
+    View administrativa para corrigir o campo 'vara' nos registros antigos,
+    migrando de 'Xª VARA ESPECIAL CRIMINAL' para 'Xº JUIZADO ESPECIAL CRIMINAL'.
+    Requer superuser. Pode ser executada com dry_run=true para preview.
+    """
+
+    permission_classes = [permissions.IsAdminUser]
+
+    MAPA_VARAS = {
+        "1ª VARA ESPECIAL CRIMINAL": "1º JUIZADO ESPECIAL CRIMINAL",
+        "2ª VARA ESPECIAL CRIMINAL": "2º JUIZADO ESPECIAL CRIMINAL",
+        "3ª VARA ESPECIAL CRIMINAL": "3º JUIZADO ESPECIAL CRIMINAL",
+        "1a VARA ESPECIAL CRIMINAL": "1º JUIZADO ESPECIAL CRIMINAL",
+        "2a VARA ESPECIAL CRIMINAL": "2º JUIZADO ESPECIAL CRIMINAL",
+        "3a VARA ESPECIAL CRIMINAL": "3º JUIZADO ESPECIAL CRIMINAL",
+        "1ª VARA CRIMINAL": "1º JUIZADO ESPECIAL CRIMINAL",
+        "2ª VARA CRIMINAL": "2º JUIZADO ESPECIAL CRIMINAL",
+        "3ª VARA CRIMINAL": "3º JUIZADO ESPECIAL CRIMINAL",
+    }
+
+    def post(self, request):
+        if not request.user.is_superuser:
+            return Response(
+                {"error": "Acesso negado"}, status=status.HTTP_403_FORBIDDEN
+            )
+
+        dry_run = request.data.get("dry_run", False)
+        relatorio = []
+        total_alterados = 0
+
+        for vara_antiga, vara_nova in self.MAPA_VARAS.items():
+            qs = Apreensao.objects.filter(vara__iexact=vara_antiga)
+            count = qs.count()
+            if count == 0:
+                continue
+
+            relatorio.append(
+                {"de": vara_antiga, "para": vara_nova, "registros": count}
+            )
+
+            if not dry_run:
+                qs.update(vara=vara_nova)
+                total_alterados += count
+
+        # Detecta variações não mapeadas
+        nao_mapeados = (
+            Apreensao.objects.filter(vara__icontains="VARA ESPECIAL")
+            .exclude(vara__icontains="JUIZADO")
+            .values_list("vara", flat=True)
+            .distinct()[:20]
+        )
+
+        return Response(
+            {
+                "dry_run": dry_run,
+                "alteracoes": relatorio,
+                "total_alterados": total_alterados if not dry_run else None,
+                "nao_mapeados_ainda": list(nao_mapeados),
+                "mensagem": (
+                    "[DRY-RUN] Nenhuma alteração foi salva."
+                    if dry_run
+                    else f"Migração concluída: {total_alterados} registro(s) atualizados."
+                ),
+            }
+        )
+
+
 # class ResetSystemView(APIView):
 #     """
 #     Temporary view to trigger the go_live command via API.
