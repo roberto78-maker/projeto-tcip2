@@ -97,7 +97,7 @@ export function validarCadastro(form) {
   if (!form.dataFato) return "Informe a DATA DO FATO.";
   if (!form.bou || form.bou.length < 8) return "Informe o No BOU completo.";
   if (!form.processo) return "Informe o No PROJUDI.";
-  if (!form.vara) return "Selecione a VARA criminal.";
+  if (!form.vara) return "Selecione o JUIZADO criminal.";
   if (!form.unidadeOrigem) return "Selecione a UNIDADE de origem.";
   if (!form.patente) return "Selecione a GRADUACAO do policial.";
   if (!form.policial) return "Informe o NOME do Policial Entregador.";
