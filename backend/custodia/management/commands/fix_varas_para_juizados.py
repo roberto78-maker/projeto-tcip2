@@ -2,9 +2,9 @@
 Management command to migrate old 'vara' values from
 "Xª VARA ESPECIAL CRIMINAL" -> "Xº JUIZADO ESPECIAL CRIMINAL"
 """
+
 from django.core.management.base import BaseCommand
 from custodia.models import Apreensao
-
 
 MAPA_VARAS = {
     "1ª VARA ESPECIAL CRIMINAL": "1º JUIZADO ESPECIAL CRIMINAL",
@@ -40,9 +40,7 @@ class Command(BaseCommand):
             if count == 0:
                 continue
 
-            self.stdout.write(
-                f'  "{vara_antiga}" → "{vara_nova}": {count} registro(s)'
-            )
+            self.stdout.write(f'  "{vara_antiga}" → "{vara_nova}": {count} registro(s)')
 
             if not dry_run:
                 qs.update(vara=vara_nova)
@@ -50,9 +48,9 @@ class Command(BaseCommand):
 
         # Também corrige valores que contenham "VARA" mas não "JUIZADO"
         # (captura variações não mapeadas acima)
-        qs_vara = Apreensao.objects.filter(
-            vara__icontains="VARA ESPECIAL"
-        ).exclude(vara__icontains="JUIZADO")
+        qs_vara = Apreensao.objects.filter(vara__icontains="VARA ESPECIAL").exclude(
+            vara__icontains="JUIZADO"
+        )
 
         restantes = qs_vara.count()
         if restantes > 0:

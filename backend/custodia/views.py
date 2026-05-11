@@ -1080,9 +1080,7 @@ class FixVarasParaJuizadosView(APIView):
             if count == 0:
                 continue
 
-            relatorio.append(
-                {"de": vara_antiga, "para": vara_nova, "registros": count}
-            )
+            relatorio.append({"de": vara_antiga, "para": vara_nova, "registros": count})
 
             if not dry_run:
                 qs.update(vara=vara_nova)

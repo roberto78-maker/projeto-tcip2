@@ -10,6 +10,7 @@ Requer:
   - pip install requests
   - As credenciais de superusuário do sistema
 """
+
 import sys
 import requests
 
@@ -59,4 +60,6 @@ else:
     print("   (Pode ser que a migração já foi feita ou os dados já estavam corretos)")
 
 if data["nao_mapeados_ainda"]:
-    print(f"\n⚠️  Registros não mapeados (verifique manualmente): {data['nao_mapeados_ainda']}")
+    print(
+        f"\n⚠️  Registros não mapeados (verifique manualmente): {data['nao_mapeados_ainda']}"
+    )
