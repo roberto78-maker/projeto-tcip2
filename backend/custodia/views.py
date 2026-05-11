@@ -790,7 +790,7 @@ class RelatorioIncineracaoPDFView(APIView):
         )
         filtros_usados = []
         if vara:
-            filtros_usados.append(f"Vara: {vara}")
+            filtros_usados.append(f"Juizado: {vara}")
         if substancia:
             filtros_usados.append(f"Subst\u00e2ncia: {substancia}")
         if natureza:
