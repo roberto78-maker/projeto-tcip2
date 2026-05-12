@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useRef } from "react";
 import { getUsuario } from "../services/auth.js";
 import {
   atualizarMaterialPorTipo,
@@ -85,9 +85,12 @@ export function useCadastroForm() {
   const handleMaterialUnidadeChange = (id, value) => updateMaterial(id, "unidadePeso", value);
   const handleMaterialLacreChange = (id, value) => updateMaterial(id, "lacre", value);
 
-  const handleSalvar = async () => {
-    if (salvando) return;
+  const isSubmitting = useRef(false);
 
+  const handleSalvar = async () => {
+    if (isSubmitting.current || salvando) return;
+
+    isSubmitting.current = true;
     setSalvando(true);
     try {
       const { mensagem, proximoEstado } = await salvarCadastro(form);
@@ -97,6 +100,7 @@ export function useCadastroForm() {
       console.error(err);
       alert(`Erro ao salvar: ${err.message}`);
     } finally {
+      isSubmitting.current = false;
       setSalvando(false);
     }
   };

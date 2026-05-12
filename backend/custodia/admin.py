@@ -145,4 +145,4 @@ class HistoricoAdmin(admin.ModelAdmin):
         return False  # Histórico nunca deve ser criado manualmente
 
     def has_delete_permission(self, request, obj=None):
-        return False  # Histórico nunca deve ser deletado (rastreabilidade jurídica)
+        return request.user.is_superuser
