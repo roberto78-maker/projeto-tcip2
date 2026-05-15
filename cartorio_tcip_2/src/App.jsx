@@ -40,6 +40,31 @@ export default function App() {
     return viewsValidas.includes(hash) ? hash : "dashboard";
   });
   const [logado, setLogado] = useState(isAutenticado());
+  
+  // 💓 HEARTBEAT: Mantém o Render acordado a cada 10 minutos (previne suspensão do plano Free)
+  useEffect(() => {
+    if (!logado) return;
+    
+    const keepAlive = () => {
+      console.log("💓 Keep-Alive: Mantendo o Render ativo...");
+      const user = JSON.parse(localStorage.getItem("usuario_logado") || "{}");
+      if (!user.access) return;
+
+      const BASE_URL = import.meta.env.VITE_API_URL || "";
+      fetch(`${BASE_URL}/api/dashboard/stats/`, {
+        headers: { "Authorization": `Bearer ${user.access}` }
+      }).catch(() => {}); // Ignora erros, o importante é a requisição chegar ao servidor
+    };
+
+    // Primeira execução após 1 minuto, depois a cada 10 minutos
+    const timerInicial = setTimeout(keepAlive, 60000);
+    const interval = setInterval(keepAlive, 10 * 60 * 1000); 
+    
+    return () => {
+      clearTimeout(timerInicial);
+      clearInterval(interval);
+    };
+  }, [logado]);
 
   // Sincroniza o "Voltar" do navegador com as telas do sistema
   useEffect(() => {

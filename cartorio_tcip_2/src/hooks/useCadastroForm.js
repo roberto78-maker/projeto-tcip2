@@ -88,20 +88,28 @@ export function useCadastroForm() {
   const isSubmitting = useRef(false);
 
   const handleSalvar = async () => {
-    if (isSubmitting.current || salvando) return;
+    // 🛡️ Proteção Absoluta contra Duplicação
+    if (isSubmitting.current || salvando) {
+      console.warn("⚠️ [BLOQUEIO] Tentativa de salvamento duplicada detectada e bloqueada.");
+      return;
+    }
 
     isSubmitting.current = true;
     setSalvando(true);
+    
     try {
       const { mensagem, proximoEstado } = await salvarCadastro(form);
       alert(mensagem);
       setForm(proximoEstado);
     } catch (err) {
-      console.error(err);
+      console.error("❌ Erro ao salvar cadastro:", err);
       alert(`Erro ao salvar: ${err.message}`);
     } finally {
-      isSubmitting.current = false;
-      setSalvando(false);
+      // Pequeno delay no reset da trava para garantir que o estado do React estabilize
+      setTimeout(() => {
+        isSubmitting.current = false;
+        setSalvando(false);
+      }, 500);
     }
   };
 
