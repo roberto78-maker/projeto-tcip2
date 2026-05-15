@@ -33,6 +33,17 @@ from rest_framework.views import APIView
 from .models import Apreensao, LoteIncineracao, Historico
 from .serializers import ApreensaoSerializer, LoteIncineracaoSerializer
 
+
+class HealthCheckView(APIView):
+    """
+    Public endpoint to keep the server alive and check health.
+    """
+
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        return Response({"status": "healthy", "timestamp": timezone.now()}, status=status.HTTP_200_OK)
+
 logger = logging.getLogger(__name__)
 
 

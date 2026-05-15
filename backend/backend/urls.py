@@ -13,6 +13,7 @@ from custodia.views import (
     DashboardStatsView,
     UserProfileView,
     FixVarasParaJuizadosView,
+    HealthCheckView,
     # ResetSystemView,
 )
 
@@ -48,6 +49,7 @@ admin.site.index_title = "Painel de Controle"
 urlpatterns = [
     # 🔒 Admin em URL personalizada (não o padrão /admin/)
     path("tcip-painel-restrito/", admin.site.urls),
+    path("api/health/", HealthCheckView.as_view(), name="health_check"),
     path("api/", include(router.urls)),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
