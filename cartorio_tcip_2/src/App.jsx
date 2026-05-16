@@ -47,13 +47,9 @@ export default function App() {
     
     const keepAlive = () => {
       console.log("💓 Keep-Alive: Mantendo o Render ativo...");
-      const user = JSON.parse(localStorage.getItem("usuario_logado") || "{}");
-      if (!user.access) return;
-
       const BASE_URL = import.meta.env.VITE_API_URL || "";
-      fetch(`${BASE_URL}/api/dashboard/stats/`, {
-        headers: { "Authorization": `Bearer ${user.access}` }
-      }).catch(() => {}); // Ignora erros, o importante é a requisição chegar ao servidor
+      fetch(`${BASE_URL}/api/health/`)
+        .catch(() => {}); // Ignora erros, o importante é a requisição chegar ao servidor
     };
 
     // Primeira execução após 1 minuto, depois a cada 10 minutos
