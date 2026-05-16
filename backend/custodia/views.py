@@ -42,7 +42,11 @@ class HealthCheckView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
-        return Response({"status": "healthy", "timestamp": timezone.now()}, status=status.HTTP_200_OK)
+        return Response(
+            {"status": "healthy", "timestamp": timezone.now()},
+            status=status.HTTP_200_OK,
+        )
+
 
 logger = logging.getLogger(__name__)
 
