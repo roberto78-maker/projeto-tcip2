@@ -408,6 +408,7 @@ export default function AuditoriaView() {
                   <th>Autor / Réu</th>
                   <th>Substância / Objeto</th>
                   <th>Localização (Status)</th>
+                  <th>Anexo</th>
                   <th>Juizado</th>
                   <th>Data do Fato</th>
                 </tr>
@@ -415,7 +416,7 @@ export default function AuditoriaView() {
               <tbody>
                 {data.detalhado.length === 0 ? (
                   <tr>
-                    <td colSpan="7" style={{ textAlign: "center", padding: "40px", color: "#94a3b8" }}>
+                    <td colSpan="8" style={{ textAlign: "center", padding: "40px", color: "#94a3b8" }}>
                       Ops, nenhum processo encontrado com as exatas informações pesquisadas acima.
                     </td>
                   </tr>
@@ -460,6 +461,37 @@ export default function AuditoriaView() {
                             </div>
                           )}
                         </td>
+                        <td>
+                          {item.arquivo_pdf_url ? (
+                            <a 
+                              href={item.arquivo_pdf_url} 
+                              target="_blank" 
+                              rel="noreferrer" 
+                              style={{ 
+                                display: "inline-flex", 
+                                alignItems: "center", 
+                                gap: "4px", 
+                                padding: "6px 10px", 
+                                borderRadius: "6px", 
+                                backgroundColor: "#f0fdf4", 
+                                border: "1px solid #bbf7d0", 
+                                color: "#166534", 
+                                fontWeight: "700", 
+                                fontSize: "11px", 
+                                textDecoration: "none",
+                                cursor: "pointer",
+                                transition: "all 0.2s"
+                              }}
+                              title="Visualizar PDF anexado"
+                            >
+                              📄 VER PDF
+                            </a>
+                          ) : (
+                            <span style={{ fontSize: "11px", color: "#94a3b8", fontStyle: "italic" }}>
+                              Nenhum
+                            </span>
+                          )}
+                        </td>
                         <td style={{ fontSize: "13px", color: "#475569" }}>{item.vara || "-"}</td>
                         <td style={{ fontSize: "13px", color: "#475569" }}>{item.data ? item.data.split("-").reverse().join("/") : "-"}</td>
                       </tr>
@@ -473,7 +505,7 @@ export default function AuditoriaView() {
                     <td colSpan="2" style={{ padding: "15px", textAlign: "left", fontSize: "14px", color: "#1e293b" }}>
                       TOTAL DE PROCESSOS: {String(data.detalhado.length).padStart(2, '0')}
                     </td>
-                    <td colSpan="5" style={{ padding: "15px", textAlign: "left", fontSize: "12px", color: "#64748b" }}>
+                    <td colSpan="6" style={{ padding: "15px", textAlign: "left", fontSize: "12px", color: "#64748b" }}>
                         * Relatórios de peso total devem ser consultados individualmente por natureza de crime.
                     </td>
                   </tr>

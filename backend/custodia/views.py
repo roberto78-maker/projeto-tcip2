@@ -652,6 +652,7 @@ class RelatorioIncineracaoView(APIView):
                 "motivo_exclusao",
                 "lote_incineracao__numero",
                 "lote_incineracao__data_criacao",
+                "arquivo_pdf_url",
             ).order_by("-data_fato", "-data_criacao")[:500]
         except Exception as e:
             logger.error(f"Erro ao consultar radar: {str(e)}")
@@ -698,6 +699,7 @@ class RelatorioIncineracaoView(APIView):
                     "vara": item["vara"],
                     "status_label": status_desc,
                     "motivo_exclusao": item["motivo_exclusao"],
+                    "arquivo_pdf_url": item["arquivo_pdf_url"],
                     "data": (
                         data_exibicao.strftime("%Y-%m-%d")
                         if hasattr(data_exibicao, "strftime")
