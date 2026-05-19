@@ -10,6 +10,7 @@ from datetime import timedelta
 
 import cloudinary.uploader
 from django.conf import settings
+from django.core.cache import cache
 from django.core.files.storage import default_storage
 from django.db.models import Count, Max, Q, Sum
 from django.http import HttpResponse
@@ -1255,6 +1256,10 @@ class ReceberAssinaturaView(APIView):
 
         agora = timezone.now()
 
+        # Guarda a assinatura temporariamente em cache por 30 minutos (1800s)
+        cache_key = f"assinatura_{token_str}"
+        cache.set(cache_key, assinatura_b64, timeout=1800)
+
         if bou:
             # Tenta buscar registros já existentes com esse BOU
             apreensoes = Apreensao.objects.filter(bou=bou)
@@ -1336,7 +1341,19 @@ class StatusAssinaturaView(APIView):
 
         agora = timezone.now()
 
-        # Busca por BOU (registros mais recentes) ou por token
+        # 1. Verifica se a assinatura chegou e está no cache
+        cache_key = f"assinatura_{token_str}"
+        assinatura_cache = cache.get(cache_key)
+
+        if assinatura_cache:
+            return Response(
+                {
+                    "assinado": True,
+                    "assinatura_base64": assinatura_cache,
+                }
+            )
+
+        # 2. Busca por BOU (registros mais recentes) ou por token
         if bou:
             apreensao = (
                 Apreensao.objects.filter(bou=bou).order_by("-data_criacao").first()
