@@ -20,7 +20,7 @@ export function formatarPesoDisplay(valor, unidade) {
   return `${num.toFixed(2).replace(".", ",")} ${unidade}`;
 }
 
-export async function gerarReciboCadastroPdf(dados, numeroRecibo, anoRecibo) {
+export async function gerarReciboCadastroPdf(dados, numeroRecibo, anoRecibo, assinaturaBase64 = null) {
   const {
     crimesSelecionados,
     materiais,
@@ -162,6 +162,24 @@ export async function gerarReciboCadastroPdf(dados, numeroRecibo, anoRecibo) {
   currY += splitObs.length * 4 + 40;
 
   const lineSize = 70;
+  // ─── Campo de Assinatura — Responsável pela Entrega (Esquerda) ───────────
+  // Se houver assinatura eletrônica, insere a imagem acima da linha
+  if (assinaturaBase64) {
+    try {
+      // Imagem da assinatura a punho coletada no celular
+      doc.addImage(
+        assinaturaBase64,
+        "PNG",
+        marginX,           // x: alinhado com a linha
+        currY - 22,        // y: 22pt acima da linha
+        lineSize,          // largura = mesma da linha
+        20                 // altura = 20pt
+      );
+    } catch {
+      // Ignora erro de imagem — exibe apenas o nome abaixo da linha
+    }
+  }
+
   doc.line(marginX, currY, marginX + lineSize, currY);
   doc.setFont("helvetica", "bold");
   doc.text(`${patente.toUpperCase()} ${policial.toUpperCase()}`, marginX + lineSize / 2, currY + 5, { align: "center" });
