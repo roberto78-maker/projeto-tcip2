@@ -92,6 +92,13 @@ class Apreensao(models.Model):
     numero_recibo = models.IntegerField(blank=True, null=True)
     ano_recibo = models.IntegerField(blank=True, null=True)
 
+    # ─── Assinatura Eletrônica ──────────────────────────────────────────────
+    # Imagem da assinatura a punho coletada via celular (canvas → Base64)
+    assinatura_base64 = models.TextField(blank=True, null=True)
+    # Token UUID de sessão gerado ao exibir o QR Code (expira em 30 min)
+    token_assinatura = models.UUIDField(blank=True, null=True, db_index=True)
+    token_expira_em = models.DateTimeField(blank=True, null=True)
+
     history = HistoricalRecords()
 
     def __str__(self):

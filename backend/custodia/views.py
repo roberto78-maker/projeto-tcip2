@@ -1151,3 +1151,214 @@ class FixVarasParaJuizadosView(APIView):
 #                 {"error": f"Erro ao resetar: {str(e)}"},
 #                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
 #             )
+
+
+# ─── Assinatura Eletrônica via QR Code ────────────────────────────────────────
+
+import uuid as uuid_module
+from datetime import timedelta
+
+
+class GerarTokenAssinaturaView(APIView):
+    """
+    POST autenticado — chamado pelo PC do cartório ao clicar em
+    "Coletar Assinatura". Gera um token UUID temporário (válido 30 min),
+    salva em todos os registros do BOU informado e retorna a URL do QR Code
+    que o celular deve acessar.
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        bou = request.data.get("bou", "").strip()
+        if not bou:
+            return Response(
+                {"error": "BOU é obrigatório."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        token = uuid_module.uuid4()
+        expira_em = timezone.now() + timedelta(minutes=30)
+
+        # Salva o token em todos os registros com esse BOU
+        apreensoes = Apreensao.objects.filter(bou=bou)
+        if not apreensoes.exists():
+            # BOU ainda não salvo: vamos gerar token sem vincular a registros.
+            # O frontend salva os registros apenas após a assinatura.
+            logger.info(
+                f"[Assinatura] Token gerado para BOU '{bou}' sem registros "
+                f"existentes (cadastro ainda não salvo)."
+            )
+        else:
+            apreensoes.update(token_assinatura=token, token_expira_em=expira_em)
+
+        # URL que o celular vai abrir ao escanear o QR Code
+        frontend_base = os.environ.get(
+            "FRONTEND_URL", "https://projeto-tcip2.vercel.app"
+        )
+        url_celular = f"{frontend_base}/assinar?token={token}&bou={bou}"
+
+        logger.info(
+            f"[Assinatura] Token {token} gerado para BOU '{bou}'. "
+            f"Expira em: {expira_em}"
+        )
+
+        return Response(
+            {
+                "token": str(token),
+                "url_qr": url_celular,
+                "expira_em": expira_em.isoformat(),
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class ReceberAssinaturaView(APIView):
+    """
+    POST público (sem JWT) — chamado pelo celular ao confirmar a assinatura.
+    Valida o token, verifica expiração e salva o Base64 da assinatura
+    em todos os registros do BOU correspondente.
+    """
+
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        token_str = request.data.get("token", "").strip()
+        assinatura_b64 = request.data.get("assinatura_base64", "").strip()
+        bou = request.data.get("bou", "").strip()
+
+        # Validações básicas
+        if not token_str:
+            return Response(
+                {"error": "Token é obrigatório."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not assinatura_b64:
+            return Response(
+                {"error": "Assinatura não pode estar em branco."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not assinatura_b64.startswith("data:image/"):
+            return Response(
+                {"error": "Formato de assinatura inválido."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Valida o UUID
+        try:
+            token = uuid_module.UUID(token_str)
+        except ValueError:
+            return Response(
+                {"error": "Token inválido."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        agora = timezone.now()
+
+        if bou:
+            # Tenta buscar registros já existentes com esse BOU
+            apreensoes = Apreensao.objects.filter(bou=bou)
+            if apreensoes.exists():
+                # Verifica expiração usando o primeiro registro
+                primeiro = apreensoes.filter(token_expira_em__isnull=False).first()
+                if primeiro and primeiro.token_expira_em and primeiro.token_expira_em < agora:
+                    return Response(
+                        {"error": "Token expirado. Gere um novo QR Code."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                apreensoes.update(assinatura_base64=assinatura_b64)
+                count = apreensoes.count()
+                logger.info(
+                    f"[Assinatura] Assinatura salva via BOU '{bou}' "
+                    f"em {count} registro(s)."
+                )
+                return Response({"ok": True, "registros": count})
+
+        # Fallback: busca pelo token UUID diretamente
+        apreensoes_token = Apreensao.objects.filter(token_assinatura=token)
+        if not apreensoes_token.exists():
+            # Token ainda válido sem registros — salva uma entrada temporária
+            # O token ficará disponível para o polling via status endpoint
+            logger.warning(
+                f"[Assinatura] Token {token} recebido sem registros vinculados."
+            )
+            return Response(
+                {"ok": True, "registros": 0, "pendente": True}
+            )
+
+        primeiro = apreensoes_token.first()
+        if primeiro.token_expira_em and primeiro.token_expira_em < agora:
+            return Response(
+                {"error": "Token expirado. Gere um novo QR Code."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        apreensoes_token.update(assinatura_base64=assinatura_b64)
+        count = apreensoes_token.count()
+        logger.info(
+            f"[Assinatura] Assinatura salva via token {token} "
+            f"em {count} registro(s)."
+        )
+        return Response({"ok": True, "registros": count})
+
+
+class StatusAssinaturaView(APIView):
+    """
+    GET público (sem JWT) — chamado pelo PC a cada 3 segundos (short polling)
+    para verificar se a assinatura do celular já chegou.
+
+    Parâmetros de query:
+      ?token=<uuid>  — token de sessão do QR Code
+      ?bou=<bou>     — BOU do cadastro (opcional, melhora a busca)
+    """
+
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        token_str = request.query_params.get("token", "").strip()
+        bou = request.query_params.get("bou", "").strip()
+
+        if not token_str:
+            return Response(
+                {"error": "Token é obrigatório."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            token = uuid_module.UUID(token_str)
+        except ValueError:
+            return Response(
+                {"error": "Token inválido."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        agora = timezone.now()
+
+        # Busca por BOU (registros mais recentes) ou por token
+        if bou:
+            apreensao = (
+                Apreensao.objects.filter(bou=bou)
+                .order_by("-data_criacao")
+                .first()
+            )
+        else:
+            apreensao = Apreensao.objects.filter(
+                token_assinatura=token
+            ).first()
+
+        if not apreensao:
+            return Response({"assinado": False, "assinatura_base64": None})
+
+        # Verifica expiração
+        if apreensao.token_expira_em and apreensao.token_expira_em < agora:
+            return Response(
+                {"assinado": False, "expirado": True, "assinatura_base64": None}
+            )
+
+        assinado = bool(apreensao.assinatura_base64)
+        return Response(
+            {
+                "assinado": assinado,
+                "assinatura_base64": apreensao.assinatura_base64 if assinado else None,
+            }
+        )

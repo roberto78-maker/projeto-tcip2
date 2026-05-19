@@ -14,6 +14,9 @@ from custodia.views import (
     UserProfileView,
     FixVarasParaJuizadosView,
     HealthCheckView,
+    GerarTokenAssinaturaView,
+    ReceberAssinaturaView,
+    StatusAssinaturaView,
     # ResetSystemView,
 )
 
@@ -53,6 +56,22 @@ urlpatterns = [
     path("api/", include(router.urls)),
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    # ✍️ Assinatura Eletrônica via QR Code
+    path(
+        "api/assinatura/gerar-token/",
+        GerarTokenAssinaturaView.as_view(),
+        name="assinatura_gerar_token",
+    ),
+    path(
+        "api/assinatura/receber/",
+        ReceberAssinaturaView.as_view(),
+        name="assinatura_receber",
+    ),
+    path(
+        "api/assinatura/status/",
+        StatusAssinaturaView.as_view(),
+        name="assinatura_status",
+    ),
     # 📊 Relatórios de Auditoria
     path(
         "api/relatorios/incineracao/",
