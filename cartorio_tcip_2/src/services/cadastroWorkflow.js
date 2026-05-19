@@ -159,7 +159,7 @@ function salvarHistoricosFormulario(form) {
   });
 }
 
-export async function salvarCadastro(form) {
+export async function salvarCadastro(form, assinaturaBase64 = null) {
   const erroValidacao = validarCadastro(form);
   if (erroValidacao) {
     throw new Error(erroValidacao);
@@ -172,7 +172,8 @@ export async function salvarCadastro(form) {
   // Gerar número sequencial de recibo (controlado pelo banco de dados)
   const { numero_recibo, ano_recibo } = await gerarNumeroRecibo(form.bou);
 
-  await gerarReciboCadastroPdf(form, numero_recibo, ano_recibo);
+  // Passa a assinatura eletrônica para o PDF (pode ser null se não coletada)
+  await gerarReciboCadastroPdf(form, numero_recibo, ano_recibo, assinaturaBase64);
   salvarHistoricosFormulario(form);
 
   return {
