@@ -2,6 +2,7 @@ import React from "react";
 import { JUIZADOS, SUBSTANCIAS, UNIDADES_PM, PATENTES, CRIMES_GERAIS } from "../constants/options.js";
 import { useCadastroForm } from "../hooks/useCadastroForm.js";
 import AutocompleteInput from "./AutocompleteInput.jsx";
+import QRCodeModal from "./QRCodeModal.jsx";
 
 const FormGroup = ({ label, id, children, required }) => (
   <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -37,11 +38,16 @@ export default function CadastroView() {
     rg,
     materiais,
     salvando,
+    showQRModal,
+    tokenQR,
+    urlQR,
     adicionarMaterial,
     removerMaterial,
     toggleCrime,
     updateMaterialTipo,
-    handleSalvar,
+    handleColetarAssinatura,
+    handleFinalizarComAssinatura,
+    handleCancelarQR,
     handleDataFatoChange,
     handleBouChange,
     handleProcessoChange,
@@ -340,13 +346,33 @@ export default function CadastroView() {
       </div>
 
       <button
+        id="btn-coletar-assinatura"
         className="btn-green"
-        onClick={handleSalvar}
+        onClick={handleColetarAssinatura}
         disabled={salvando}
-        style={{ width: "100%", padding: "16px", fontWeight: "800", opacity: salvando ? 0.7 : 1, cursor: salvando ? "not-allowed" : "pointer" }}
+        style={{
+          width: "100%",
+          padding: "16px",
+          fontWeight: "800",
+          fontSize: "15px",
+          opacity: salvando ? 0.7 : 1,
+          cursor: salvando ? "not-allowed" : "pointer",
+          letterSpacing: "1px",
+        }}
       >
-        {salvando ? "PROCESSANDO..." : "FINALIZAR CADASTRO E GERAR RECIBO"}
+        {salvando ? "AGUARDE..." : "📱 COLETAR ASSINATURA E GERAR RECIBO"}
       </button>
+
+      {/* Modal do QR Code — exibido ao iniciar coleta de assinatura */}
+      {showQRModal && (
+        <QRCodeModal
+          token={tokenQR}
+          urlQr={urlQR}
+          bou={bou}
+          onSucesso={handleFinalizarComAssinatura}
+          onCancelar={handleCancelarQR}
+        />
+      )}
     </div>
   );
 }
