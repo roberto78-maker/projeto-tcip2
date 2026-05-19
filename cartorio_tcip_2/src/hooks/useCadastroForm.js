@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { getUsuario } from "../services/auth.js";
+import { gerarTokenAssinatura } from "../services/assinaturaService.js";
 import {
   atualizarMaterialPorTipo,
   criarEstadoInicialCadastro,
@@ -15,6 +16,11 @@ import {
 export function useCadastroForm() {
   const [form, setForm] = useState(criarEstadoInicialCadastro);
   const [salvando, setSalvando] = useState(false);
+  // Estados do fluxo de assinatura eletrônica
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [tokenQR, setTokenQR] = useState("");
+  const [urlQR, setUrlQR] = useState("");
+  const [assinaturaBase64, setAssinaturaBase64] = useState(null);
 
   const updateField = (field, value) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -87,31 +93,68 @@ export function useCadastroForm() {
 
   const isSubmitting = useRef(false);
 
-  const handleSalvar = async () => {
-    // 🛡️ Proteção Absoluta contra Duplicação
-    if (isSubmitting.current || salvando) {
-      console.warn("⚠️ [BLOQUEIO] Tentativa de salvamento duplicada detectada e bloqueada.");
+  /**
+   * ETAPA 1: Valida o formulário e abre o modal do QR Code.
+   * O cadastro só é salvo no banco após a assinatura ser coletada.
+   */
+  const handleColetarAssinatura = async () => {
+    // Validação antes de abrir o QR
+    const erroValidacao = validarCadastro(form);
+    if (erroValidacao) {
+      alert(erroValidacao);
       return;
     }
 
-    isSubmitting.current = true;
     setSalvando(true);
-    
     try {
-      const { mensagem, proximoEstado } = await salvarCadastro(form);
+      const { token, url_qr } = await gerarTokenAssinatura(form.bou);
+      setTokenQR(token);
+      setUrlQR(url_qr);
+      setShowQRModal(true);
+    } catch (err) {
+      alert(`Erro ao gerar QR Code: ${err.message}`);
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  /**
+   * ETAPA 2: Chamado pelo QRCodeModal quando a assinatura chega.
+   * Salva os registros no banco, gera o PDF com a assinatura e faz download.
+   */
+  const handleFinalizarComAssinatura = async (assinatura) => {
+    if (isSubmitting.current) return;
+    isSubmitting.current = true;
+    setShowQRModal(false);
+    setSalvando(true);
+
+    try {
+      const { mensagem, proximoEstado } = await salvarCadastro(
+        form,
+        assinatura
+      );
+      setAssinaturaBase64(null);
       alert(mensagem);
       setForm(proximoEstado);
     } catch (err) {
       console.error("❌ Erro ao salvar cadastro:", err);
       alert(`Erro ao salvar: ${err.message}`);
     } finally {
-      // Pequeno delay no reset da trava para garantir que o estado do React estabilize
       setTimeout(() => {
         isSubmitting.current = false;
         setSalvando(false);
       }, 500);
     }
   };
+
+  const handleCancelarQR = () => {
+    setShowQRModal(false);
+    setTokenQR("");
+    setUrlQR("");
+  };
+
+  // Mantido por compatibilidade (não é mais usado no fluxo principal)
+  const handleSalvar = handleColetarAssinatura;
 
   return {
     operador: getUsuario()?.username?.toUpperCase() || "",
@@ -127,11 +170,20 @@ export function useCadastroForm() {
     rg: form.rg,
     materiais: form.materiais,
     salvando,
+    // Estados do QR Code
+    showQRModal,
+    tokenQR,
+    urlQR,
+    assinaturaBase64,
+    // Handlers
     adicionarMaterial,
     removerMaterial,
     toggleCrime,
     updateMaterialTipo,
     handleSalvar,
+    handleColetarAssinatura,
+    handleFinalizarComAssinatura,
+    handleCancelarQR,
     handleDataFatoChange,
     handleBouChange,
     handleProcessoChange,
