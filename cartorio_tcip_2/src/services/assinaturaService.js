@@ -3,9 +3,9 @@
  * Funções de API para o fluxo de Assinatura Eletrônica via QR Code.
  */
 
-import { getToken } from "./auth.js";
+import { getUsuario } from "./auth.js";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_API_URL || "";
 
 /**
  * Gera um token UUID de sessão no backend para o QR Code.
@@ -14,7 +14,8 @@ const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
  * @returns {{ token, url_qr, expira_em }}
  */
 export async function gerarTokenAssinatura(bou) {
-  const jwt = getToken();
+  const usuario = getUsuario();
+  const jwt = usuario?.access || "";
   const resp = await fetch(`${API_BASE}/api/assinatura/gerar-token/`, {
     method: "POST",
     headers: {
