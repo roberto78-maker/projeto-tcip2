@@ -7,6 +7,7 @@ import ProntoQueimaView from "./components/ProntoQueimaView";
 import LotesProntosView from "./components/LotesProntosView";
 import AuditoriaView from "./components/AuditoriaView";
 import LoginView from "./components/LoginView";
+import AssinaturaView from "./components/AssinaturaView";
 
 import brasao from "./assets/brasao.png";
 
@@ -81,6 +82,12 @@ export default function App() {
   };
 
   const usuario = getUsuario();
+
+  // 📱 ROTA DO CELULAR: /assinar?token=...&bou=...
+  // Exibe a tela de assinatura sem exigir login JWT
+  if (window.location.pathname === "/assinar") {
+    return <AssinaturaView />;
+  }
 
   // 🔐 LOGIN
   if (!logado) {
