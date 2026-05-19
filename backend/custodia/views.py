@@ -1261,7 +1261,11 @@ class ReceberAssinaturaView(APIView):
             if apreensoes.exists():
                 # Verifica expiração usando o primeiro registro
                 primeiro = apreensoes.filter(token_expira_em__isnull=False).first()
-                if primeiro and primeiro.token_expira_em and primeiro.token_expira_em < agora:
+                if (
+                    primeiro
+                    and primeiro.token_expira_em
+                    and primeiro.token_expira_em < agora
+                ):
                     return Response(
                         {"error": "Token expirado. Gere um novo QR Code."},
                         status=status.HTTP_400_BAD_REQUEST,
@@ -1282,9 +1286,7 @@ class ReceberAssinaturaView(APIView):
             logger.warning(
                 f"[Assinatura] Token {token} recebido sem registros vinculados."
             )
-            return Response(
-                {"ok": True, "registros": 0, "pendente": True}
-            )
+            return Response({"ok": True, "registros": 0, "pendente": True})
 
         primeiro = apreensoes_token.first()
         if primeiro.token_expira_em and primeiro.token_expira_em < agora:
@@ -1337,14 +1339,10 @@ class StatusAssinaturaView(APIView):
         # Busca por BOU (registros mais recentes) ou por token
         if bou:
             apreensao = (
-                Apreensao.objects.filter(bou=bou)
-                .order_by("-data_criacao")
-                .first()
+                Apreensao.objects.filter(bou=bou).order_by("-data_criacao").first()
             )
         else:
-            apreensao = Apreensao.objects.filter(
-                token_assinatura=token
-            ).first()
+            apreensao = Apreensao.objects.filter(token_assinatura=token).first()
 
         if not apreensao:
             return Response({"assinado": False, "assinatura_base64": None})
