@@ -10,6 +10,7 @@ import {
   formatarProcesso,
   formatarRG,
   salvarCadastro,
+  validarCadastro,
   upper,
 } from "../services/cadastroWorkflow.js";
 
