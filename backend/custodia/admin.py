@@ -103,7 +103,7 @@ class ApreensaoAdmin(admin.ModelAdmin):
         return request.user.is_superuser
 
     def has_delete_permission(self, request, obj=None):
-        return request.user.is_superuser
+        return request.user.is_superuser or request.user.is_staff
 
 
 @admin.register(LoteIncineracao)
@@ -130,7 +130,7 @@ class LoteIncineracaoAdmin(admin.ModelAdmin):
         return request.user.is_superuser
 
     def has_delete_permission(self, request, obj=None):
-        return request.user.is_superuser
+        return request.user.is_superuser or request.user.is_staff
 
 
 @admin.register(Historico)
@@ -145,4 +145,4 @@ class HistoricoAdmin(admin.ModelAdmin):
         return False  # Histórico nunca deve ser criado manualmente
 
     def has_delete_permission(self, request, obj=None):
-        return request.user.is_superuser
+        return request.user.is_superuser or request.user.is_staff
