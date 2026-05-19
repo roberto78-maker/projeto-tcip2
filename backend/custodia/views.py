@@ -1158,9 +1158,6 @@ class FixVarasParaJuizadosView(APIView):
 
 # ─── Assinatura Eletrônica via QR Code ────────────────────────────────────────
 
-import uuid as uuid_module
-from datetime import timedelta
-
 
 class GerarTokenAssinaturaView(APIView):
     """
