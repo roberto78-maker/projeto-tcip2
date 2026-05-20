@@ -1,4 +1,4 @@
-import { addApreensao, gerarNumeroRecibo } from "./api.js";
+import { addApreensao, gerarNumeroRecibo, invalidateApreensaoCache } from "./api.js";
 import { saveHistory } from "../components/AutocompleteInput.jsx";
 import { gerarReciboCadastroPdf } from "./cadastroReciboPdf.js";
 
@@ -166,7 +166,11 @@ export async function salvarCadastro(form, assinaturaBase64 = null) {
   }
 
   for (const material of form.materiais) {
-    await addApreensao(montarPayloadApreensao(form, material));
+    const payload = montarPayloadApreensao(form, material);
+    if (assinaturaBase64) {
+      payload.assinatura_base64 = assinaturaBase64;
+    }
+    await addApreensao(payload);
   }
 
   // Gerar número sequencial de recibo (controlado pelo banco de dados)
@@ -175,6 +179,7 @@ export async function salvarCadastro(form, assinaturaBase64 = null) {
   // Passa a assinatura eletrônica para o PDF (pode ser null se não coletada)
   await gerarReciboCadastroPdf(form, numero_recibo, ano_recibo, assinaturaBase64);
   salvarHistoricosFormulario(form);
+  invalidateApreensaoCache();
 
   return {
     mensagem: "Procedimento registrado com sucesso!",

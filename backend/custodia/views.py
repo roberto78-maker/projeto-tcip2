@@ -73,7 +73,7 @@ def upload_documento(arquivo, *, public_id, folder, request=None):
     original_name = getattr(arquivo, "name", "documento.bin")
     filename = original_name.replace("\\", "_").replace("/", "_").replace(" ", "_")
     storage_path = f"{folder}/{public_id}_{filename}"
-    saved_path = default_storage.save(storage_path, arquivo)
+    saved_path = default_storage.save(storage_path, arquivo).replace("\\", "/")
     relative_url = default_storage.url(saved_path)
 
     if request is not None:
@@ -159,6 +159,7 @@ class LoteIncineracaoFilter(django_filters.FilterSet):
 class LoteIncineracaoViewSet(viewsets.ModelViewSet):
     queryset = LoteIncineracao.objects.all().order_by("-data_criacao")
     serializer_class = LoteIncineracaoSerializer
+    pagination_class = None
     filterset_class = LoteIncineracaoFilter
     search_fields = ["protocolo", "origem"]
     ordering_fields = ["numero", "ano", "data_criacao"]
