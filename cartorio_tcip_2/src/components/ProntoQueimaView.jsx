@@ -5,6 +5,18 @@ import { getApreensoes, getLotes, finalizarLote } from "../services/api.js";
 import { getUsuario } from "../services/auth.js";
 import brasao from "../assets/brasao.png";
 
+// Formata mês e ano (Ex: 01/26)
+const getMesAno = (item) => {
+  const dataString = item.data_fato || item.data_criacao;
+  if (dataString) {
+    const data = new Date(dataString);
+    const mes = String(data.getMonth() + 1).padStart(2, '0');
+    const ano = String(data.getFullYear()).slice(-2);
+    return `${mes}/${ano}`;
+  }
+  return "-";
+};
+
 // Formata peso com unidade inteligente
 const formatarPesoDisplay = (valor, unidade) => {
   const num = parseFloat(String(valor).replace(",", ".")) || 0;
@@ -117,13 +129,14 @@ export default function ProntoQueimaView() {
       item.bou,
       item.processo,
       item.reu || "NÃO IDENTIFICADO",
+      getMesAno(item),
       item.substancia,
       `${formatarPesoDisplay(item.peso, item.unidade)}`
     ]);
 
     autoTable(doc, {
       startY: 59,
-      head: [["BOU", "PROCESSO", "NOTICIADO", "DROGAS", "PESO"]],
+      head: [["BOU", "PROCESSO", "NOTICIADO", "MÊS/ANO", "DROGAS", "PESO"]],
       body: tableData,
       theme: "grid",
       styles: { 
@@ -342,6 +355,7 @@ export default function ProntoQueimaView() {
                   <tr>
                     <th style={{ textAlign: "left", padding: "8px" }}>BOU</th>
                     <th style={{ textAlign: "left", padding: "8px" }}>NOTICIADO</th>
+                    <th style={{ textAlign: "center", padding: "8px" }}>MÊS/ANO</th>
                     <th style={{ textAlign: "right", padding: "8px" }}>PESO</th>
                   </tr>
                 </thead>
@@ -350,6 +364,7 @@ export default function ProntoQueimaView() {
                     <tr key={item.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
                       <td style={{ padding: "8px", fontWeight: "600" }}>{item.bou}</td>
                       <td style={{ padding: "8px", color: "#64748b" }}>{item.reu || "N/I"}</td>
+                      <td style={{ padding: "8px", textAlign: "center" }}>{getMesAno(item)}</td>
                       <td style={{ padding: "8px", textAlign: "right" }}>{formatarPesoDisplay(item.peso, item.unidade)}</td>
                     </tr>
                   ))}
