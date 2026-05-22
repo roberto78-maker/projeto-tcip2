@@ -161,7 +161,7 @@ export default function ProntoQueimaView() {
       item.processo,
       item.reu || "NÃO IDENTIFICADO",
       getMesAno(item),
-      item.substancia,
+      item.substancia ? item.substancia.toUpperCase() : "",
       `${formatarPesoDisplay(item.peso, item.unidade)}`
     ]);
 
