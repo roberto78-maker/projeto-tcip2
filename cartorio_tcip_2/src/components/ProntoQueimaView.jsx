@@ -60,11 +60,42 @@ export default function ProntoQueimaView() {
   // Filtrar apenas o que já está em status incineracao e que seja DROGAS
   const itensParaIncinerar = apreensoes.filter(a => a.status === "incineracao" && a.natureza === "DROGAS");
 
-  // Agrupar itens por lote_incineracao (ID)
-  const lotesAgrupados = lotes.map(lote => ({
-    ...lote,
-    itens: itensParaIncinerar.filter(a => a.lote_incineracao === lote.id)
-  })).filter(lote => lote.itens.length > 0);
+  // Agrupar itens por lote_incineracao (ID) e ordenar por BOU
+  const lotesAgrupados = lotes.map(lote => {
+    let itens = itensParaIncinerar.filter(a => a.lote_incineracao === lote.id);
+    
+    // Ordenar itens do menor para o maior pelo número do BOU
+    itens.sort((a, b) => {
+      const parseBOU = (bou) => {
+        if (!bou) return { ano: 0, num: 0 };
+        const parts = String(bou).match(/\d+/g);
+        if (!parts) return { ano: 0, num: 0 };
+        
+        if (parts.length >= 2) {
+          if (parts[0].length === 4) {
+            return { ano: parseInt(parts[0], 10), num: parseInt(parts[1], 10) };
+          } else if (parts[1].length === 4) {
+            return { ano: parseInt(parts[1], 10), num: parseInt(parts[0], 10) };
+          }
+          return { ano: parseInt(parts[0], 10), num: parseInt(parts[1], 10) };
+        }
+        return { ano: 0, num: parseInt(parts[0], 10) };
+      };
+
+      const bouA = parseBOU(a.bou);
+      const bouB = parseBOU(b.bou);
+
+      if (bouA.ano !== bouB.ano) {
+        return bouA.ano - bouB.ano;
+      }
+      return bouA.num - bouB.num;
+    });
+
+    return {
+      ...lote,
+      itens
+    };
+  }).filter(lote => lote.itens.length > 0);
 
   const gerarCertidaoPDF = async (lote) => {
     const doc = new jsPDF();
