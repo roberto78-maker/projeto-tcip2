@@ -20,7 +20,8 @@ export const CRIMES_GERAIS = [
   "Perturbação do Sossego: Artigo 42 da LCP",
   "Drogas para Consumo Pessoal: Artigo 28 da Lei 11.343/06",
   "Jogos de Azar: Artigo 50 da LCP",
-  "Porte Ilegal de Arma Branca: Artigo 19 da LCP"
+  "Porte Ilegal de Arma Branca: Artigo 19 da LCP",
+  "Trafegar em Velocidade Incompatível Gerando Perigo de Dano: Artigo 311 do CTB"
 ];
 
 export const JUIZADOS = [
