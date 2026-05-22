@@ -49,14 +49,18 @@ export function formatarRG(valor) {
 }
 
 export function formatarBOU(valor) {
-  const anoAtual = new Date().getFullYear().toString();
   let raw = String(valor).replace(/[^\d/]/g, "");
-  if (!raw.startsWith(`${anoAtual}/`)) {
-    raw = `${anoAtual}/`;
+  
+  if (raw.includes("/")) {
+    const partes = raw.split("/");
+    const ano = partes[0].slice(0, 4);
+    const seq = (partes[1] || "").replace(/\D/g, "").slice(0, 7);
+    return `${ano}/${seq}`;
+  } else {
+    const digitos = raw.replace(/\D/g, "");
+    if (digitos.length <= 4) return digitos;
+    return `${digitos.slice(0, 4)}/${digitos.slice(4, 11)}`;
   }
-  const partes = raw.split("/");
-  const seq = (partes[1] || "").replace(/\D/g, "").slice(0, 7);
-  return `${anoAtual}/${seq}`;
 }
 
 export function formatarProcesso(valor) {
