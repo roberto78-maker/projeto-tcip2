@@ -120,7 +120,7 @@ export async function gerarReciboCadastroPdf(dados, numeroRecibo, anoRecibo, ass
           : item.tipo === "SOM"
             ? "SOM - "
             : "OBJETO - ";
-      descFinal = `${prefixo}${item.substancia}`;
+      descFinal = `${prefixo}${item.substancia ? item.substancia.toUpperCase() : ""}`;
     }
 
     return [
