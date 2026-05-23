@@ -9,6 +9,8 @@ import { JUIZADOS, SUBSTANCIAS, CRIMES_GERAIS } from "../constants/options.js";
 export default function AuditoriaView() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const [filtros, setFiltros] = useState({
     data_inicio: "",
     data_fim: "",
@@ -27,6 +29,7 @@ export default function AuditoriaView() {
     try {
       const res = await getRelatorioIncineracao(filtros);
       setData(res);
+      setCurrentPage(1);
     } catch (e) {
       alert("Erro ao buscar registros no radar.");
       console.error(e);
@@ -238,6 +241,19 @@ export default function AuditoriaView() {
 
   const stats = getStats();
 
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = data?.detalhado ? data.detalhado.slice(indexOfFirstItem, indexOfLastItem) : [];
+  const totalPages = data?.detalhado ? Math.ceil(data.detalhado.length / itemsPerPage) : 0;
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
   return (
     <div style={{ padding: "10px", paddingBottom: "50px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
@@ -414,14 +430,14 @@ export default function AuditoriaView() {
                 </tr>
               </thead>
               <tbody>
-                {data.detalhado.length === 0 ? (
+                {currentItems.length === 0 ? (
                   <tr>
                     <td colSpan="8" style={{ textAlign: "center", padding: "40px", color: "#94a3b8" }}>
                       Ops, nenhum processo encontrado com as exatas informações pesquisadas acima.
                     </td>
                   </tr>
                 ) : (
-                  data.detalhado.map((item) => {
+                  currentItems.map((item) => {
                     const natMap = {
                         "DROGAS": { label: "💊 DROGAS", color: "#10b981" },
                         "SOM": { label: "🔊 SOM", color: "#3b82f6" },
@@ -512,6 +528,43 @@ export default function AuditoriaView() {
                 </tfoot>
               )}
             </table>
+
+            {totalPages > 1 && (
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "15px", borderTop: "1px solid #e2e8f0", background: "white", borderBottomLeftRadius: "8px", borderBottomRightRadius: "8px" }}>
+                <span style={{ fontSize: "13px", color: "#64748b", fontWeight: "600" }}>
+                  Mostrando {indexOfFirstItem + 1} a {Math.min(indexOfLastItem, data.detalhado.length)} de {data.detalhado.length} registros
+                </span>
+                <div style={{ display: "flex", gap: "10px" }}>
+                  <button
+                    onClick={handlePrevPage}
+                    disabled={currentPage === 1}
+                    style={{
+                      padding: "8px 16px", borderRadius: "6px",
+                      border: "1px solid #cbd5e1", background: currentPage === 1 ? "#f1f5f9" : "white",
+                      color: currentPage === 1 ? "#94a3b8" : "#334155", fontWeight: "600", fontSize: "13px",
+                      cursor: currentPage === 1 ? "not-allowed" : "pointer", transition: "all 0.2s",
+                    }}
+                  >
+                    Anterior
+                  </button>
+                  <span style={{ padding: "8px 12px", fontSize: "13px", fontWeight: "700", color: "#0f172a", background: "#f8fafc", borderRadius: "6px", border: "1px solid #e2e8f0" }}>
+                    Página {currentPage} de {totalPages}
+                  </span>
+                  <button
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
+                    style={{
+                      padding: "8px 16px", borderRadius: "6px",
+                      border: "1px solid #cbd5e1", background: currentPage === totalPages ? "#f1f5f9" : "white",
+                      color: currentPage === totalPages ? "#94a3b8" : "#334155", fontWeight: "600", fontSize: "13px",
+                      cursor: currentPage === totalPages ? "not-allowed" : "pointer", transition: "all 0.2s",
+                    }}
+                  >
+                    Próxima
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
