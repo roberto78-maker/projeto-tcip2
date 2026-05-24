@@ -251,7 +251,7 @@ export default function CofreView() {
                         <div style={{ fontSize: "11px", color: "#64748b" }}>{item.processo}</div>
                       </td>
                       <td>
-                        <div style={{ fontWeight: "700", color: abaAtiva === "DROGAS" ? "#059669" : "#2563eb" }}>
+                        <div style={{ fontWeight: "700", textTransform: "uppercase", color: abaAtiva === "DROGAS" ? "#059669" : "#2563eb" }}>
                           {item.substancia}
                         </div>
                         <div style={{ fontSize: "12px", color: "#64748b" }}>{item.reu}</div>
