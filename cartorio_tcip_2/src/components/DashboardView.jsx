@@ -58,8 +58,7 @@ export default function DashboardView() {
   // ─── Weight formatter ───────────────────────────────────────────────────────
   const formatarPesoDisplay = (gramas) => {
     const g = Number(gramas) || 0;
-    if (g >= 1000) return `${(g / 1000).toFixed(3).replace(".", ",")} Kg`;
-    return `${g.toFixed(2).replace(".", ",")} g`;
+    return `${g.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} g`;
   };
 
   // ─── Chart data — built directly from pre-aggregated server fields ──────────
