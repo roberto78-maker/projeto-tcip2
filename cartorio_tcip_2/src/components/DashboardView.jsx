@@ -58,14 +58,23 @@ export default function DashboardView() {
   // ─── Weight formatter ───────────────────────────────────────────────────────
   const formatarPesoDisplay = (gramas) => {
     const g = Number(gramas) || 0;
-    const formatado = g.toLocaleString("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+    
+    let valorExibicao = g;
+    let unidade = "g";
+
+    if (g >= 1000) {
+      valorExibicao = g / 1000;
+      unidade = "Kg";
+    }
+
+    const formatado = valorExibicao.toLocaleString("pt-BR", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
     const [inteiro, decimal] = formatado.split(",");
 
     return (
       <span title="Valor exato incluindo miligramas" style={{ display: "inline-flex", alignItems: "baseline" }}>
         <span>{inteiro},</span>
         <span style={{ fontSize: "0.75em", opacity: 0.8, fontWeight: "600", marginLeft: "2px" }}>{decimal}</span>
-        <span style={{ fontSize: "0.65em", opacity: 0.9, marginLeft: "4px", fontWeight: "normal" }}>g</span>
+        <span style={{ fontSize: "0.65em", opacity: 0.9, marginLeft: "4px", fontWeight: "normal" }}>{unidade}</span>
       </span>
     );
   };
