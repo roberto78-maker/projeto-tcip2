@@ -110,27 +110,27 @@ if DEBUG:
         BASE_DIR.parent / "cartorio_tcip_2" / "dist",
     ]
 
+# Lê as credenciais Cloudinary uma única vez para evitar divergência entre
+# CLOUDINARY_STORAGE (django-cloudinary-storage) e cloudinary.config() (SDK).
+_CLOUD_NAME   = os.environ.get("CLOUD_NAME", "")
+_CLOUD_KEY    = os.environ.get("API_KEY", "")
+_CLOUD_SECRET = os.environ.get("API_SECRET", "")
+
 CLOUDINARY_STORAGE = {
-    "CLOUD_NAME": os.environ.get("CLOUD_NAME", ""),
-    "API_KEY": os.environ.get("API_KEY", ""),
-    "API_SECRET": os.environ.get("API_SECRET", ""),
+    "CLOUD_NAME": _CLOUD_NAME,
+    "API_KEY":    _CLOUD_KEY,
+    "API_SECRET": _CLOUD_SECRET,
     "SECURE": True,
 }
 
 cloudinary.config(
-    cloud_name=os.environ.get("CLOUD_NAME"),
-    api_key=os.environ.get("API_KEY"),
-    api_secret=os.environ.get("API_SECRET"),
+    cloud_name=_CLOUD_NAME,
+    api_key=_CLOUD_KEY,
+    api_secret=_CLOUD_SECRET,
     secure=True,
 )
 
-USE_CLOUDINARY = all(
-    [
-        os.environ.get("CLOUD_NAME"),
-        os.environ.get("API_KEY"),
-        os.environ.get("API_SECRET"),
-    ]
-)
+USE_CLOUDINARY = all([_CLOUD_NAME, _CLOUD_KEY, _CLOUD_SECRET])
 
 if USE_CLOUDINARY:
     STORAGES = {
