@@ -728,7 +728,35 @@ class RelatorioIncineracaoPDFView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        qs = Apreensao.objects.select_related("lote_incineracao").all()
+        qs_base = _aplicar_filtros_relatorio(Apreensao.objects.all(), request.GET)
+
+        # Agrega estatísticas antes de fatiar para evitar múltiplos selects e loops Python
+        stats = qs_base.aggregate(
+            total_itens=Count("id"),
+            processos_unicos=Count("processo", distinct=True),
+            reus_unicos=Count("reu", distinct=True),
+            peso_total=Sum(
+                "peso",
+                filter=Q(natureza="DROGAS") & ~Q(unidade="Unid")
+            ),
+            count_som=Count("id", filter=Q(natureza="SOM")),
+            count_facas=Count(
+                "id",
+                filter=(
+                    Q(substancia__icontains="faca")
+                    | Q(substancia__icontains="facão")
+                ),
+            ),
+        )
+
+        total_itens = stats["total_itens"]
+        processos_unicos = stats["processos_unicos"]
+        reus_unicos = stats["reus_unicos"]
+        peso_total = float(stats["peso_total"] or 0)
+        count_som = stats["count_som"]
+        count_facas = stats["count_facas"]
+
+        qs = qs_base.select_related("lote_incineracao").order_by("data_criacao")[:1000]
 
         data_inicio = request.GET.get("data_inicio")
         data_fim = request.GET.get("data_fim")
@@ -739,29 +767,6 @@ class RelatorioIncineracaoPDFView(APIView):
         bou = request.GET.get("bou")
         processo = request.GET.get("processo")
         reu = request.GET.get("reu")
-
-        if data_inicio:
-            qs = qs.filter(data_fato__gte=data_inicio)
-        if data_fim:
-            qs = qs.filter(data_fato__lte=data_fim)
-        if vara:
-            qs = qs.filter(vara__icontains=vara)
-        if substancia == "__NENHUMA__":
-            qs = qs.exclude(natureza="DROGAS")
-        elif substancia:
-            qs = qs.filter(substancia__icontains=substancia)
-        if natureza:
-            qs = qs.filter(natureza=natureza)
-        if status_filter:
-            qs = qs.filter(status=status_filter)
-        if bou:
-            qs = qs.filter(bou__icontains=bou)
-        if processo:
-            qs = qs.filter(processo__icontains=processo)
-        if reu:
-            qs = qs.filter(reu__icontains=reu)
-
-        qs = qs.order_by("data_criacao")[:1000]
 
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(
@@ -845,26 +850,6 @@ class RelatorioIncineracaoPDFView(APIView):
 
         info = f"<b>{periodo_texto}</b><br/>" f"<b>Filtros Aplicados:</b> {filtros_str}"
         elements.append(Paragraph(info, normal_style))
-
-        total_itens = qs.count()
-        processos_unicos = qs.values("processo").distinct().count()
-        reus_unicos = qs.values("reu").distinct().count()
-
-        peso_total = 0
-        count_som = 0
-        count_facas = 0
-
-        for item in qs:
-            if item.natureza == "DROGAS" and item.unidade != "Unid":
-                peso_total += item.peso or 0
-            if item.natureza == "SOM":
-                count_som += 1
-            if item.substancia and (
-                "faca" in item.substancia.lower()
-                or "fac\u00e3o" in item.substancia.lower()
-            ):
-                count_facas += 1
-
         elements.append(Spacer(1, 10))
 
         resumo_data = [
@@ -1284,8 +1269,7 @@ class ReceberAssinaturaView(APIView):
                         {"error": "Token expirado. Gere um novo QR Code."},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
-                apreensoes.update(assinatura_base64=assinatura_b64)
-                count = apreensoes.count()
+                count = apreensoes.update(assinatura_base64=assinatura_b64)
                 logger.info(
                     f"[Assinatura] Assinatura salva via BOU '{bou}' "
                     f"em {count} registro(s)."
@@ -1309,8 +1293,7 @@ class ReceberAssinaturaView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        apreensoes_token.update(assinatura_base64=assinatura_b64)
-        count = apreensoes_token.count()
+        count = apreensoes_token.update(assinatura_base64=assinatura_b64)
         logger.info(
             f"[Assinatura] Assinatura salva via token {token} "
             f"em {count} registro(s)."

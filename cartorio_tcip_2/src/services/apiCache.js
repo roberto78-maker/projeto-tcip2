@@ -20,9 +20,13 @@ export function get(key) {
 
 // ── Write ───────────────────────────────────────────────────────────────────
 export function set(key, data, ttl = DEFAULT_TTL_MS) {
-  // Simple safety limit: if cache is full, wipe it to prevent memory leaks
-  if (_cache.size >= MAX_CACHE_SIZE) {
-    _cache.clear();
+  // Se o cache atingiu o limite, removemos o item mais antigo (FIFO)
+  // para evitar vazamento de memória mantendo os itens mais recentes.
+  if (_cache.size >= MAX_CACHE_SIZE && !_cache.has(key)) {
+    const oldestKey = _cache.keys().next().value;
+    if (oldestKey !== undefined) {
+      _cache.delete(oldestKey);
+    }
   }
 
   _cache.set(key, {
