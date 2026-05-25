@@ -154,7 +154,10 @@ export function useCadastroForm() {
     setUrlQR("");
   };
 
-  // Mantido por compatibilidade (não é mais usado no fluxo principal)
+  /**
+   * @deprecated Mantido apenas por compatibilidade retrógrada.
+   * Utilize `handleColetarAssinatura` para iniciar o fluxo moderno com QR Code.
+   */
   const handleSalvar = handleColetarAssinatura;
 
   return {

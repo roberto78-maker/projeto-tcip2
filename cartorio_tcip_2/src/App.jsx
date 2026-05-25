@@ -41,7 +41,12 @@ export default function App() {
     return viewsValidas.includes(hash) ? hash : "dashboard";
   });
   const [logado, setLogado] = useState(isAutenticado());
-  
+  const [usuario, setUsuario] = useState(() => (logado ? getUsuario() : null));
+
+  useEffect(() => {
+    setUsuario(logado ? getUsuario() : null);
+  }, [logado]);
+
   // 💓 HEARTBEAT: Mantém o Render acordado a cada 10 minutos (previne suspensão do plano Free)
   useEffect(() => {
     if (!logado) return;
@@ -80,8 +85,6 @@ export default function App() {
       window.history.pushState(null, "", `#/${v}`);
     }
   };
-
-  const usuario = getUsuario();
 
   // 📱 ROTA DO CELULAR: /assinar?token=...&bou=...
   // Exibe a tela de assinatura sem exigir login JWT

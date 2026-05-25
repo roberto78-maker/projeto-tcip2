@@ -14,6 +14,47 @@ import { Bar } from "react-chartjs-2";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
+// ─── Sub-components ─────────────────────────────────────────────────────────
+const TopCard = ({ title, value, subtitle, bg, icon, onClick }) => (
+  <div 
+    onClick={onClick}
+    style={{ 
+      background: bg, color: "white", padding: "20px", borderRadius: "8px", flex: 1, display: "flex", flexDirection: "column", 
+      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+      cursor: onClick ? "pointer" : "default",
+      transition: "transform 0.2s, box-shadow 0.2s"
+    }}
+    onMouseEnter={(e) => {
+      if (onClick) {
+        e.currentTarget.style.transform = "translateY(-2px)";
+        e.currentTarget.style.boxShadow = "0 4px 8px rgba(0,0,0,0.2)";
+      }
+    }}
+    onMouseLeave={(e) => {
+      if (onClick) {
+        e.currentTarget.style.transform = "translateY(0)";
+        e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
+      }
+    }}
+  >
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
+      <h3 style={{ margin: 0, fontSize: "14px", fontWeight: "600", letterSpacing: "0.5px" }}>{title}</h3>
+      <span style={{ fontSize: "20px", opacity: 0.8 }}>{icon}</span>
+    </div>
+    <div style={{ fontSize: "28px", fontWeight: "700", marginBottom: "8px" }}>{value}</div>
+    <div style={{ fontSize: "12px", opacity: 0.9 }}>{subtitle}</div>
+  </div>
+);
+
+const BorderCard = ({ title, value, subtitle, color }) => (
+  <div style={{ background: "white", padding: "20px", borderRadius: "6px", flex: 1, borderLeft: `5px solid ${color}`, boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+    <div style={{ fontSize: "12px", fontWeight: "700", color: "#475569", marginBottom: "8px" }}>{title}</div>
+    <div style={{ fontSize: "22px", fontWeight: "700", color: "#0f172a" }}>
+      {value} <span style={{ fontSize: "14px", fontWeight: "500", color: "#64748b" }}>{subtitle}</span>
+    </div>
+  </div>
+);
+
 // ─── Initial state shape mirrors the DashboardStatsView response ──────────────
 const EMPTY_STATS = {
   total: 0,
@@ -107,47 +148,6 @@ export default function DashboardView() {
     }
     window.location.hash = `#/${path}`;
   };
-
-  // ─── Sub-components ─────────────────────────────────────────────────────────
-  const TopCard = ({ title, value, subtitle, bg, icon, onClick }) => (
-    <div 
-      onClick={onClick}
-      style={{ 
-        background: bg, color: "white", padding: "20px", borderRadius: "8px", flex: 1, display: "flex", flexDirection: "column", 
-        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-        cursor: onClick ? "pointer" : "default",
-        transition: "transform 0.2s, box-shadow 0.2s"
-      }}
-      onMouseEnter={(e) => {
-        if (onClick) {
-          e.currentTarget.style.transform = "translateY(-2px)";
-          e.currentTarget.style.boxShadow = "0 4px 8px rgba(0,0,0,0.2)";
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (onClick) {
-          e.currentTarget.style.transform = "translateY(0)";
-          e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
-        }
-      }}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
-        <h3 style={{ margin: 0, fontSize: "14px", fontWeight: "600", letterSpacing: "0.5px" }}>{title}</h3>
-        <span style={{ fontSize: "20px", opacity: 0.8 }}>{icon}</span>
-      </div>
-      <div style={{ fontSize: "28px", fontWeight: "700", marginBottom: "8px" }}>{value}</div>
-      <div style={{ fontSize: "12px", opacity: 0.9 }}>{subtitle}</div>
-    </div>
-  );
-
-  const BorderCard = ({ title, value, subtitle, color }) => (
-    <div style={{ background: "white", padding: "20px", borderRadius: "6px", flex: 1, borderLeft: `5px solid ${color}`, boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
-      <div style={{ fontSize: "12px", fontWeight: "700", color: "#475569", marginBottom: "8px" }}>{title}</div>
-      <div style={{ fontSize: "22px", fontWeight: "700", color: "#0f172a" }}>
-        {value} <span style={{ fontSize: "14px", fontWeight: "500", color: "#64748b" }}>{subtitle}</span>
-      </div>
-    </div>
-  );
 
   // ─── Loading / error states ─────────────────────────────────────────────────
   if (loading) {
