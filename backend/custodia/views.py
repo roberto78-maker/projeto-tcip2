@@ -13,7 +13,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.files.storage import default_storage
 from django.db import transaction
-from django.db.models import Count, Max, Q, Sum
+from django.db.models import Count, Max, Q, Sum, Case, When, F, FloatField
 from django.http import HttpResponse
 from django.utils import timezone
 from django_filters import rest_framework as django_filters
@@ -93,6 +93,13 @@ class DashboardStatsView(APIView):
         Replaces the previous pattern of downloading all records and filtering
         on the frontend.
         """
+        peso_expressao = Case(
+            When(unidade__iexact="kg", then=F("peso") * 1000.0),
+            When(unidade__iexact="mg", then=F("peso") / 1000.0),
+            default=F("peso"),
+            output_field=FloatField(),
+        )
+
         stats = Apreensao.objects.aggregate(
             total=Count("id"),
             count_conferencia=Count("id", filter=Q(status="conferencia")),
@@ -100,9 +107,9 @@ class DashboardStatsView(APIView):
             count_incineracao=Count("id", filter=Q(status="incineracao")),
             count_queima_pronta=Count("id", filter=Q(status="queima_pronta")),
             count_excluido=Count("id", filter=Q(status="excluido")),
-            peso_cofre=Sum("peso", filter=Q(status="cofre")),
-            peso_incineracao=Sum("peso", filter=Q(status="incineracao")),
-            peso_queima_pronta=Sum("peso", filter=Q(status="queima_pronta")),
+            peso_cofre=Sum(peso_expressao, filter=Q(status="cofre")),
+            peso_incineracao=Sum(peso_expressao, filter=Q(status="incineracao")),
+            peso_queima_pronta=Sum(peso_expressao, filter=Q(status="queima_pronta")),
             count_som=Count("id", filter=Q(natureza="SOM")),
             count_outros=Count("id", filter=Q(natureza="OUTROS")),
             count_facas=Count(
@@ -728,12 +735,21 @@ class RelatorioIncineracaoPDFView(APIView):
     def get(self, request):
         qs_base = _aplicar_filtros_relatorio(Apreensao.objects.all(), request.GET)
 
+        peso_expressao = Case(
+            When(unidade__iexact="kg", then=F("peso") * 1000.0),
+            When(unidade__iexact="mg", then=F("peso") / 1000.0),
+            default=F("peso"),
+            output_field=FloatField(),
+        )
+
         # Agrega estatísticas antes de fatiar para evitar múltiplos selects e loops Python
         stats = qs_base.aggregate(
             total_itens=Count("id"),
             processos_unicos=Count("processo", distinct=True),
             reus_unicos=Count("reu", distinct=True),
-            peso_total=Sum("peso", filter=Q(natureza="DROGAS") & ~Q(unidade="Unid")),
+            peso_total=Sum(
+                peso_expressao, filter=Q(natureza="DROGAS") & ~Q(unidade="Unid")
+            ),
             count_som=Count("id", filter=Q(natureza="SOM")),
             count_facas=Count(
                 "id",
