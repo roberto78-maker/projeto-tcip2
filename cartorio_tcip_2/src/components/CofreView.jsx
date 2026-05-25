@@ -29,7 +29,14 @@ function buildFilters(abaAtiva, busca) {
 
 export default function CofreView() {
   // ─── Filter state ─────────────────────────────────────────────────────────
-  const [abaAtiva, setAbaAtiva] = useState("DROGAS");
+  const [abaAtiva, setAbaAtiva] = useState(() => {
+    const savedTab = localStorage.getItem("deposito_tab");
+    if (savedTab) {
+      localStorage.removeItem("deposito_tab");
+      return savedTab;
+    }
+    return "DROGAS";
+  });
   const [busca, setBusca]       = useState("");
 
   // ─── Misc ─────────────────────────────────────────────────────────────────

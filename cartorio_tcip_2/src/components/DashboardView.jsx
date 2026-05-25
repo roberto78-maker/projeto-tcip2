@@ -100,9 +100,37 @@ export default function DashboardView() {
     }],
   };
 
+  // ─── Navigation Helper ──────────────────────────────────────────────────────
+  const navigateTo = (path, tab) => {
+    if (tab) {
+      localStorage.setItem("deposito_tab", tab);
+    }
+    window.location.hash = `#/${path}`;
+  };
+
   // ─── Sub-components ─────────────────────────────────────────────────────────
-  const TopCard = ({ title, value, subtitle, bg, icon }) => (
-    <div style={{ background: bg, color: "white", padding: "20px", borderRadius: "8px", flex: 1, display: "flex", flexDirection: "column", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
+  const TopCard = ({ title, value, subtitle, bg, icon, onClick }) => (
+    <div 
+      onClick={onClick}
+      style={{ 
+        background: bg, color: "white", padding: "20px", borderRadius: "8px", flex: 1, display: "flex", flexDirection: "column", 
+        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+        cursor: onClick ? "pointer" : "default",
+        transition: "transform 0.2s, box-shadow 0.2s"
+      }}
+      onMouseEnter={(e) => {
+        if (onClick) {
+          e.currentTarget.style.transform = "translateY(-2px)";
+          e.currentTarget.style.boxShadow = "0 4px 8px rgba(0,0,0,0.2)";
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (onClick) {
+          e.currentTarget.style.transform = "translateY(0)";
+          e.currentTarget.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
+        }
+      }}
+    >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
         <h3 style={{ margin: 0, fontSize: "14px", fontWeight: "600", letterSpacing: "0.5px" }}>{title}</h3>
         <span style={{ fontSize: "20px", opacity: 0.8 }}>{icon}</span>
@@ -153,6 +181,7 @@ export default function DashboardView() {
           subtitle={`${stats.count_cofre} itens no depósito`}
           bg="#007bff"
           icon="📦"
+          onClick={() => navigateTo("deposito", "DROGAS")}
         />
         <TopCard
           title="LOTES EM FORMAÇÃO"
@@ -160,6 +189,7 @@ export default function DashboardView() {
           subtitle={`${stats.lotes_em_formacao} lotes (${stats.count_incineracao} itens)`}
           bg="#ffb000"
           icon="⚖️"
+          onClick={() => navigateTo("incineracao")}
         />
         <TopCard
           title="INCINERADOS NO PERÍODO"
@@ -167,6 +197,7 @@ export default function DashboardView() {
           subtitle={`${stats.lotes_incinerados} lotes (${stats.count_queima_pronta} itens)`}
           bg="#28a745"
           icon="🔥"
+          onClick={() => navigateTo("lotes_prontos")}
         />
       </div>
 
@@ -178,6 +209,7 @@ export default function DashboardView() {
           subtitle="recebidos no período"
           bg="#8b5cf6"
           icon="🔊"
+          onClick={() => navigateTo("deposito", "OBJETOS")}
         />
         <TopCard
           title="FACAS / ARMAS BRANCAS"
@@ -185,6 +217,7 @@ export default function DashboardView() {
           subtitle="recebidas no período"
           bg="#ef4444"
           icon="🗡️"
+          onClick={() => navigateTo("deposito", "OBJETOS")}
         />
         <TopCard
           title="OUTROS OBJETOS"
@@ -192,6 +225,7 @@ export default function DashboardView() {
           subtitle="registrados no período"
           bg="#64748b"
           icon="⚙️"
+          onClick={() => navigateTo("deposito", "OBJETOS")}
         />
       </div>
 
