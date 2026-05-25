@@ -473,6 +473,12 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
             ).first()
 
             if existente:
+                Apreensao.objects.filter(
+                    bou=bou, numero_recibo__isnull=True
+                ).update(
+                    numero_recibo=existente.numero_recibo,
+                    ano_recibo=existente.ano_recibo,
+                )
                 return Response(
                     {
                         "numero_recibo": existente.numero_recibo,
