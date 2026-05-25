@@ -180,13 +180,15 @@ if __name__ == "__main__":
         elif command == "cleanup":
             cleanup_old_backups()
         elif command == "help":
-            print("""
+            print(
+                """
 📖 Comandos disponíveis:
    python backup.py           - Criar novo backup
    python backup.py list      - Listar backups
    python backup.py export    - Exportar dados para JSON
    python backup.py cleanup   - Limpar backups antigos
-            """)
+            """
+            )
         else:
             print(f"❌ Comando desconhecido: {command}")
     else:
