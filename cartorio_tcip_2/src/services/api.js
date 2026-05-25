@@ -247,21 +247,33 @@ export async function finalizarLote(loteId, file = null) {
     return await res.json();
   }
 
+// Helper para construir parâmetros de consulta de relatórios
+export function buildRelatorioParams(filtros = {}) {
+  const queryParams = new URLSearchParams();
+  const keys = [
+    "data_inicio",
+    "data_fim",
+    "vara",
+    "substancia",
+    "natureza",
+    "status",
+    "bou",
+    "processo",
+    "reu",
+    "crime"
+  ];
+  for (const key of keys) {
+    if (filtros[key]) {
+      queryParams.append(key, filtros[key]);
+    }
+  }
+  return queryParams.toString();
+}
+
 // 📊 RELATÓRIOS E AUDITORIA
 export async function getRelatorioIncineracao(filtros = {}) {
-  const queryParams = new URLSearchParams();
-  if (filtros.data_inicio) queryParams.append("data_inicio", filtros.data_inicio);
-  if (filtros.data_fim) queryParams.append("data_fim", filtros.data_fim);
-  if (filtros.vara) queryParams.append("vara", filtros.vara);
-  if (filtros.substancia) queryParams.append("substancia", filtros.substancia);
-  if (filtros.natureza) queryParams.append("natureza", filtros.natureza);
-  if (filtros.status) queryParams.append("status", filtros.status);
-  if (filtros.bou) queryParams.append("bou", filtros.bou);
-  if (filtros.processo) queryParams.append("processo", filtros.processo);
-  if (filtros.reu) queryParams.append("reu", filtros.reu);
-  if (filtros.crime) queryParams.append("crime", filtros.crime);
-
-  const res = await fetch(`${BASE_URL}/api/relatorios/incineracao/?${queryParams.toString()}`, {
+  const qs = buildRelatorioParams(filtros);
+  const res = await fetch(`${BASE_URL}/api/relatorios/incineracao/?${qs}`, {
     headers: getHeaders()
   });
   if (!res.ok) throw new Error("Erro ao buscar relatório de incineração");
@@ -269,19 +281,8 @@ export async function getRelatorioIncineracao(filtros = {}) {
 }
 
 export async function downloadRelatorioPdf(filtros = {}) {
-  const queryParams = new URLSearchParams();
-  if (filtros.data_inicio) queryParams.append("data_inicio", filtros.data_inicio);
-  if (filtros.data_fim) queryParams.append("data_fim", filtros.data_fim);
-  if (filtros.vara) queryParams.append("vara", filtros.vara);
-  if (filtros.substancia) queryParams.append("substancia", filtros.substancia);
-  if (filtros.natureza) queryParams.append("natureza", filtros.natureza);
-  if (filtros.status) queryParams.append("status", filtros.status);
-  if (filtros.bou) queryParams.append("bou", filtros.bou);
-  if (filtros.processo) queryParams.append("processo", filtros.processo);
-  if (filtros.reu) queryParams.append("reu", filtros.reu);
-  if (filtros.crime) queryParams.append("crime", filtros.crime);
-
-  const res = await fetch(`${BASE_URL}/api/relatorios/incineracao/pdf/?${queryParams.toString()}`, {
+  const qs = buildRelatorioParams(filtros);
+  const res = await fetch(`${BASE_URL}/api/relatorios/incineracao/pdf/?${qs}`, {
     headers: getHeaders()
   });
   if (!res.ok) throw new Error("Erro ao gerar PDF do relatório");
