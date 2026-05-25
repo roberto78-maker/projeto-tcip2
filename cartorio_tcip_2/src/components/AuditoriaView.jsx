@@ -168,10 +168,18 @@ export default function AuditoriaView() {
       resumos.push([`RELATÓRIO GERADO POR: ${getUsuario()?.username?.toUpperCase() || "SISTEMA"}`]);
     } else {
       // Geral (sem natureza definida)
+      let pesoTotal = 0;
+      data.detalhado.forEach(i => {
+        if (i.natureza === "DROGAS" && i.unidade !== "Unid") {
+          pesoTotal += parseFloat(String(i.peso).replace(",", ".")) || 0;
+        }
+      });
+
       resumos = [
         [`TOTAL DE PROCESSOS: ${String(totalProcessos).padStart(2, "0")}`],
         [`PESSOAS IDENTIFICADAS: ${String(reusUnicos).padStart(2, "0")}`],
         [`TOTAL DE ITENS: ${String(totalItens).padStart(2, "0")}`],
+        ...(pesoTotal > 0 ? [[`PESO TOTAL (DROGAS): ${formatarPesoDisplay(pesoTotal, "g")}`]] : []),
         [`RELATÓRIO GERADO POR: ${getUsuario()?.username?.toUpperCase() || "SISTEMA"}`]
       ];
     }
