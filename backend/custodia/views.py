@@ -108,8 +108,7 @@ class DashboardStatsView(APIView):
             count_facas=Count(
                 "id",
                 filter=(
-                    Q(substancia__icontains="faca")
-                    | Q(substancia__icontains="facão")
+                    Q(substancia__icontains="faca") | Q(substancia__icontains="facão")
                 ),
             ),
         )
@@ -595,15 +594,15 @@ def _aplicar_filtros_relatorio(qs, params):
     Retorna o queryset filtrado sem alterar a lógica de negócio.
     """
     data_inicio = params.get("data_inicio")
-    data_fim    = params.get("data_fim")
-    vara        = params.get("vara")
-    substancia  = params.get("substancia")
-    natureza    = params.get("natureza")
-    status_f    = params.get("status")
-    bou         = params.get("bou")
-    processo    = params.get("processo")
-    reu         = params.get("reu")
-    crime       = params.get("crime")
+    data_fim = params.get("data_fim")
+    vara = params.get("vara")
+    substancia = params.get("substancia")
+    natureza = params.get("natureza")
+    status_f = params.get("status")
+    bou = params.get("bou")
+    processo = params.get("processo")
+    reu = params.get("reu")
+    crime = params.get("crime")
 
     if data_inicio:
         qs = qs.filter(data_fato__gte=data_inicio)
@@ -624,8 +623,7 @@ def _aplicar_filtros_relatorio(qs, params):
     if natureza:
         if natureza == "AMEACA":
             qs = qs.filter(
-                Q(natureza="AMEACA")
-                | Q(substancia__icontains="NÃO HÁ APREENSÃO")
+                Q(natureza="AMEACA") | Q(substancia__icontains="NÃO HÁ APREENSÃO")
             )
         else:
             qs = qs.filter(natureza=natureza)
@@ -735,16 +733,12 @@ class RelatorioIncineracaoPDFView(APIView):
             total_itens=Count("id"),
             processos_unicos=Count("processo", distinct=True),
             reus_unicos=Count("reu", distinct=True),
-            peso_total=Sum(
-                "peso",
-                filter=Q(natureza="DROGAS") & ~Q(unidade="Unid")
-            ),
+            peso_total=Sum("peso", filter=Q(natureza="DROGAS") & ~Q(unidade="Unid")),
             count_som=Count("id", filter=Q(natureza="SOM")),
             count_facas=Count(
                 "id",
                 filter=(
-                    Q(substancia__icontains="faca")
-                    | Q(substancia__icontains="facão")
+                    Q(substancia__icontains="faca") | Q(substancia__icontains="facão")
                 ),
             ),
         )

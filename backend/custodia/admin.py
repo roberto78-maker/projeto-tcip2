@@ -123,11 +123,7 @@ class LoteIncineracaoAdmin(admin.ModelAdmin):
     ordering = ("-numero",)
 
     def get_queryset(self, request):
-        return (
-            super()
-            .get_queryset(request)
-            .annotate(_total_itens=Count("apreensoes"))
-        )
+        return super().get_queryset(request).annotate(_total_itens=Count("apreensoes"))
 
     def total_itens(self, obj):
         return obj._total_itens

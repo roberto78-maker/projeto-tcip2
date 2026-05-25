@@ -112,13 +112,13 @@ if DEBUG:
 
 # Lê as credenciais Cloudinary uma única vez para evitar divergência entre
 # CLOUDINARY_STORAGE (django-cloudinary-storage) e cloudinary.config() (SDK).
-_CLOUD_NAME   = os.environ.get("CLOUD_NAME", "")
-_CLOUD_KEY    = os.environ.get("API_KEY", "")
+_CLOUD_NAME = os.environ.get("CLOUD_NAME", "")
+_CLOUD_KEY = os.environ.get("API_KEY", "")
 _CLOUD_SECRET = os.environ.get("API_SECRET", "")
 
 CLOUDINARY_STORAGE = {
     "CLOUD_NAME": _CLOUD_NAME,
-    "API_KEY":    _CLOUD_KEY,
+    "API_KEY": _CLOUD_KEY,
     "API_SECRET": _CLOUD_SECRET,
     "SECURE": True,
 }
