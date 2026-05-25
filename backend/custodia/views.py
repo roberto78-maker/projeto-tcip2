@@ -612,9 +612,9 @@ def _aplicar_filtros_relatorio(qs, params):
     crime = params.get("crime")
 
     if data_inicio:
-        qs = qs.filter(data_fato__gte=data_inicio)
+        qs = qs.filter(data_fato__date__gte=data_inicio)
     if data_fim:
-        qs = qs.filter(data_fato__lte=data_fim)
+        qs = qs.filter(data_fato__date__lte=data_fim)
     if vara:
         qs = qs.filter(
             Q(vara__icontains=vara)
