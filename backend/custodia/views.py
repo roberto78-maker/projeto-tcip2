@@ -473,9 +473,7 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
             ).first()
 
             if existente:
-                Apreensao.objects.filter(
-                    bou=bou, numero_recibo__isnull=True
-                ).update(
+                Apreensao.objects.filter(bou=bou, numero_recibo__isnull=True).update(
                     numero_recibo=existente.numero_recibo,
                     ano_recibo=existente.ano_recibo,
                 )
@@ -969,7 +967,9 @@ class RelatorioIncineracaoPDFView(APIView):
                     if hasattr(item, "lote_incineracao") and item.lote_incineracao:
                         lote_num = str(item.lote_incineracao.numero).zfill(2)
                         lote_data = (
-                            timezone.localtime(item.lote_incineracao.data_criacao).strftime("%d/%m/%y")
+                            timezone.localtime(
+                                item.lote_incineracao.data_criacao
+                            ).strftime("%d/%m/%y")
                             if item.lote_incineracao.data_criacao
                             else "S/D"
                         )
@@ -983,7 +983,11 @@ class RelatorioIncineracaoPDFView(APIView):
                             item.substancia or "-",
                             f"{item.peso} {item.unidade}",
                             status_desc,
-                            timezone.localtime(dt_exibicao).strftime("%d/%m/%Y") if dt_exibicao else "-",
+                            (
+                                timezone.localtime(dt_exibicao).strftime("%d/%m/%Y")
+                                if dt_exibicao
+                                else "-"
+                            ),
                         ]
                     )
 
