@@ -102,7 +102,7 @@ class Apreensao(models.Model):
     history = HistoricalRecords()
 
     def __str__(self):
-        return f"{self.bou} - {self.substancia}"
+        return f"{self.bou} - {self.substancia or '(sem substância)'}"
 
 
 class Historico(models.Model):
