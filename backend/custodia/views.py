@@ -694,9 +694,10 @@ class RelatorioIncineracaoView(APIView):
 
             if item.get("lote_incineracao__numero"):
                 lote_num = str(item["lote_incineracao__numero"]).zfill(2)
+                lote_dt = item.get("lote_incineracao__data_criacao")
                 lote_data = (
-                    item["lote_incineracao__data_criacao"].strftime("%d/%m/%y")
-                    if item.get("lote_incineracao__data_criacao")
+                    timezone.localtime(lote_dt).strftime("%d/%m/%y")
+                    if lote_dt
                     else "S/D"
                 )
                 status_desc = f"{status_desc} (Lote {lote_num} - {lote_data})"
@@ -719,8 +720,8 @@ class RelatorioIncineracaoView(APIView):
                     "motivo_exclusao": item["motivo_exclusao"],
                     "arquivo_pdf_url": item["arquivo_pdf_url"],
                     "data": (
-                        data_exibicao.strftime("%Y-%m-%d")
-                        if hasattr(data_exibicao, "strftime")
+                        timezone.localtime(data_exibicao).strftime("%Y-%m-%d")
+                        if data_exibicao
                         else None
                     ),
                 }
