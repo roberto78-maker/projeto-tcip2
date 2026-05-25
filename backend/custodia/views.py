@@ -12,6 +12,7 @@ import cloudinary.uploader
 from django.conf import settings
 from django.core.cache import cache
 from django.core.files.storage import default_storage
+from django.db import transaction
 from django.db.models import Count, Max, Q, Sum
 from django.http import HttpResponse
 from django.utils import timezone
@@ -104,41 +105,33 @@ class DashboardStatsView(APIView):
             peso_queima_pronta=Sum("peso", filter=Q(status="queima_pronta")),
             count_som=Count("id", filter=Q(natureza="SOM")),
             count_outros=Count("id", filter=Q(natureza="OUTROS")),
+            count_facas=Count(
+                "id",
+                filter=(
+                    Q(substancia__icontains="faca")
+                    | Q(substancia__icontains="facão")
+                ),
+            ),
         )
 
         stats["peso_cofre"] = float(stats["peso_cofre"] or 0)
         stats["peso_incineracao"] = float(stats["peso_incineracao"] or 0)
         stats["peso_queima_pronta"] = float(stats["peso_queima_pronta"] or 0)
 
-        lotes_em_formacao = (
-            Apreensao.objects.filter(
-                status="incineracao", lote_incineracao__isnull=False
-            )
-            .values("lote_incineracao")
-            .distinct()
-            .count()
-        )
-        lotes_incinerados = (
-            Apreensao.objects.filter(
-                status="queima_pronta", lote_incineracao__isnull=False
-            )
-            .values("lote_incineracao")
-            .distinct()
-            .count()
+        lotes_stats = LoteIncineracao.objects.aggregate(
+            lotes_em_formacao=Count(
+                "id",
+                filter=Q(apreensoes__status="incineracao"),
+                distinct=True,
+            ),
+            lotes_incinerados=Count(
+                "id",
+                filter=Q(apreensoes__status="queima_pronta"),
+                distinct=True,
+            ),
         )
 
-        count_facas = Apreensao.objects.filter(
-            Q(substancia__icontains="faca") | Q(substancia__icontains="fac\u00e3o")
-        ).count()
-
-        return Response(
-            {
-                **stats,
-                "lotes_em_formacao": lotes_em_formacao,
-                "lotes_incinerados": lotes_incinerados,
-                "count_facas": count_facas,
-            }
-        )
+        return Response({**stats, **lotes_stats})
 
 
 class LoteIncineracaoFilter(django_filters.FilterSet):
@@ -455,6 +448,8 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
         Recebe o BOU no body e atribui o mesmo número a todos os registros
         com o mesmo BOU (pois um recibo pode conter múltiplos materiais).
         Se os registros do BOU já possuem número, retorna o existente.
+        Opera dentro de transaction.atomic + select_for_update para evitar
+        race conditions em cadastros simultâneos.
         """
         bou = request.data.get("bou")
         if not bou:
@@ -465,33 +460,37 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
 
         ano_atual = timezone.now().year
 
-        # Verifica se já existe um recibo para esse BOU no ano atual
-        existente = Apreensao.objects.filter(
-            bou=bou, ano_recibo=ano_atual, numero_recibo__isnull=False
-        ).first()
+        with transaction.atomic():
+            # Verifica se já existe um recibo para esse BOU no ano atual
+            existente = Apreensao.objects.filter(
+                bou=bou, ano_recibo=ano_atual, numero_recibo__isnull=False
+            ).first()
 
-        if existente:
-            return Response(
-                {
-                    "numero_recibo": existente.numero_recibo,
-                    "ano_recibo": existente.ano_recibo,
-                }
+            if existente:
+                return Response(
+                    {
+                        "numero_recibo": existente.numero_recibo,
+                        "ano_recibo": existente.ano_recibo,
+                    }
+                )
+
+            # Bloqueia as linhas do ano atual para leitura exclusiva
+            ultimo_recibo = (
+                Apreensao.objects.select_for_update()
+                .filter(ano_recibo=ano_atual)
+                .aggregate(Max("numero_recibo"))["numero_recibo__max"]
             )
 
-        # Busca o maior número de recibo do ano atual
-        ultimo_recibo = Apreensao.objects.filter(ano_recibo=ano_atual).aggregate(
-            Max("numero_recibo")
-        )["numero_recibo__max"]
+            novo_numero = (ultimo_recibo + 1) if ultimo_recibo else 1
 
-        novo_numero = (ultimo_recibo + 1) if ultimo_recibo else 1
-
-        # Atribui o número a todos os registros desse BOU
-        registros = Apreensao.objects.filter(bou=bou, numero_recibo__isnull=True)
-        registros.update(numero_recibo=novo_numero, ano_recibo=ano_atual)
+            # .update() retorna a contagem de linhas afetadas
+            count = Apreensao.objects.filter(
+                bou=bou, numero_recibo__isnull=True
+            ).update(numero_recibo=novo_numero, ano_recibo=ano_atual)
 
         logger.info(
             f"Recibo #{novo_numero}/{ano_atual} gerado para BOU {bou} "
-            f"({registros.count()} registros)"
+            f"({count} registros)"
         )
 
         return Response(
@@ -554,27 +553,31 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
         """
         Gera um número sequencial único de ofício para o ano atual.
         Se a apreensão já tiver um número, retorna o mesmo.
+        Opera dentro de transaction.atomic + select_for_update para evitar
+        race conditions em emissões simultâneas.
         """
-        apreensao = self.get_object()
         ano_atual = timezone.now().year
 
-        # Se já tiver número e for do mesmo ano, não faz nada
-        if apreensao.numero_oficio and apreensao.ano_oficio == ano_atual:
-            return Response(ApreensaoSerializer(apreensao).data)
+        with transaction.atomic():
+            # Bloqueia a linha da apreensão para escrita exclusiva
+            apreensao = Apreensao.objects.select_for_update().get(pk=pk)
 
-        # Busca o maior número de ofício do ano atual
-        ultimo_oficio = Apreensao.objects.filter(ano_oficio=ano_atual).aggregate(
-            Max("numero_oficio")
-        )["numero_oficio__max"]
+            # Re-verifica dentro da transação (double-check)
+            if apreensao.numero_oficio and apreensao.ano_oficio == ano_atual:
+                return Response(ApreensaoSerializer(apreensao).data)
 
-        # Se não houver nenhum, começa do 100 (ou o valor que preferirem)
-        # O usuário mencionou que estava no 97+ no frontend.
-        # Vamos manter uma base razoável se for o primeiro do ano.
-        novo_numero = (ultimo_oficio + 1) if ultimo_oficio else 100
+            # Bloqueia e busca o maior número do ano
+            ultimo_oficio = (
+                Apreensao.objects.select_for_update()
+                .filter(ano_oficio=ano_atual)
+                .aggregate(Max("numero_oficio"))["numero_oficio__max"]
+            )
 
-        apreensao.numero_oficio = novo_numero
-        apreensao.ano_oficio = ano_atual
-        apreensao.save(update_fields=["numero_oficio", "ano_oficio"])
+            novo_numero = (ultimo_oficio + 1) if ultimo_oficio else 100
+
+            apreensao.numero_oficio = novo_numero
+            apreensao.ano_oficio = ano_atual
+            apreensao.save(update_fields=["numero_oficio", "ano_oficio"])
 
         Historico.objects.create(
             apreensao=apreensao,
@@ -585,60 +588,65 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
         return Response(ApreensaoSerializer(apreensao).data)
 
 
+def _aplicar_filtros_relatorio(qs, params):
+    """
+    Aplica os filtros comuns às views de relatório (JSON e PDF).
+    Recebe um queryset base e um dict-like de parâmetros GET.
+    Retorna o queryset filtrado sem alterar a lógica de negócio.
+    """
+    data_inicio = params.get("data_inicio")
+    data_fim    = params.get("data_fim")
+    vara        = params.get("vara")
+    substancia  = params.get("substancia")
+    natureza    = params.get("natureza")
+    status_f    = params.get("status")
+    bou         = params.get("bou")
+    processo    = params.get("processo")
+    reu         = params.get("reu")
+    crime       = params.get("crime")
+
+    if data_inicio:
+        qs = qs.filter(data_fato__gte=data_inicio)
+    if data_fim:
+        qs = qs.filter(data_fato__lte=data_fim)
+    if vara:
+        qs = qs.filter(
+            Q(vara__icontains=vara)
+            | Q(vara__icontains=vara.replace("JUIZADO", "VARA").replace("º", "ª"))
+            | Q(vara__icontains=vara.replace("VARA", "JUIZADO").replace("ª", "º"))
+        )
+    if substancia == "__NENHUMA__":
+        qs = qs.exclude(natureza="DROGAS")
+    elif substancia:
+        qs = qs.filter(
+            Q(substancia__icontains=substancia) | Q(descricao__icontains=substancia)
+        )
+    if natureza:
+        if natureza == "AMEACA":
+            qs = qs.filter(
+                Q(natureza="AMEACA")
+                | Q(substancia__icontains="NÃO HÁ APREENSÃO")
+            )
+        else:
+            qs = qs.filter(natureza=natureza)
+    if status_f:
+        qs = qs.filter(status=status_f)
+    if bou:
+        qs = qs.filter(bou__icontains=bou)
+    if processo:
+        qs = qs.filter(processo__icontains=processo)
+    if reu:
+        qs = qs.filter(reu__icontains=reu)
+    if crime:
+        qs = qs.filter(descricao__icontains=crime)
+    return qs
+
+
 class RelatorioIncineracaoView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        qs = Apreensao.objects.all()
-
-        data_inicio = request.GET.get("data_inicio")
-        data_fim = request.GET.get("data_fim")
-        vara = request.GET.get("vara")
-        substancia = request.GET.get("substancia")
-        natureza = request.GET.get("natureza")
-        status_filter = request.GET.get("status")
-        bou = request.GET.get("bou")
-        processo = request.GET.get("processo")
-        reu = request.GET.get("reu")
-
-        if data_inicio:
-            qs = qs.filter(data_fato__gte=data_inicio)
-        if data_fim:
-            qs = qs.filter(data_fato__lte=data_fim)
-        if vara:
-            # Busca por icontains para compatibilidade com registros antigos
-            # ("VARA") e novos ("JUIZADO"). Também tenta variação numérica.
-            qs = qs.filter(
-                Q(vara__icontains=vara)
-                | Q(vara__icontains=vara.replace("JUIZADO", "VARA").replace("º", "ª"))
-                | Q(vara__icontains=vara.replace("VARA", "JUIZADO").replace("ª", "º"))
-            )
-        if substancia == "__NENHUMA__":
-            qs = qs.exclude(natureza="DROGAS")
-        elif substancia:
-            qs = qs.filter(
-                Q(substancia__icontains=substancia) | Q(descricao__icontains=substancia)
-            )
-        if natureza:
-            if natureza == "AMEACA":
-                qs = qs.filter(
-                    Q(natureza="AMEACA")
-                    | Q(substancia__icontains="N\u00c3O H\u00c1 APREENS\u00c3O")
-                )
-            else:
-                qs = qs.filter(natureza=natureza)
-        if status_filter:
-            qs = qs.filter(status=status_filter)
-        if bou:
-            qs = qs.filter(bou__icontains=bou)
-        if processo:
-            qs = qs.filter(processo__icontains=processo)
-        if reu:
-            qs = qs.filter(reu__icontains=reu)
-
-        crime = request.GET.get("crime")
-        if crime:
-            qs = qs.filter(descricao__icontains=crime)
+        qs = _aplicar_filtros_relatorio(Apreensao.objects.all(), request.GET)
 
         try:
             detalhado = qs.values(
