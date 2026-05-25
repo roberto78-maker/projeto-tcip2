@@ -143,7 +143,15 @@ export default function AuditoriaView() {
       let pesoTotal = 0;
       data.detalhado.forEach(i => {
         if (i.natureza !== "DROGAS" || i.unidade === "Unid") return;
-        pesoTotal += parseFloat(String(i.peso).replace(",", ".")) || 0;
+        const p = parseFloat(String(i.peso).replace(",", ".")) || 0;
+        const uni = String(i.unidade).toLowerCase();
+        if (uni.includes("kg")) {
+          pesoTotal += p * 1000;
+        } else if (uni.includes("mg")) {
+          pesoTotal += p / 1000;
+        } else {
+          pesoTotal += p;
+        }
       });
       tituloResumo = "RESUMO - ANÁLISE DE ENTORPECENTES";
       resumos = [
@@ -175,7 +183,15 @@ export default function AuditoriaView() {
       let pesoTotal = 0;
       data.detalhado.forEach(i => {
         if (i.natureza === "DROGAS" && i.unidade !== "Unid") {
-          pesoTotal += parseFloat(String(i.peso).replace(",", ".")) || 0;
+          const p = parseFloat(String(i.peso).replace(",", ".")) || 0;
+          const uni = String(i.unidade).toLowerCase();
+          if (uni.includes("kg")) {
+            pesoTotal += p * 1000;
+          } else if (uni.includes("mg")) {
+            pesoTotal += p / 1000;
+          } else {
+            pesoTotal += p;
+          }
         }
       });
 
@@ -241,7 +257,15 @@ export default function AuditoriaView() {
     let pesoTotal = 0;
     det.forEach(i => {
       if (i.natureza === "DROGAS" && i.unidade !== "Unid") {
-        pesoTotal += parseFloat(String(i.peso).replace(",", ".")) || 0;
+        const p = parseFloat(String(i.peso).replace(",", ".")) || 0;
+        const uni = String(i.unidade).toLowerCase();
+        if (uni.includes("kg")) {
+          pesoTotal += p * 1000;
+        } else if (uni.includes("mg")) {
+          pesoTotal += p / 1000;
+        } else {
+          pesoTotal += p;
+        }
       }
     });
 
