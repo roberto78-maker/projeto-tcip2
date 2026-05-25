@@ -45,10 +45,14 @@ export default function AuditoriaView() {
 
   const formatarPesoDisplay = (valor, unidade) => {
     if (unidade === "Unid") return `${valor} Unid.`;
-    const gramas = parseFloat(String(valor).replace(",", ".")) || 0;
-    if (!gramas) return "0,00 g";
-    if (gramas >= 1000) return `${(gramas / 1000).toFixed(3).replace(".", ",")} Kg`;
-    return `${gramas.toFixed(2).replace(".", ",")} g`;
+    const num = parseFloat(String(valor).replace(",", ".")) || 0;
+    if (["Kg", "kg"].includes(unidade)) return `${num.toFixed(3).replace(".", ",")} Kg`;
+    if (["Gr", "g"].includes(unidade) || !unidade) {
+      if (num >= 1000) return `${(num / 1000).toFixed(3).replace(".", ",")} Kg`;
+      return `${num.toFixed(2).replace(".", ",")} g`;
+    }
+    if (["Mg", "mg"].includes(unidade)) return `${num.toFixed(2).replace(".", ",")} mg`;
+    return `${num.toFixed(2).replace(".", ",")} ${unidade}`;
   };
 
   const handleDownload = async () => {
