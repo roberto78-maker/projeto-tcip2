@@ -87,7 +87,7 @@ export default function LotesProntosView() {
       item.bou,
       item.processo,
       item.reu || "NÃO IDENTIFICADO",
-      item.substancia,
+      item.substancia ? item.substancia.toUpperCase() : "-",
       `${formatarPesoDisplay(item.peso, item.unidade)}`
     ]);
 

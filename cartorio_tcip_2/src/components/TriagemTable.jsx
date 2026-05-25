@@ -93,7 +93,7 @@ export function TriagemTable({
                 <td style={{ textTransform: "uppercase" }}>{item.reu || "NAO INFORMADO"}</td>
                 <td>
                   <span className="badge" style={{ background: "#0ea5e9", color: "white" }}>
-                    {item.substancia || "Desconhecida"}
+                    {item.substancia ? item.substancia.toUpperCase() : "DESCONHECIDA"}
                   </span>
                 </td>
                 <td style={{ color: "#dc2626", fontWeight: "600" }}>

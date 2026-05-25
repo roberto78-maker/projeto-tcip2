@@ -259,7 +259,7 @@ export default function CofreView() {
                       </td>
                       <td>
                         <div style={{ fontWeight: "700", textTransform: "uppercase", color: abaAtiva === "DROGAS" ? "#059669" : "#2563eb" }}>
-                          {item.substancia}
+                          {item.substancia ? item.substancia.toUpperCase() : ""}
                         </div>
                         <div style={{ fontSize: "12px", color: "#64748b" }}>{item.reu}</div>
                       </td>
