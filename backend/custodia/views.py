@@ -963,7 +963,7 @@ class RelatorioIncineracaoPDFView(APIView):
                     if hasattr(item, "lote_incineracao") and item.lote_incineracao:
                         lote_num = str(item.lote_incineracao.numero).zfill(2)
                         lote_data = (
-                            item.lote_incineracao.data_criacao.strftime("%d/%m/%y")
+                            timezone.localtime(item.lote_incineracao.data_criacao).strftime("%d/%m/%y")
                             if item.lote_incineracao.data_criacao
                             else "S/D"
                         )
@@ -977,7 +977,7 @@ class RelatorioIncineracaoPDFView(APIView):
                             item.substancia or "-",
                             f"{item.peso} {item.unidade}",
                             status_desc,
-                            dt_exibicao.strftime("%d/%m/%Y") if dt_exibicao else "-",
+                            timezone.localtime(dt_exibicao).strftime("%d/%m/%Y") if dt_exibicao else "-",
                         ]
                     )
 
