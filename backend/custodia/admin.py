@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db.models import Count
 from django.utils.html import format_html
 from .models import Apreensao, LoteIncineracao, Historico
 
@@ -121,9 +122,17 @@ class LoteIncineracaoAdmin(admin.ModelAdmin):
     list_filter = ("ano", "origem")
     ordering = ("-numero",)
 
-    def total_itens(self, obj):
-        return obj.apreensoes.count()
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .annotate(_total_itens=Count("apreensoes"))
+        )
 
+    def total_itens(self, obj):
+        return obj._total_itens
+
+    total_itens.admin_order_field = "_total_itens"
     total_itens.short_description = "Itens"
 
     def has_add_permission(self, request):
