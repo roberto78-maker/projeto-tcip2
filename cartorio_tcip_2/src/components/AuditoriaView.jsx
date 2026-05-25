@@ -97,7 +97,7 @@ export default function AuditoriaView() {
         item.bou || "S/N",
         item.processo || "S/N",
         (item.reu || "-").toUpperCase(),
-        item.substancia || "-",
+        (item.substancia || "-").toUpperCase(),
         formatarPesoDisplay(item.peso, item.unidade),
         item.status_label || item.status
       ]);
@@ -108,7 +108,7 @@ export default function AuditoriaView() {
         item.bou || "S/N",
         item.processo || "S/N",
         (item.reu || "-").toUpperCase(),
-        item.substancia || item.natureza || "-",
+        (item.substancia || item.natureza || "-").toUpperCase(),
         `${item.peso ? item.peso : "01"} ${item.unidade || "Unid"}.`,
         item.status_label || item.status
       ]);
@@ -460,7 +460,7 @@ export default function AuditoriaView() {
                           {item.reu || "-"}
                         </td>
                         <td>
-                          <span className="badge amber" style={{ display: "inline-block", marginBottom: "4px" }}>
+                          <span className="badge amber" style={{ display: "inline-block", marginBottom: "4px", textTransform: "uppercase" }}>
                             {item.substancia || "-"}
                           </span>
                           <div style={{ fontWeight: "600", color: "#1e293b", fontSize: "13px" }}>
