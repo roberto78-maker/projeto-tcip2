@@ -197,22 +197,12 @@ export async function gerarOficioPersonalizadoPdf(dados) {
   
   y = currentSubjectY + 18;
 
-  // Gerar vocativo dinamicamente
+  // Pegar vocativo selecionado
   let vocativo = "";
-  if (dados.cargo_destinatario) {
-    const cargoLower = dados.cargo_destinatario.toLowerCase();
-    if (cargoLower.includes("juiz") || cargoLower.includes("juíza") || cargoLower.includes("direito")) {
-      vocativo = "Senhor(a) Juiz(a),";
-    } else if (cargoLower.includes("promotor") || cargoLower.includes("promotora")) {
-      vocativo = "Senhor(a) Promotor(a),";
-    } else if (cargoLower.includes("delegado") || cargoLower.includes("delegada")) {
-      vocativo = "Senhor(a) Delegado(a),";
-    } else if (cargoLower.includes("diretor") || cargoLower.includes("diretora")) {
-      vocativo = "Senhor(a) Diretor(a),";
-    } else {
-      const words = dados.cargo_destinatario.trim().split(" ");
-      const firstWord = words[0].replace(/\(a\)/gi, "").replace(/\(A\)/gi, "");
-      vocativo = `Senhor(a) ${firstWord}(a),`;
+  if (dados.tratamento) {
+    vocativo = dados.tratamento.trim();
+    if (!vocativo.endsWith(",")) {
+      vocativo += ",";
     }
   }
 
@@ -279,14 +269,13 @@ export async function gerarOficioPersonalizadoPdf(dados) {
   // ══════════════════════════════════════════════════════════════════════════
   const footerY = pageHeight - 20; 
 
-  y = footerY - 28;
+  // Colocar o destinatário (3 linhas: cargo/tratamento, órgão e cidade)
+  y = footerY - 22;
 
   doc.setFont("helvetica", "bold");
-  doc.text(dados.tratamento || "Exmo.(A) Sr.(A)", marginL, y);
+  doc.text(dados.cargo_destinatario || "Exmo.(a) Sr.(a) Juiz(a)", marginL, y);
   y += 6;
-  doc.text(dados.cargo_destinatario || "Juiz (A) de Direito", marginL, y);
-  y += 6;
-  doc.text(dados.orgao_destino || "Juizado Especial Criminal", marginL, y);
+  doc.text(dados.orgao_destino || "1º JUIZADO ESPECIAL CRIMINAL", marginL, y);
   y += 6;
   doc.text(dados.cidade_destino || "Cascavel - Pr.", marginL, y);
 
