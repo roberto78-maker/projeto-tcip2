@@ -18,6 +18,79 @@ function carregarImagem(src) {
   });
 }
 
+function drawJustifiedLine(doc, words, x, y, targetWidth) {
+  if (words.length === 0) return;
+  if (words.length === 1) {
+    doc.text(words[0], x, y);
+    return;
+  }
+  
+  let totalWordsWidth = 0;
+  for (const word of words) {
+    totalWordsWidth += doc.getTextWidth(word);
+  }
+  
+  const remainingSpace = targetWidth - totalWordsWidth;
+  const numGaps = words.length - 1;
+  const gapWidth = remainingSpace / numGaps;
+  
+  let currentX = x;
+  for (let i = 0; i < words.length; i++) {
+    const word = words[i];
+    doc.text(word, currentX, y);
+    currentX += doc.getTextWidth(word) + gapWidth;
+  }
+}
+
+function printJustifiedParagraph(doc, text, x, y, contentWidth, firstLineIndent, lineHeight, pageHeight, marginT) {
+  const words = text.split(/\s+/).filter(w => w.length > 0);
+  if (words.length === 0) return y;
+
+  let currentLine = [];
+  let currentWidth = 0;
+  let isFirstLine = true;
+  
+  let i = 0;
+  while (i < words.length) {
+    const word = words[i];
+    const wordWidth = doc.getTextWidth(word);
+    const targetWidth = isFirstLine ? (contentWidth - firstLineIndent) : contentWidth;
+    
+    const spaceWidth = doc.getTextWidth(" ");
+    const testWidth = currentWidth + (currentLine.length > 0 ? spaceWidth : 0) + wordWidth;
+    
+    if (testWidth <= targetWidth) {
+      currentLine.push(word);
+      currentWidth = testWidth;
+      i++;
+    } else {
+      const startX = isFirstLine ? (x + firstLineIndent) : x;
+      const lineTargetWidth = isFirstLine ? (contentWidth - firstLineIndent) : contentWidth;
+      
+      drawJustifiedLine(doc, currentLine, startX, y, lineTargetWidth);
+      
+      y += lineHeight;
+      
+      if (y > pageHeight - 60) {
+        doc.addPage();
+        y = marginT;
+      }
+      
+      currentLine = [];
+      currentWidth = 0;
+      isFirstLine = false;
+    }
+  }
+  
+  if (currentLine.length > 0) {
+    const startX = isFirstLine ? (x + firstLineIndent) : x;
+    doc.text(currentLine.join(" "), startX, y);
+    y += lineHeight;
+  }
+  
+  return y;
+}
+
 export async function gerarOficioPersonalizadoPdf(dados) {
   // ── Buscar nome completo do operador ─────────────────────────────────────
   let nomeOperador = "";
