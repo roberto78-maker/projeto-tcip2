@@ -123,3 +123,24 @@ try:
     register(User, app="custodia")
 except Exception:
     pass
+
+
+class OficioPersonalizado(models.Model):
+    numero_oficio = models.IntegerField(blank=True, null=True)
+    ano_oficio = models.IntegerField(blank=True, null=True)
+
+    bou = models.CharField(max_length=100, blank=True, null=True)
+    assunto = models.CharField(max_length=200)
+    texto = models.TextField()
+    tratamento = models.CharField(max_length=100)
+    cargo_destinatario = models.CharField(max_length=100)
+    orgao_destino = models.CharField(max_length=200)
+    cidade_destino = models.CharField(max_length=100)
+
+    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    data_criacao = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    history = HistoricalRecords()
+
+    def __str__(self):
+        return f"Ofício {self.numero_oficio}/{self.ano_oficio} - {self.assunto}"

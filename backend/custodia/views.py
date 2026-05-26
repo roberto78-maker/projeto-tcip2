@@ -35,8 +35,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 
-from .models import Apreensao, LoteIncineracao, Historico
-from .serializers import ApreensaoSerializer, LoteIncineracaoSerializer
+from .models import Apreensao, LoteIncineracao, Historico, OficioPersonalizado
+from .serializers import (
+    ApreensaoSerializer,
+    LoteIncineracaoSerializer,
+    OficioPersonalizadoSerializer,
+)
 
 
 class HealthCheckView(APIView):
@@ -577,13 +581,21 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
                 return Response(ApreensaoSerializer(apreensao).data)
 
             # Bloqueia e busca o maior número do ano
-            ultimo_oficio = (
+            ultimo_oficio_apreensao = (
                 Apreensao.objects.select_for_update()
                 .filter(ano_oficio=ano_atual)
                 .aggregate(Max("numero_oficio"))["numero_oficio__max"]
+                or 0
+            )
+            ultimo_oficio_personalizado = (
+                OficioPersonalizado.objects.select_for_update()
+                .filter(ano_oficio=ano_atual)
+                .aggregate(Max("numero_oficio"))["numero_oficio__max"]
+                or 0
             )
 
-            novo_numero = (ultimo_oficio + 1) if ultimo_oficio else 100
+            ultimo_oficio = max(ultimo_oficio_apreensao, ultimo_oficio_personalizado)
+            novo_numero = (ultimo_oficio + 1) if ultimo_oficio > 0 else 100
 
             apreensao.numero_oficio = novo_numero
             apreensao.ano_oficio = ano_atual
@@ -1389,4 +1401,50 @@ class StatusAssinaturaView(APIView):
                 "assinado": assinado,
                 "assinatura_base64": apreensao.assinatura_base64 if assinado else None,
             }
+        )
+
+
+class OficioPersonalizadoViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = OficioPersonalizado.objects.all().order_by("-data_criacao")
+    serializer_class = OficioPersonalizadoSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["bou", "assunto", "texto", "orgao_destino", "numero_oficio"]
+    pagination_class = StandardResultsSetPagination
+
+    def create(self, request, *args, **kwargs):
+        ano_atual = timezone.now().year
+
+        with transaction.atomic():
+            # Pegar o maior numero
+            ultimo_oficio_apreensao = (
+                Apreensao.objects.select_for_update()
+                .filter(ano_oficio=ano_atual)
+                .aggregate(Max("numero_oficio"))["numero_oficio__max"]
+                or 0
+            )
+            ultimo_oficio_personalizado = (
+                OficioPersonalizado.objects.select_for_update()
+                .filter(ano_oficio=ano_atual)
+                .aggregate(Max("numero_oficio"))["numero_oficio__max"]
+                or 0
+            )
+
+            ultimo_oficio = max(ultimo_oficio_apreensao, ultimo_oficio_personalizado)
+            novo_numero = (ultimo_oficio + 1) if ultimo_oficio > 0 else 100
+
+            # Atualizar os dados do request com o numero gerado e usuario
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            # Salvar a instancia
+            serializer.save(
+                numero_oficio=novo_numero,
+                ano_oficio=ano_atual,
+                usuario=request.user if request.user.is_authenticated else None,
+            )
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
