@@ -9,6 +9,7 @@ export const CRIMES_GERAIS = [
   "Calúnia: Artigo 138 do CP",
   "Difamação: Artigo 139 do CP",
   "Injúria: Artigo 140 do CP",
+  "Violação de Domicílio: Artigo 150 da Lei 2.848/40",
   "Dano Simples: Artigo 163 do CP",
   "Outras Fraudes: Artigo 176 do CP",
   "Resistência: Artigo 329 do CP",
