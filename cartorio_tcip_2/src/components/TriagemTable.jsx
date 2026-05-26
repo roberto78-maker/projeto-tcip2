@@ -109,7 +109,7 @@ export function TriagemTable({
       await gerarReciboCadastroPdf(dados, firstItem.numero_recibo, firstItem.ano_recibo, firstItem.assinatura_base64);
     } catch (err) {
       console.error("Erro ao gerar recibo:", err);
-      alert("Erro ao gerar recibo. Tente novamente.");
+      alert("Erro ao gerar recibo: " + (err.message || err));
     } finally {
       setGerandoRecibo(null);
     }
