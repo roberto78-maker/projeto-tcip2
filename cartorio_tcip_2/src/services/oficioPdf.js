@@ -194,17 +194,18 @@ export async function gerarOficioEncaminhamentoPdf(item) {
   doc.text("Respeitosamente,", centerX, y, { align: "center" });
 
   y += 25;
-
-  // Linha de assinatura
-  const sigLineW = 60;
-  const sigLineStartX = centerX - sigLineW / 2;
-  doc.line(sigLineStartX, y, sigLineStartX + sigLineW, y);
-
-  y += 5;
   doc.setFont("helvetica", "bold");
   const assinatura = patenteOperador
     ? `${patenteOperador} ${nomeOperador}`.toUpperCase()
     : nomeOperador.toUpperCase();
+  const nameWidth = doc.getTextWidth(assinatura);
+
+  // O risco da assinatura terá a mesma largura que o nome (mínimo de 60mm)
+  const sigLineW = Math.max(60, nameWidth);
+  const sigLineStartX = centerX - sigLineW / 2;
+  doc.line(sigLineStartX, y, sigLineStartX + sigLineW, y);
+
+  y += 5;
   doc.text(assinatura, centerX, y, { align: "center" });
 
   y += 6;
