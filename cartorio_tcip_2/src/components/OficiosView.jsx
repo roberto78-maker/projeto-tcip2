@@ -222,7 +222,3 @@ function OficiosView() {
 }
 
 export default OficiosView;
-  );
-}
-
-export default OficiosView;
