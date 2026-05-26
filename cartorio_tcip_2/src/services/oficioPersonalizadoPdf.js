@@ -148,8 +148,9 @@ export async function gerarOficioPersonalizadoPdf(dados) {
   doc.text("POLÍCIA MILITAR", centerX, y + 7, { align: "center" });
   doc.text("5º COMANDO REGIONAL", centerX, y + 12, { align: "center" });
   doc.text("SEXTO BATALHÃO DE POLÍCIA MILITAR", centerX, y + 17, { align: "center" });
+  doc.text("PRIMEIRO CARTORIO - TCIP", centerX, y + 22, { align: "center" });
 
-  y += 25;
+  y += 30;
 
   doc.setDrawColor(0);
   doc.setLineWidth(0.3);

@@ -91,8 +91,9 @@ export async function gerarOficioEncaminhamentoPdf(item) {
   doc.text("POLÍCIA MILITAR", centerX, y + 7, { align: "center" });
   doc.text("5º COMANDO REGIONAL", centerX, y + 12, { align: "center" });
   doc.text("SEXTO BATALHÃO DE POLÍCIA MILITAR", centerX, y + 17, { align: "center" });
+  doc.text("PRIMEIRO CARTORIO - TCIP", centerX, y + 22, { align: "center" });
 
-  y += 25;
+  y += 30;
 
   // Linha separadora do cabeçalho
   doc.setDrawColor(0);
