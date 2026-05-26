@@ -140,7 +140,13 @@ export default function App() {
       <div className="sidebar">
 
         <div className="sidebar-header">
-          <img src={brasao} alt="Brasão 6º BPM" />
+          <img 
+            src={brasao} 
+            alt="Brasão 6º BPM" 
+            onClick={() => changeView("dashboard")}
+            style={{ cursor: "pointer" }}
+            title="Ir para o Dashboard"
+          />
           <h2>6º BPM - CASCAVEL</h2>
           <h3 style={{ margin: "5px 0 0 0", color: "#94a3b8", fontSize: "12px", fontWeight: "600", letterSpacing: "0.5px" }}>PRIMEIRO CARTÓRIO - TCIP</h3>
         </div>
