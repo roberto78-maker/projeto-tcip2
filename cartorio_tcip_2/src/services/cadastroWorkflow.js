@@ -151,6 +151,8 @@ export function montarPayloadApreensao(form, material) {
     lacre: material.lacre || "",
     vara: form.vara || "",
     policial: `${form.patente} ${form.policial}`,
+    rg: form.rg || "",
+    unidade_origem: form.unidadeOrigem || "",
   };
 }
 

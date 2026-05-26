@@ -359,6 +359,25 @@ export async function gerarNumeroRecibo(bou) {
   return await res.json();
 }
 
+// 🔍 BUSCAR TODAS AS APREENSOES DE UM BOU (suporta paginação)
+export async function getApreensoesPorBou(bou) {
+  let url = `${API_URL}?bou=${encodeURIComponent(bou)}`;
+  let allResults = [];
+  while (url) {
+    const res = await fetch(url, { headers: getHeaders() });
+    if (!res.ok) throw new Error("Erro ao buscar apreensões pelo BOU");
+    const data = await res.json();
+    if (data.results) {
+      allResults = [...allResults, ...data.results];
+      url = fixPaginationUrl(data.next);
+    } else {
+      allResults = data;
+      break;
+    }
+  }
+  return allResults.filter(item => item.bou === bou);
+}
+
 // 📄 GERAR OFÍCIO PERSONALIZADO
 export async function addOficioPersonalizado(data) {
   const res = await fetch(`${BASE_URL}/api/oficios/`, {

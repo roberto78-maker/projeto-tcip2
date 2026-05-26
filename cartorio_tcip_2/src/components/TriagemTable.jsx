@@ -35,6 +35,7 @@ export function TriagemTable({
   abrirModalExclusao,
 }) {
   const [gerandoOficio, setGerandoOficio] = useState(null);
+  const [gerandoRecibo, setGerandoRecibo] = useState(null);
 
   const handleGerarOficio = async (item) => {
     setGerandoOficio(item.id);
@@ -52,6 +53,65 @@ export function TriagemTable({
       alert("Erro ao gerar ofício. Tente novamente.");
     } finally {
       setGerandoOficio(null);
+    }
+  };
+
+  const handleGerarRecibo = async (item) => {
+    setGerandoRecibo(item.id);
+    try {
+      // 1. Busca todas as apreensões com o mesmo BOU
+      const materials = await getApreensoesPorBou(item.bou);
+      
+      if (!materials || materials.length === 0) {
+        alert("Nenhum registro encontrado para este BOU.");
+        return;
+      }
+
+      const firstItem = materials[0];
+
+      // 2. Separa a patente do nome do policial
+      const fullPolicial = firstItem.policial || "";
+      let patente = "";
+      let policial = fullPolicial;
+      const sortedPatentes = [...PATENTES].sort((a, b) => b.length - a.length);
+      for (const p of sortedPatentes) {
+        if (fullPolicial.startsWith(p + " ")) {
+          patente = p;
+          policial = fullPolicial.slice(p.length + 1);
+          break;
+        }
+      }
+
+      // 3. Reconstrói o formato de dados para gerar o PDF
+      const crimes = firstItem.descricao ? firstItem.descricao.split(", ") : [];
+
+      const dados = {
+        crimesSelecionados: crimes,
+        fielDepositario: false, // Itens na triagem não são fiel depositário
+        bou: firstItem.bou,
+        vara: firstItem.vara,
+        patente: patente || "SD",
+        policial: policial || fullPolicial,
+        rg: firstItem.rg || "N/A",
+        unidadeOrigem: firstItem.unidade_origem || "RPA",
+        processo: firstItem.processo,
+        materiais: materials.map((m) => ({
+          reu: m.reu,
+          tipo: m.natureza === "DROGAS" ? "DROGA" : m.natureza === "SOM" ? "SOM" : m.tem_apreensao ? "OBJETO" : "NENHUM",
+          substancia: m.substancia,
+          peso: m.peso,
+          unidadePeso: m.unidade,
+          lacre: m.lacre,
+        }))
+      };
+
+      // 4. Gera o PDF com a assinatura se existir
+      await gerarReciboCadastroPdf(dados, firstItem.numero_recibo, firstItem.ano_recibo, firstItem.assinatura_base64);
+    } catch (err) {
+      console.error("Erro ao gerar recibo:", err);
+      alert("Erro ao gerar recibo. Tente novamente.");
+    } finally {
+      setGerandoRecibo(null);
     }
   };
 
@@ -132,6 +192,28 @@ export function TriagemTable({
                         : item.numero_oficio
                         ? "OFÍCIO ✓"
                         : "OFÍCIO"}
+                    </button>
+                    <button
+                      className="btn-recibo"
+                      onClick={() => handleGerarRecibo(item)}
+                      disabled={gerandoRecibo === item.id}
+                      style={{
+                        padding: "8px 12px",
+                        border: "none",
+                        color: "white",
+                        background:
+                          gerandoRecibo === item.id
+                            ? "#9ca3af"
+                            : "#2563eb",
+                        borderRadius: "6px",
+                        fontWeight: "600",
+                        cursor: gerandoRecibo === item.id ? "not-allowed" : "pointer",
+                        fontSize: "12px",
+                        transition: "all 0.2s ease",
+                      }}
+                      title="Reimprimir Recibo de Objetos Apreendidos"
+                    >
+                      {gerandoRecibo === item.id ? "..." : "RECIBO"}
                     </button>
                     <button className="btn-green" onClick={() => abrirModalDespacho(item)}>
                       TRIAR

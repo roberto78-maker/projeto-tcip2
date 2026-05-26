@@ -99,6 +99,10 @@ class Apreensao(models.Model):
     token_assinatura = models.UUIDField(blank=True, null=True, db_index=True)
     token_expira_em = models.DateTimeField(blank=True, null=True)
 
+    # Informações adicionais do policial para reemissão do recibo com alta fidelidade
+    rg = models.CharField(max_length=50, blank=True, null=True)
+    unidade_origem = models.CharField(max_length=100, blank=True, null=True)
+
     history = HistoricalRecords()
 
     def __str__(self):
