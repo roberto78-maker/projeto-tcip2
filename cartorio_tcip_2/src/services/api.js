@@ -358,6 +358,23 @@ export async function gerarNumeroRecibo(bou) {
 
   return await res.json();
 }
+
+// 📄 GERAR OFÍCIO PERSONALIZADO
+export async function addOficioPersonalizado(data) {
+  const res = await fetch(`${BASE_URL}/api/oficios/`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const erro = await res.text();
+    console.error("Erro POST oficios:", erro);
+    throw new Error("Erro ao criar ofício personalizado");
+  }
+
+  return await res.json();
+}
 // ? RESET DO SISTEMA (Apenas Superusers)
 // export async function resetSystem() {
 //   const res = await fetch(`${BASE_URL}/api/system/reset/`, {

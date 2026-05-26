@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { api } from "../services/api";
+import { addOficioPersonalizado } from "../services/api";
 import { gerarOficioPersonalizadoPdf } from "../services/oficioPersonalizadoPdf";
 
 function OficiosView() {
@@ -30,8 +30,7 @@ function OficiosView() {
     setErro(null);
     try {
       // Salva no backend para gerar o número sequencial
-      const res = await api.post("/oficios/", formData);
-      const dadosComNumero = res.data;
+      const dadosComNumero = await addOficioPersonalizado(formData);
       
       // Gera o PDF
       await gerarOficioPersonalizadoPdf(dadosComNumero);
