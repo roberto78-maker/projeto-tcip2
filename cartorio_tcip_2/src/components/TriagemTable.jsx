@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { gerarOficioEncaminhamentoPdf } from "../services/oficioPdf.js";
-import { gerarNumeroOficio, invalidateApreensaoCache } from "../services/api.js";
+import { gerarNumeroOficio, invalidateApreensaoCache, getApreensoesPorBou } from "../services/api.js";
+import { gerarReciboCadastroPdf } from "../services/cadastroReciboPdf.js";
+import { PATENTES } from "../constants/options.js";
 
 const formatarPesoDisplay = (valor, unidade) => {
   const num = parseFloat(String(valor).replace(",", ".")) || 0;
