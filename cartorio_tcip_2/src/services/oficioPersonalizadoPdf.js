@@ -176,31 +176,56 @@ export async function gerarOficioPersonalizadoPdf(dados) {
     { align: "right" }
   );
 
-  y += 12;
+  y += 24;
 
   // ══════════════════════════════════════════════════════════════════════════
   // ASSUNTO E CORPO DO TEXTO
   // ══════════════════════════════════════════════════════════════════════════
   doc.setFont("helvetica", "bold");
-  doc.text("ASSUNTO:", marginL, y);
+  doc.text("Assunto: ", marginL, y);
+  const labelWidth = doc.getTextWidth("Assunto: ");
   doc.setFont("helvetica", "normal");
   
-  const subjectLines = doc.splitTextToSize(dados.assunto || "", contentWidth - 25);
-  doc.text(subjectLines, marginL + 25, y);
+  const subjectText = dados.assunto || "";
+  const subjectLines = doc.splitTextToSize(subjectText, contentWidth - labelWidth);
+  doc.text(subjectLines[0] || "", marginL + labelWidth, y);
+  let currentSubjectY = y;
+  for (let j = 1; j < subjectLines.length; j++) {
+    currentSubjectY += 6;
+    doc.text(subjectLines[j], marginL + labelWidth, currentSubjectY);
+  }
   
-  y += subjectLines.length * 6 + 6;
+  y = currentSubjectY + 18;
 
-  if (dados.bou) {
+  // Gerar vocativo dinamicamente
+  let vocativo = "";
+  if (dados.cargo_destinatario) {
+    const cargoLower = dados.cargo_destinatario.toLowerCase();
+    if (cargoLower.includes("juiz") || cargoLower.includes("juíza") || cargoLower.includes("direito")) {
+      vocativo = "Senhor(a) Juiz(a),";
+    } else if (cargoLower.includes("promotor") || cargoLower.includes("promotora")) {
+      vocativo = "Senhor(a) Promotor(a),";
+    } else if (cargoLower.includes("delegado") || cargoLower.includes("delegada")) {
+      vocativo = "Senhor(a) Delegado(a),";
+    } else if (cargoLower.includes("diretor") || cargoLower.includes("diretora")) {
+      vocativo = "Senhor(a) Diretor(a),";
+    } else {
+      const words = dados.cargo_destinatario.trim().split(" ");
+      const firstWord = words[0].replace(/\(a\)/gi, "").replace(/\(A\)/gi, "");
+      vocativo = `Senhor(a) ${firstWord}(a),`;
+    }
+  }
+
+  if (vocativo) {
     doc.setFont("helvetica", "bold");
-    doc.text("REFERÊNCIA (BOU):", marginL, y);
-    doc.setFont("helvetica", "normal");
-    doc.text(dados.bou, marginL + 45, y);
-    y += 12;
+    doc.text(vocativo, centerX, y, { align: "center" });
+    y += 14;
   }
 
   const recuoParagrafo = 12.5;
 
   doc.setFont("helvetica", "normal");
+  doc.setFontSize(12);
   
   // O texto base pode conter quebras de linha
   const paragrafos = (dados.texto || "").split("\n");
@@ -210,11 +235,11 @@ export async function gerarOficioPersonalizadoPdf(dados) {
       y += 6;
       continue;
     }
-    const linhas = doc.splitTextToSize(paragrafo, contentWidth - recuoParagrafo);
-    doc.text(linhas, marginL + recuoParagrafo, y);
-    y += linhas.length * 6;
     
-    // Verifica se precisa de nova página
+    // Imprime o parágrafo justificado com recuo apenas na primeira linha
+    y = printJustifiedParagraph(doc, paragrafo, marginL, y, contentWidth, recuoParagrafo, 6, pageHeight, marginT);
+    
+    // Se o y após o parágrafo estiver no limite inferior, adiciona nova página
     if (y > pageHeight - 60) {
       doc.addPage();
       y = marginT;
