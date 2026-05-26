@@ -23,7 +23,6 @@ const inputStyle = {
 
 function OficiosView() {
   const [formData, setFormData] = useState({
-    bou: "",
     assunto: "",
     texto: "",
     tratamento: "Exmo.(A) Sr.(A)",
@@ -56,7 +55,6 @@ function OficiosView() {
       
       // Limpa formulário após gerar
       setFormData({
-        bou: "",
         assunto: "",
         texto: "",
         tratamento: "Exmo.(A) Sr.(A)",
@@ -104,32 +102,18 @@ function OficiosView() {
         
         <form onSubmit={handleGerarOficio} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
           
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "15px" }}>
-            <FormGroup label="Referência / BOU (Opcional)" id="bou">
-              <input
-                type="text"
-                id="bou"
-                name="bou"
-                value={formData.bou}
-                onChange={handleChange}
-                placeholder="Ex: 2026/1234567"
-                style={inputStyle}
-              />
-            </FormGroup>
-            
-            <FormGroup label="Assunto" id="assunto" required>
-              <input
-                type="text"
-                id="assunto"
-                name="assunto"
-                value={formData.assunto}
-                onChange={handleChange}
-                placeholder="Ex: Encaminhamento de Laudo Pericial"
-                required
-                style={inputStyle}
-              />
-            </FormGroup>
-          </div>
+          <FormGroup label="Assunto" id="assunto" required>
+            <input
+              type="text"
+              id="assunto"
+              name="assunto"
+              value={formData.assunto}
+              onChange={handleChange}
+              placeholder="Ex: Encaminhamento de Laudo Pericial"
+              required
+              style={inputStyle}
+            />
+          </FormGroup>
 
           <FormGroup label="Texto Base" id="texto" required>
             <textarea
