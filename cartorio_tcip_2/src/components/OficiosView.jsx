@@ -21,13 +21,44 @@ const inputStyle = {
   color: "#1e293b",
 };
 
+const TRATAMENTOS = [
+  "Excelentíssimo(a) Senhor(a) Juiz(a)",
+  "Excelentíssimo(a) Senhor(a) Promotor(a)",
+  "Senhor(a) Gerente",
+  "Senhor(a) Comandante",
+  "Senhor(a) Coordenador(a)",
+  "Senhor(a) Dr.(a) Delegado(a)",
+  "Senhor(a)"
+];
+
+const CARGOS = [
+  "Exmo.(a) Sr.(a) Juiz(a)",
+  "Exmo.(a) Sr.(a) Promotor(a)",
+  "Senhor(a) Gerente",
+  "Senhor(a) Coordenador(a)",
+  "Senhor(a) Dr.(a) Delegado(a)",
+  "Ao Senhor,"
+];
+
+const ORGAOS = [
+  "1º JUIZADO ESPECIAL CRIMINAL",
+  "2º JUIZADO ESPECIAL CRIMINAL",
+  "3º JUIZADO ESPECIAL CRIMINAL",
+  "DELEGACIA DE POLICIA CIVIL",
+  "11ª PROMOTORIA DE JUSTIÇA",
+  "COOPAVEL COOPERATIVA AGROINDUSTRIAL",
+  "DIVISÃO DE VIGILÂNCIA SANITÁRIA",
+  "VARA DA INFANCIA E DA JUVENTUDE",
+  "COMANDANTE DO 6º BATALHÃO - PMPR"
+];
+
 function OficiosView() {
   const [formData, setFormData] = useState({
     assunto: "",
     texto: "",
-    tratamento: "Exmo.(A) Sr.(A)",
-    cargo_destinatario: "Juiz (A) de Direito",
-    orgao_destino: "Juizado Especial Criminal",
+    tratamento: "Excelentíssimo(a) Senhor(a) Juiz(a)",
+    cargo_destinatario: "Exmo.(a) Sr.(a) Juiz(a)",
+    orgao_destino: "1º JUIZADO ESPECIAL CRIMINAL",
     cidade_destino: "Cascavel - Pr."
   });
   const [gerando, setGerando] = useState(false);
@@ -57,9 +88,9 @@ function OficiosView() {
       setFormData({
         assunto: "",
         texto: "",
-        tratamento: "Exmo.(A) Sr.(A)",
-        cargo_destinatario: "Juiz (A) de Direito",
-        orgao_destino: "Juizado Especial Criminal",
+        tratamento: "Excelentíssimo(a) Senhor(a) Juiz(a)",
+        cargo_destinatario: "Exmo.(a) Sr.(a) Juiz(a)",
+        orgao_destino: "1º JUIZADO ESPECIAL CRIMINAL",
         cidade_destino: "Cascavel - Pr."
       });
       alert(`Ofício nº ${dadosComNumero.numero_oficio}/${dadosComNumero.ano_oficio} gerado com sucesso!`);
@@ -136,9 +167,13 @@ function OficiosView() {
                 name="tratamento"
                 value={formData.tratamento}
                 onChange={handleChange}
-                placeholder="Ex: Exmo.(A) Sr.(A)"
+                list="tratamentos-list"
+                placeholder="Selecione ou digite..."
                 style={inputStyle}
               />
+              <datalist id="tratamentos-list">
+                {TRATAMENTOS.map((item) => <option key={item} value={item} />)}
+              </datalist>
             </FormGroup>
             
             <FormGroup label="Cargo do Destinatário" id="cargo_destinatario">
@@ -148,9 +183,13 @@ function OficiosView() {
                 name="cargo_destinatario"
                 value={formData.cargo_destinatario}
                 onChange={handleChange}
-                placeholder="Ex: Juiz de Direito"
+                list="cargos-list"
+                placeholder="Selecione ou digite..."
                 style={inputStyle}
               />
+              <datalist id="cargos-list">
+                {CARGOS.map((item) => <option key={item} value={item} />)}
+              </datalist>
             </FormGroup>
           </div>
 
@@ -162,9 +201,13 @@ function OficiosView() {
                 name="orgao_destino"
                 value={formData.orgao_destino}
                 onChange={handleChange}
-                placeholder="Ex: Juizado Especial Criminal"
+                list="orgaos-list"
+                placeholder="Selecione ou digite..."
                 style={inputStyle}
               />
+              <datalist id="orgaos-list">
+                {ORGAOS.map((item) => <option key={item} value={item} />)}
+              </datalist>
             </FormGroup>
             
             <FormGroup label="Cidade de Destino" id="cidade_destino">
@@ -174,7 +217,7 @@ function OficiosView() {
                 name="cidade_destino"
                 value={formData.cidade_destino}
                 onChange={handleChange}
-                placeholder="Ex: Cascavel - Pr."
+                placeholder="Cascavel - Pr."
                 style={inputStyle}
               />
             </FormGroup>
