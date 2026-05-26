@@ -2,6 +2,25 @@ import React, { useState } from "react";
 import { addOficioPersonalizado } from "../services/api";
 import { gerarOficioPersonalizadoPdf } from "../services/oficioPersonalizadoPdf";
 
+const FormGroup = ({ label, id, children, required }) => (
+  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+    <label htmlFor={id} style={{ fontSize: "12px", fontWeight: "700", color: "#475569" }}>
+      {label} {required && <span style={{ color: "#ef4444" }}>*</span>}
+    </label>
+    {children}
+  </div>
+);
+
+const inputStyle = {
+  padding: "10px",
+  border: "1px solid #cbd5e1",
+  borderRadius: "6px",
+  width: "100%",
+  boxSizing: "border-box",
+  background: "white",
+  color: "#1e293b",
+};
+
 function OficiosView() {
   const [formData, setFormData] = useState({
     bou: "",
@@ -55,132 +74,154 @@ function OficiosView() {
   };
 
   return (
-    <div className="view-container fade-in">
-      <div className="header-actions">
-        <h2 className="title">
-          <span style={{ fontSize: "24px", marginRight: "10px" }}>📄</span>
-          Gerador de Ofícios
-        </h2>
+    <div style={{ padding: "10px", paddingBottom: "50px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+        <div>
+          <h2 style={{ fontSize: "24px", margin: 0, fontWeight: "700" }}>📄 Gerador de Ofícios</h2>
+          <p style={{ margin: 0, color: "#64748b", fontSize: "14px" }}>
+            Criação de ofícios com numeração integrada e formatação ABNT automática.
+          </p>
+        </div>
       </div>
 
-      <div className="card-custom">
-        {erro && <div className="alert-error" style={{ marginBottom: "15px", padding: "10px", background: "#fef2f2", color: "#991b1b", borderRadius: "5px", border: "1px solid #f87171" }}>{erro}</div>}
+      <div className="card">
+        {erro && (
+          <div 
+            style={{ 
+              marginBottom: "15px", 
+              padding: "10px 15px", 
+              background: "#fef2f2", 
+              color: "#b91c1c", 
+              borderRadius: "6px", 
+              border: "1px solid #fca5a5",
+              fontSize: "13px",
+              fontWeight: "600"
+            }}
+          >
+            ⚠️ {erro}
+          </div>
+        )}
         
-        <form onSubmit={handleGerarOficio} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+        <form onSubmit={handleGerarOficio} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
           
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
-            <div>
-              <label style={{ display: "block", marginBottom: "5px", color: "#cbd5e1", fontWeight: "bold" }}>Referência / BOU (Opcional)</label>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "15px" }}>
+            <FormGroup label="Referência / BOU (Opcional)" id="bou">
               <input
                 type="text"
+                id="bou"
                 name="bou"
                 value={formData.bou}
                 onChange={handleChange}
                 placeholder="Ex: 2026/1234567"
-                style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #334155", background: "#1e293b", color: "white" }}
+                style={inputStyle}
               />
-            </div>
-            <div>
-              <label style={{ display: "block", marginBottom: "5px", color: "#cbd5e1", fontWeight: "bold" }}>Assunto *</label>
+            </FormGroup>
+            
+            <FormGroup label="Assunto" id="assunto" required>
               <input
                 type="text"
+                id="assunto"
                 name="assunto"
                 value={formData.assunto}
                 onChange={handleChange}
                 placeholder="Ex: Encaminhamento de Laudo Pericial"
                 required
-                style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #334155", background: "#1e293b", color: "white" }}
+                style={inputStyle}
               />
-            </div>
+            </FormGroup>
           </div>
 
-          <div>
-            <label style={{ display: "block", marginBottom: "5px", color: "#cbd5e1", fontWeight: "bold" }}>Texto Base *</label>
+          <FormGroup label="Texto Base" id="texto" required>
             <textarea
+              id="texto"
               name="texto"
               value={formData.texto}
               onChange={handleChange}
               placeholder="Digite o conteúdo do ofício aqui..."
               required
               rows="8"
-              style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #334155", background: "#1e293b", color: "white", resize: "vertical" }}
+              style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit" }}
             />
-          </div>
+          </FormGroup>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
-            <div>
-              <label style={{ display: "block", marginBottom: "5px", color: "#cbd5e1", fontWeight: "bold" }}>Forma de Tratamento</label>
+            <FormGroup label="Forma de Tratamento" id="tratamento">
               <input
                 type="text"
+                id="tratamento"
                 name="tratamento"
                 value={formData.tratamento}
                 onChange={handleChange}
                 placeholder="Ex: Exmo.(A) Sr.(A)"
-                style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #334155", background: "#1e293b", color: "white" }}
+                style={inputStyle}
               />
-            </div>
-            <div>
-              <label style={{ display: "block", marginBottom: "5px", color: "#cbd5e1", fontWeight: "bold" }}>Cargo do Destinatário</label>
+            </FormGroup>
+            
+            <FormGroup label="Cargo do Destinatário" id="cargo_destinatario">
               <input
                 type="text"
+                id="cargo_destinatario"
                 name="cargo_destinatario"
                 value={formData.cargo_destinatario}
                 onChange={handleChange}
                 placeholder="Ex: Juiz de Direito"
-                style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #334155", background: "#1e293b", color: "white" }}
+                style={inputStyle}
               />
-            </div>
+            </FormGroup>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
-            <div>
-              <label style={{ display: "block", marginBottom: "5px", color: "#cbd5e1", fontWeight: "bold" }}>Órgão de Destino</label>
+          <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: "15px" }}>
+            <FormGroup label="Órgão de Destino" id="orgao_destino">
               <input
                 type="text"
+                id="orgao_destino"
                 name="orgao_destino"
                 value={formData.orgao_destino}
                 onChange={handleChange}
                 placeholder="Ex: Juizado Especial Criminal"
-                style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #334155", background: "#1e293b", color: "white" }}
+                style={inputStyle}
               />
-            </div>
-            <div>
-              <label style={{ display: "block", marginBottom: "5px", color: "#cbd5e1", fontWeight: "bold" }}>Cidade de Destino</label>
+            </FormGroup>
+            
+            <FormGroup label="Cidade de Destino" id="cidade_destino">
               <input
                 type="text"
+                id="cidade_destino"
                 name="cidade_destino"
                 value={formData.cidade_destino}
                 onChange={handleChange}
                 placeholder="Ex: Cascavel - Pr."
-                style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #334155", background: "#1e293b", color: "white" }}
+                style={inputStyle}
               />
-            </div>
+            </FormGroup>
           </div>
 
-          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}>
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "10px" }}>
             <button
               type="submit"
+              className="btn-blue"
               disabled={gerando}
               style={{
-                background: gerando ? "#94a3b8" : "#3b82f6",
-                color: "white",
                 padding: "12px 24px",
-                borderRadius: "5px",
-                border: "none",
-                cursor: gerando ? "not-allowed" : "pointer",
                 fontWeight: "bold",
-                fontSize: "16px",
+                fontSize: "15px",
                 display: "flex",
                 alignItems: "center",
-                gap: "8px"
+                gap: "8px",
+                height: "45px"
               }}
             >
-              {gerando ? "⏳ Gerando..." : "📄 Gerar Ofício (PDF)"}
+              {gerando && <span className="spinner"></span>}
+              {gerando ? "Gerando..." : "📄 Gerar Ofício (PDF)"}
             </button>
           </div>
         </form>
       </div>
     </div>
+  );
+}
+
+export default OficiosView;
   );
 }
 
