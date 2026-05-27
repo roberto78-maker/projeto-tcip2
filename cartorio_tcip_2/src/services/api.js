@@ -176,6 +176,21 @@ export async function updateApreensao(id, data) {
   return await res.json();
 }
 
+// 🗑️ REMOVER PDF
+export async function removerPdf(id) {
+  const res = await fetch(`${API_URL}${id}/remover_pdf/`, {
+    method: "POST",
+    headers: getHeaders(),
+  });
+
+  if (!res.ok) {
+    const erro = await res.json();
+    throw new Error(erro.error || "Erro ao remover PDF");
+  }
+
+  return await res.json();
+}
+
 // 📦 LOTES (suporta paginação)
 export async function getLotes() {
   const res = await fetch(`${BASE_URL}/api/lotes/`, {

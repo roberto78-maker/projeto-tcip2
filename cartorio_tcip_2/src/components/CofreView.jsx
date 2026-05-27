@@ -1,5 +1,5 @@
 import React, { useState, useRef, useMemo } from "react";
-import { updateApreensao, destinarIncineracao } from "../services/api.js";
+import { updateApreensao, destinarIncineracao, removerPdf } from "../services/api.js";
 import { usePagedList } from "../hooks/usePagedList.js";
 
 const formatarPesoDisplay = (valor, unidade) => {
@@ -97,6 +97,17 @@ export default function CofreView() {
       recarregar(); // cache-invalidate + reload
     } catch (e) {
       alert(e.message || "Erro ao fazer upload.");
+    }
+  };
+
+  const handleRemoverPdf = async (id) => {
+    if (!window.confirm("Deseja realmente remover o PDF anexado?")) return;
+    try {
+      await removerPdf(id);
+      alert("PDF removido com sucesso!");
+      recarregar();
+    } catch (e) {
+      alert(e.message || "Erro ao remover PDF.");
     }
   };
 
@@ -273,9 +284,18 @@ export default function CofreView() {
                       </td>
                       <td>
                         {hasPDF ? (
-                          <a href={pdfUrl} target="_blank" rel="noreferrer" style={{ fontSize: "11px", color: "#10b981", fontWeight: "700", textDecoration: "none" }}>
-                            📄 VER PDF
-                          </a>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <a href={pdfUrl} target="_blank" rel="noreferrer" style={{ fontSize: "11px", color: "#10b981", fontWeight: "700", textDecoration: "none" }}>
+                              📄 VER PDF
+                            </a>
+                            <button
+                              onClick={() => handleRemoverPdf(item.id)}
+                              style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: "12px", padding: 0 }}
+                              title="Remover PDF"
+                            >
+                              ❌
+                            </button>
+                          </div>
                         ) : (
                           <label style={{ cursor: "pointer", color: "#3b82f6", fontSize: "11px", fontWeight: "700" }}>
                             📎 ANEXAR

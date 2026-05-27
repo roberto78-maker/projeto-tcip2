@@ -563,6 +563,34 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
             )
 
     @action(detail=True, methods=["post"])
+    def remover_pdf(self, request, pk=None):
+        """
+        Removes the attached PDF by clearing the arquivo_pdf_url field.
+        """
+        apreensao = self.get_object()
+        
+        if not apreensao.arquivo_pdf_url and not apreensao.arquivo_pdf:
+            return Response(
+                {"error": "Nenhum PDF anexado para remover."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+            
+        apreensao.arquivo_pdf_url = None
+        if apreensao.arquivo_pdf:
+            apreensao.arquivo_pdf.delete(save=False)
+            
+        apreensao.save(update_fields=["arquivo_pdf_url", "arquivo_pdf"])
+        
+        Historico.objects.create(
+            apreensao=apreensao,
+            usuario=request.user if request.user.is_authenticated else None,
+            acao="Removeu o PDF anexado",
+        )
+        
+        logger.info(f"PDF removido para Apreensão {apreensao.id}")
+        return Response({"message": "PDF removido com sucesso."})
+
+    @action(detail=True, methods=["post"])
     def gerar_numero_oficio(self, request, pk=None):
         """
         Gera um número sequencial único de ofício para o ano atual.
