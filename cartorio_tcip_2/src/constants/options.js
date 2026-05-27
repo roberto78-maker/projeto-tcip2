@@ -25,7 +25,8 @@ export const CRIMES_GERAIS = [
   "Vias de Fato: Artigo 21 da LCP",
   "Trafegar em Velocidade Incompatível Gerando Perigo de Dano: Artigo 311 do CTB",
   "Violar a Suspensão/Proibição de Dirigir: Artigo 307 do CTB",
-  "Permitir a Condução de Veiculo a Não Habilitado: Artigo 310 do CTB"
+  "Permitir a Condução de Veiculo a Não Habilitado: Artigo 310 do CTB",
+  "Direção Perigosa de Veículo: Artigo 34 da LCP"
 ];
 
 export const JUIZADOS = [
