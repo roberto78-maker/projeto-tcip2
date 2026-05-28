@@ -63,7 +63,9 @@ export const UNIDADES_PM = [
   "CPU",
   "BPFRON",
   "P2",
-  "PATRULHA RURAL"
+  "PATRULHA RURAL",
+  "RONE",
+  "DEAEV"
 ];
 
 export const PATENTES = [
