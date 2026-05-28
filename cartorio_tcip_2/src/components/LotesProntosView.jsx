@@ -31,7 +31,7 @@ export default function LotesProntosView() {
     setLoading(true);
     try {
       const [dataApreensoes, dataLotes] = await Promise.all([
-        getApreensoes({ status: "queima_pronta", fetchAll: true }),
+        getApreensoes({ status: "queima_pronta&page_size=100", fetchAll: true }),
         getLotes()
       ]);
       setApreensoes(dataApreensoes);
