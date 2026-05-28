@@ -18,6 +18,7 @@ export const CRIMES_GERAIS = [
   "Jogos de Azar: Artigo 50 da LCP",
   "Lesão Corporal Leve: Artigo 129 do CP",
   "Omissão de Cautela na Guarda de Animais: Artigo 31 do LCP",
+  "Omissão de Socorro no Trânsito: Artigo 304 do CTB",
   "Outras Fraudes: Artigo 176 do CP",
   "Permitir a Condução de Veiculo a Não Habilitado: Artigo 310 do CTB",
   "Perturbação do Sossego: Artigo 42 da LCP",
