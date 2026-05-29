@@ -322,7 +322,15 @@ export default function AuditoriaView() {
              <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>⚖️ Filtrar por Crime (Artigos):</label>
              <select name="crime" value={filtros.crime} onChange={handleFiltroChange} className="input-tcip auditoria-select-crime">
                <option value="">Todos os Crimes</option>
-               {CRIMES_GERAIS.map(cr => <option key={cr} value={cr}>{cr}</option>)}
+               {CRIMES_GERAIS.map(cr => (
+                 <option
+                   key={cr}
+                   value={cr}
+                   style={cr === "Perturbação do Sossego: Artigo 42 da LCP" ? { fontWeight: "bold" } : {}}
+                 >
+                   {cr}
+                 </option>
+               ))}
              </select>
           </div>
 

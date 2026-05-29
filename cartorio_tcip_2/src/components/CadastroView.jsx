@@ -96,7 +96,8 @@ export default function CadastroView() {
                 alignItems: "center",
                 gap: "10px",
                 fontSize: "12px",
-                color: "#475569",
+                color: crime === "Perturbação do Sossego: Artigo 42 da LCP" ? "#1e293b" : "#475569",
+                fontWeight: crime === "Perturbação do Sossego: Artigo 42 da LCP" ? "bold" : "normal",
                 cursor: "pointer",
                 padding: "6px",
                 borderRadius: "6px",
@@ -108,7 +109,7 @@ export default function CadastroView() {
                 checked={crimesSelecionados.includes(crime)}
                 onChange={(e) => toggleCrime(crime, e.target.checked)}
               />
-              {crime}
+              {crime === "Perturbação do Sossego: Artigo 42 da LCP" ? <strong>{crime}</strong> : crime}
             </label>
           ))}
         </div>
