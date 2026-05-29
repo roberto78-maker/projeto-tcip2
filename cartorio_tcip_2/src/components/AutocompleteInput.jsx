@@ -21,6 +21,7 @@ export default function AutocompleteInput({
   asyncSearch,
   renderSuggestion,
   onSelectSuggestion,
+  onDeleteSuggestion,
   ...props
 }) {
   const [suggestions, setSuggestions] = useState([]);
@@ -212,13 +213,57 @@ export default function AutocompleteInput({
                 borderBottom: "1px solid #f1f5f9",
                 display: "flex",
                 alignItems: "center",
+                justifyContent: "space-between",
                 gap: "8px",
               }}
             >
-              <span style={{ color: "#94a3b8", fontSize: "11px" }}>
-                {asyncSearch ? "👤" : "🕓"}
-              </span>
-              {renderSuggestion ? renderSuggestion(s) : s}
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, minWidth: 0 }}>
+                <span style={{ color: "#94a3b8", fontSize: "11px", flexShrink: 0 }}>
+                  {asyncSearch ? "👤" : "👁️"}
+                </span>
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {renderSuggestion ? renderSuggestion(s) : s}
+                </span>
+              </div>
+              {onDeleteSuggestion && s.id && (
+                <button
+                  type="button"
+                  title="Excluir do sistema"
+                  onMouseDown={async (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    if (window.confirm(`Deseja realmente excluir este policial do sistema?`)) {
+                      try {
+                        await onDeleteSuggestion(s);
+                        setSuggestions((prev) => prev.filter((item) => item.id !== s.id));
+                      } catch (err) {
+                        alert(err.message || "Erro ao excluir");
+                      }
+                    }
+                  }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#ef4444",
+                    cursor: "pointer",
+                    padding: "4px 8px",
+                    fontSize: "13px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: "4px",
+                    flexShrink: 0,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = "#fee2e2";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = "none";
+                  }}
+                >
+                  🗑️
+                </button>
+              )}
             </li>
           ))}
         </ul>
