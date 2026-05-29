@@ -241,9 +241,9 @@ export default function CadastroView() {
         <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1.5fr 100px 100px 120px 40px", gap: "12px", marginBottom: "10px", padding: "0 10px" }}>
           <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>NOTICIADO / AUTOR</label>
           <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>TIPO</label>
-          <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>APREENSAO / DROGA</label>
-          <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>QUANT. / PESO</label>
           <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>APREENSOES</label>
+          <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>QUANT. / PESO</label>
+          <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>UNID.</label>
           <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>No LACRE</label>
           <div></div>
         </div>
