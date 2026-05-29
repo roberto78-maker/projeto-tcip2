@@ -1,13 +1,27 @@
-import React from "react";
+import React, { useState } from "react";
 import { JUIZADOS, SUBSTANCIAS, UNIDADES_PM, PATENTES, CRIMES_GERAIS } from "../constants/options.js";
 import { useCadastroForm } from "../hooks/useCadastroForm.js";
 import AutocompleteInput from "./AutocompleteInput.jsx";
 import QRCodeModal from "./QRCodeModal.jsx";
+import { getPoliciais, addPolicial } from "../services/api.js";
 
-const FormGroup = ({ label, id, children, required }) => (
+const FormGroup = ({ label, id, children, required, rightElement }) => (
   <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-    <label htmlFor={id} style={{ fontSize: "12px", fontWeight: "700", color: "#475569" }}>
-      {label} {required && <span style={{ color: "#ef4444" }}>*</span>}
+    <label
+      htmlFor={id}
+      style={{
+        fontSize: "12px",
+        fontWeight: "700",
+        color: "#475569",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}
+    >
+      <span>
+        {label} {required && <span style={{ color: "#ef4444" }}>*</span>}
+      </span>
+      {rightElement}
     </label>
     {children}
   </div>
@@ -56,6 +70,7 @@ export default function CadastroView() {
     handlePatenteChange,
     handlePolicialChange,
     handleRgChange,
+    handleSelecionarPolicial,
     handleFielDepositarioChange,
     handleMaterialReuChange,
     handleMaterialSubstanciaChange,
@@ -64,6 +79,16 @@ export default function CadastroView() {
     handleMaterialUnidadeChange,
     handleMaterialLacreChange,
   } = useCadastroForm();
+
+  // Estados do Modal de Cadastro de Policial
+  const [showCadastrarPolicial, setShowCadastrarPolicial] = useState(false);
+  const [novoPolicial, setNovoPolicial] = useState({
+    patente: "SD",
+    nome: "",
+    rg: "",
+    unidade_origem: "RPA",
+  });
+  const [cadastrandoPolicial, setCadastrandoPolicial] = useState(false);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -204,15 +229,38 @@ export default function CadastroView() {
             </select>
           </FormGroup>
 
-          <FormGroup label="POLICIAL RESPONSÁVEL *" id="policial">
+          <FormGroup
+            label="POLICIAL RESPONSÁVEL *"
+            id="policial"
+            rightElement={
+              <button
+                type="button"
+                onClick={() => setShowCadastrarPolicial(true)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#3b82f6",
+                  fontSize: "11px",
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                  padding: 0,
+                  textDecoration: "underline",
+                }}
+              >
+                + Cadastrar Novo
+              </button>
+            }
+          >
             <AutocompleteInput
               id="policial"
               name="policial"
-              historyKey="hist_policial"
               value={policial}
               onChange={(e) => handlePolicialChange(e.target.value)}
               style={inputStyle}
               placeholder="Nome do policial..."
+              asyncSearch={getPoliciais}
+              renderSuggestion={(s) => `${s.patente || ""} ${s.nome} (RG: ${s.rg})`}
+              onSelectSuggestion={handleSelecionarPolicial}
             />
           </FormGroup>
 
@@ -220,11 +268,13 @@ export default function CadastroView() {
             <AutocompleteInput
               id="rg"
               name="rg"
-              historyKey="hist_rg"
               value={rg}
               onChange={(e) => handleRgChange(e.target.value)}
               style={inputStyle}
               placeholder="00.000.000-0"
+              asyncSearch={getPoliciais}
+              renderSuggestion={(s) => `RG: ${s.rg} - ${s.patente || ""} ${s.nome}`}
+              onSelectSuggestion={handleSelecionarPolicial}
             />
           </FormGroup>
         </div>
@@ -375,6 +425,169 @@ export default function CadastroView() {
           onSucesso={handleFinalizarComAssinatura}
           onCancelar={handleCancelarQR}
         />
+      )}
+
+      {/* Modal de Cadastro de Policial */}
+      {showCadastrarPolicial && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(15, 23, 42, 0.6)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 99999,
+          }}
+        >
+          <div
+            style={{
+              background: "white",
+              borderRadius: "12px",
+              padding: "30px",
+              width: "480px",
+              boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "20px",
+            }}
+          >
+            <h3 style={{ margin: 0, fontSize: "16px", color: "#1e3a8a", borderBottom: "1px solid #e2e8f0", paddingBottom: "10px" }}>
+              👮 Cadastrar Novo Policial
+            </h3>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "12px" }}>
+                <FormGroup label="GRADUAÇÃO *" id="modal-patente">
+                  <select
+                    id="modal-patente"
+                    style={inputStyle}
+                    value={novoPolicial.patente}
+                    onChange={(e) => setNovoPolicial({ ...novoPolicial, patente: e.target.value })}
+                  >
+                    {PATENTES.map((item) => (
+                      <option key={item} value={item}>
+                        {item}
+                      </option>
+                    ))}
+                  </select>
+                </FormGroup>
+
+                <FormGroup label="UNIDADE DE ORIGEM *" id="modal-unidade">
+                  <select
+                    id="modal-unidade"
+                    style={inputStyle}
+                    value={novoPolicial.unidade_origem}
+                    onChange={(e) => setNovoPolicial({ ...novoPolicial, unidade_origem: e.target.value })}
+                  >
+                    {UNIDADES_PM.map((item) => (
+                      <option key={item} value={item}>
+                        {item}
+                      </option>
+                    ))}
+                  </select>
+                </FormGroup>
+              </div>
+
+              <FormGroup label="NOME DO POLICIAL *" id="modal-nome">
+                <input
+                  type="text"
+                  id="modal-nome"
+                  placeholder="Nome de guerra ou completo..."
+                  style={inputStyle}
+                  value={novoPolicial.nome}
+                  onChange={(e) => setNovoPolicial({ ...novoPolicial, nome: e.target.value.toUpperCase() })}
+                />
+              </FormGroup>
+
+              <FormGroup label="RG *" id="modal-rg">
+                <input
+                  type="text"
+                  id="modal-rg"
+                  placeholder="00.000.000-0"
+                  style={inputStyle}
+                  value={novoPolicial.rg}
+                  onChange={(e) => {
+                    const formatarRGLocal = (val) => {
+                      const d = String(val).replace(/\D/g, "").slice(0, 9);
+                      if (d.length <= 2) return d;
+                      if (d.length <= 5) return `${d.slice(0, 2)}.${d.slice(2)}`;
+                      if (d.length <= 8) return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5)}`;
+                      return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}-${d.slice(8)}`;
+                    };
+                    setNovoPolicial({ ...novoPolicial, rg: formatarRGLocal(e.target.value) });
+                  }}
+                />
+              </FormGroup>
+            </div>
+
+            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "10px" }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCadastrarPolicial(false);
+                  setNovoPolicial({ patente: "SD", nome: "", rg: "", unidade_origem: "RPA" });
+                }}
+                style={{
+                  padding: "10px 20px",
+                  borderRadius: "6px",
+                  border: "1px solid #cbd5e1",
+                  background: "#f8fafc",
+                  color: "#475569",
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                }}
+                disabled={cadastrandoPolicial}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!novoPolicial.nome.trim()) {
+                    alert("Informe o nome do policial.");
+                    return;
+                  }
+                  if (!novoPolicial.rg.trim()) {
+                    alert("Informe o RG do policial.");
+                    return;
+                  }
+                  setCadastrandoPolicial(true);
+                  try {
+                    const salvo = await addPolicial({
+                      ...novoPolicial,
+                      nome: novoPolicial.nome.toUpperCase().trim(),
+                    });
+                    handleSelecionarPolicial(salvo);
+                    alert("Policial cadastrado e selecionado com sucesso!");
+                    setShowCadastrarPolicial(false);
+                    setNovoPolicial({ patente: "SD", nome: "", rg: "", unidade_origem: "RPA" });
+                  } catch (err) {
+                    alert(err.message);
+                  } finally {
+                    setCadastrandoPolicial(false);
+                  }
+                }}
+                style={{
+                  padding: "10px 20px",
+                  borderRadius: "6px",
+                  border: "none",
+                  background: "#10b981",
+                  color: "white",
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                }}
+                disabled={cadastrandoPolicial}
+              >
+                {cadastrandoPolicial ? "Cadastrando..." : "Confirmar Cadastro"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
