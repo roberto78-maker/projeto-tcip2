@@ -4,12 +4,14 @@ export const NATUREZAS = [
 ];
 
 export const CRIMES_GERAIS = [
+  "Afastar-se do Local do Acidente: Artigo 305 do CTB",
   "Ameaça: Artigo 147 do CP",
   "Calúnia: Artigo 138 do CP",
   "Conduzir Veículo sem Habilitação: Artigo 309 do CTB",
   "Dano Simples: Artigo 163 do CP",
   "Desacato: Artigo 331 do CP",
   "Desobediência: Artigo 330 do CP",
+  "Desobediência a Decisão Judicial: Artigo 359 do CP",
   "Difamação: Artigo 139 do CP",
   "Direção Perigosa de Veículo: Artigo 34 da LCP",
   "Drogas para Consumo Pessoal: Artigo 28 da Lei 11.343/06",
