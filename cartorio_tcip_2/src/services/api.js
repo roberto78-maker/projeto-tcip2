@@ -450,6 +450,18 @@ export async function addPolicial(policialData) {
   return await res.json();
 }
 
+export async function deletePolicial(id) {
+  const res = await fetch(`${POLICIAIS_URL}${id}/`, {
+    method: "DELETE",
+    headers: getHeaders(),
+  });
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(errorText || "Erro ao excluir policial");
+  }
+}
+
+
 // ? RESET DO SISTEMA (Apenas Superusers)
 // export async function resetSystem() {
 //   const res = await fetch(`${BASE_URL}/api/system/reset/`, {
