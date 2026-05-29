@@ -409,6 +409,47 @@ export async function addOficioPersonalizado(data) {
 
   return await res.json();
 }
+
+// 👮 POLICIAIS (Banco de dados de policiais)
+const POLICIAIS_URL = `${BASE_URL}/api/policiais/`;
+
+export async function getPoliciais(search = "") {
+  let url = POLICIAIS_URL;
+  if (search) {
+    url += `?search=${encodeURIComponent(search)}`;
+  }
+  const res = await fetch(url, { headers: getHeaders() });
+  if (!res.ok) {
+    throw new Error("Erro ao buscar policiais");
+  }
+  return await res.json();
+}
+
+export async function addPolicial(policialData) {
+  const res = await fetch(POLICIAIS_URL, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify(policialData),
+  });
+  if (!res.ok) {
+    const errorText = await res.text();
+    let msg = "Erro ao cadastrar policial";
+    try {
+      const errorJson = JSON.parse(errorText);
+      // Se houver mensagens de erro detalhadas por campo (ex: RG)
+      if (errorJson.rg) {
+        msg = `Erro no RG: ${errorJson.rg.join(" ")}`;
+      } else if (errorJson.nome) {
+        msg = `Erro no Nome: ${errorJson.nome.join(" ")}`;
+      } else if (errorJson.detail) {
+        msg = errorJson.detail;
+      }
+    } catch {}
+    throw new Error(msg);
+  }
+  return await res.json();
+}
+
 // ? RESET DO SISTEMA (Apenas Superusers)
 // export async function resetSystem() {
 //   const res = await fetch(`${BASE_URL}/api/system/reset/`, {
