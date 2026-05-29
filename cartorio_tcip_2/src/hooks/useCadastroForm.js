@@ -81,6 +81,15 @@ export function useCadastroForm() {
   const handlePatenteChange = (value) => updateField("patente", value);
   const handlePolicialChange = (value) => updateField("policial", upper(value));
   const handleRgChange = (value) => updateField("rg", formatarRG(value));
+  const handleSelecionarPolicial = (policialObj) => {
+    setForm((current) => ({
+      ...current,
+      policial: upper(policialObj.nome),
+      rg: formatarRG(policialObj.rg),
+      patente: policialObj.patente || current.patente,
+      unidadeOrigem: policialObj.unidade_origem || current.unidadeOrigem,
+    }));
+  };
   const handleFielDepositarioChange = (checked) => updateField("fielDepositario", checked);
 
   const handleMaterialReuChange = (id, value) => updateMaterial(id, "reu", upper(value));
@@ -196,6 +205,7 @@ export function useCadastroForm() {
     handlePatenteChange,
     handlePolicialChange,
     handleRgChange,
+    handleSelecionarPolicial,
     handleFielDepositarioChange,
     handleMaterialReuChange,
     handleMaterialSubstanciaChange,
