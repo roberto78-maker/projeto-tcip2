@@ -285,7 +285,7 @@ export default function CadastroView() {
               >
                 <option value="OBJETO">OBJETO</option>
                 <option value="DROGA">DROGA</option>
-                <option value="SOM">SOM</option>
+                <option value="SOM">APARELHO DE SOM</option>
                 <option value="NENHUM">NENHUM</option>
               </select>
 
