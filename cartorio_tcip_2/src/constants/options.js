@@ -53,22 +53,22 @@ export const SUBSTANCIAS = [
 
 export const UNIDADES_PM = [
   "RPA",
-  "ROCAM",
-  "ROTAM",
-  "CHOQUE",
-  "BOPE",
-  "CAVALARIA",
-  "BPRV",
-  "BPMOA",
-  "GOTRAN",
-  "BPEC",
   "TRANSITO",
-  "CPU",
+  "BOPE",
+  "BPEC",
   "BPFRON",
+  "BPMOA",
+  "BPRV",
+  "CAVALARIA",
+  "CHOQUE",
+  "CPU",
+  "DEAEV",
+  "GOTRAN",
   "P2",
   "PATRULHA RURAL",
+  "ROCAM",
   "RONE",
-  "DEAEV"
+  "ROTAM"
 ];
 
 export const PATENTES = [
