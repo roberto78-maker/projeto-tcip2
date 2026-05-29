@@ -52,8 +52,6 @@ export const SUBSTANCIAS = [
 ];
 
 export const UNIDADES_PM = [
-  "RPA",
-  "TRANSITO",
   "BOPE",
   "BPEC",
   "BPFRON",
@@ -68,7 +66,9 @@ export const UNIDADES_PM = [
   "PATRULHA RURAL",
   "ROCAM",
   "RONE",
-  "ROTAM"
+  "ROTAM",
+  "RPA",
+  "TRANSITO"
 ];
 
 export const PATENTES = [
