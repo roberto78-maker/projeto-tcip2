@@ -204,7 +204,7 @@ export default function CadastroView() {
             </select>
           </FormGroup>
 
-          <FormGroup label="POLICIAL ENTREGADOR *" id="policial">
+          <FormGroup label="POLICIAL RESPONSAVEL *" id="policial">
             <AutocompleteInput
               id="policial"
               name="policial"
@@ -243,7 +243,7 @@ export default function CadastroView() {
           <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>TIPO</label>
           <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>APREENSAO / DROGA</label>
           <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>QUANT. / PESO</label>
-          <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>UNID.</label>
+          <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>APREENSOES</label>
           <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>No LACRE</label>
           <div></div>
         </div>
