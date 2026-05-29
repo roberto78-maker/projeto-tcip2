@@ -89,7 +89,7 @@ export default function CadastroView() {
           }}
         >
           {CRIMES_GERAIS.map((crime) => {
-            const isDestaque = crime === "Perturbação do Sossego: Artigo 42 da LCP" || crime === "Drogas para Consumo Pessoal: Artigo 28 da Lei 11.343/06" || crime === "Ameaça: Artigo 147 do CP";
+            const isDestaque = crime === "Perturbação do Sossego: Artigo 42 da LCP" || crime === "Drogas para Consumo Pessoal: Artigo 28 da Lei 11.343/06" || crime === "Ameaça: Artigo 147 do CP" || crime === "Conduzir Veículo sem Habilitação: Artigo 309 do CTB";
             return (
             <label
               key={crime}
