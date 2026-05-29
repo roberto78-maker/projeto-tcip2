@@ -79,7 +79,7 @@ export function atualizarMaterialPorTipo(material, tipo) {
     substancia = "Maconha";
     unidadePeso = "g";
   } else if (tipo === "SOM") {
-    substancia = "Caixa de Som";
+    substancia = "";
     unidadePeso = "Unid";
   } else if (tipo === "NENHUM") {
     substancia = "NAO HA APREENSAO";
