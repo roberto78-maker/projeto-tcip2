@@ -3,7 +3,7 @@ import { JUIZADOS, SUBSTANCIAS, UNIDADES_PM, PATENTES, CRIMES_GERAIS } from "../
 import { useCadastroForm } from "../hooks/useCadastroForm.js";
 import AutocompleteInput from "./AutocompleteInput.jsx";
 import QRCodeModal from "./QRCodeModal.jsx";
-import { getPoliciais, addPolicial } from "../services/api.js";
+import { getPoliciais, addPolicial, deletePolicial } from "../services/api.js";
 
 const FormGroup = ({ label, id, children, required, rightElement }) => (
   <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -89,6 +89,20 @@ export default function CadastroView() {
     unidade_origem: "RPA",
   });
   const [cadastrandoPolicial, setCadastrandoPolicial] = useState(false);
+
+  const handleDeletarPolicial = async (policialObj) => {
+    try {
+      await deletePolicial(policialObj.id);
+      // Se o policial excluído for o que está selecionado no form, limpa os campos
+      if (policial === policialObj.nome || rg === policialObj.rg) {
+        handlePolicialChange({ target: { value: "" } });
+        handleRgChange({ target: { value: "" } });
+      }
+    } catch (err) {
+      alert(`Erro ao excluir policial: ${err.message}`);
+      throw err;
+    }
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -261,6 +275,7 @@ export default function CadastroView() {
               asyncSearch={getPoliciais}
               renderSuggestion={(s) => `${s.patente || ""} ${s.nome} (RG: ${s.rg})`}
               onSelectSuggestion={handleSelecionarPolicial}
+              onDeleteSuggestion={handleDeletarPolicial}
             />
           </FormGroup>
 
@@ -275,6 +290,7 @@ export default function CadastroView() {
               asyncSearch={getPoliciais}
               renderSuggestion={(s) => `RG: ${s.rg} - ${s.patente || ""} ${s.nome}`}
               onSelectSuggestion={handleSelecionarPolicial}
+              onDeleteSuggestion={handleDeletarPolicial}
             />
           </FormGroup>
         </div>
