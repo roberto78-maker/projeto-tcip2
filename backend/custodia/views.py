@@ -1500,4 +1500,3 @@ class PolicialViewSet(viewsets.ModelViewSet):
     filterset_class = PolicialFilter
     search_fields = ["nome", "rg"]
     pagination_class = None
-

@@ -6,22 +6,33 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('custodia', '0018_apreensao_rg_apreensao_unidade_origem_and_more'),
+        ("custodia", "0018_apreensao_rg_apreensao_unidade_origem_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Policial',
+            name="Policial",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('nome', models.CharField(db_index=True, max_length=200)),
-                ('rg', models.CharField(db_index=True, max_length=50, unique=True)),
-                ('patente', models.CharField(blank=True, max_length=50, null=True)),
-                ('unidade_origem', models.CharField(blank=True, max_length=100, null=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("nome", models.CharField(db_index=True, max_length=200)),
+                ("rg", models.CharField(db_index=True, max_length=50, unique=True)),
+                ("patente", models.CharField(blank=True, max_length=50, null=True)),
+                (
+                    "unidade_origem",
+                    models.CharField(blank=True, max_length=100, null=True),
+                ),
             ],
             options={
-                'verbose_name': 'Policial',
-                'verbose_name_plural': 'Policiais',
+                "verbose_name": "Policial",
+                "verbose_name_plural": "Policiais",
             },
         ),
     ]

@@ -64,4 +64,3 @@ class PolicialSerializer(serializers.ModelSerializer):
     class Meta:
         model = Policial
         fields = "__all__"
-

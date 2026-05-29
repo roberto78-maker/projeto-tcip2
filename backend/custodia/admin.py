@@ -158,4 +158,3 @@ class PolicialAdmin(admin.ModelAdmin):
     list_display = ("patente", "nome", "rg", "unidade_origem")
     search_fields = ("nome", "rg", "unidade_origem")
     list_filter = ("patente", "unidade_origem")
-

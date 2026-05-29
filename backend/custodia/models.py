@@ -162,4 +162,3 @@ class Policial(models.Model):
 
     def __str__(self):
         return f"{self.patente or ''} {self.nome} (RG: {self.rg})"
-
