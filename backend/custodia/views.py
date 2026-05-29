@@ -35,11 +35,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 
-from .models import Apreensao, LoteIncineracao, Historico, OficioPersonalizado
+from .models import Apreensao, LoteIncineracao, Historico, OficioPersonalizado, Policial
 from .serializers import (
     ApreensaoSerializer,
     LoteIncineracaoSerializer,
     OficioPersonalizadoSerializer,
+    PolicialSerializer,
 )
 
 
@@ -1476,3 +1477,27 @@ class OficioPersonalizadoViewSet(viewsets.ModelViewSet):
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
+
+
+class PolicialFilter(django_filters.FilterSet):
+    nome = django_filters.CharFilter(field_name="nome", lookup_expr="icontains")
+    rg = django_filters.CharFilter(field_name="rg", lookup_expr="icontains")
+
+    class Meta:
+        model = Policial
+        fields = ["nome", "rg"]
+
+
+class PolicialViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = Policial.objects.all().order_by("nome")
+    serializer_class = PolicialSerializer
+    filter_backends = [
+        django_filters.DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
+    filterset_class = PolicialFilter
+    search_fields = ["nome", "rg"]
+    pagination_class = None
+

@@ -18,6 +18,7 @@ from custodia.views import (
     ReceberAssinaturaView,
     StatusAssinaturaView,
     OficioPersonalizadoViewSet,
+    PolicialViewSet,
     # ResetSystemView,
 )
 
@@ -45,6 +46,7 @@ router = DefaultRouter()
 router.register(r"apreensoes", ApreensaoViewSet)
 router.register(r"lotes", LoteIncineracaoViewSet)
 router.register(r"oficios", OficioPersonalizadoViewSet)
+router.register(r"policiais", PolicialViewSet)
 
 # 🔐 URL do Admin customizada — dificulta ataques automatizados
 admin.site.site_header = "TCIP — Administração"

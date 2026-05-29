@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.db.models import Count
 from django.utils.html import format_html
-from .models import Apreensao, LoteIncineracao, Historico
+from .models import Apreensao, LoteIncineracao, Historico, Policial
 
 
 class HistoricoInline(admin.TabularInline):
@@ -151,3 +151,11 @@ class HistoricoAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return request.user.is_superuser or request.user.is_staff
+
+
+@admin.register(Policial)
+class PolicialAdmin(admin.ModelAdmin):
+    list_display = ("patente", "nome", "rg", "unidade_origem")
+    search_fields = ("nome", "rg", "unidade_origem")
+    list_filter = ("patente", "unidade_origem")
+

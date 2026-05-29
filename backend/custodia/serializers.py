@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Apreensao, Historico, LoteIncineracao, OficioPersonalizado
+from .models import Apreensao, Historico, LoteIncineracao, OficioPersonalizado, Policial
 
 
 class HistoricoSerializer(serializers.ModelSerializer):
@@ -58,3 +58,10 @@ class OficioPersonalizadoSerializer(serializers.ModelSerializer):
         model = OficioPersonalizado
         fields = "__all__"
         read_only_fields = ["numero_oficio", "ano_oficio", "usuario", "data_criacao"]
+
+
+class PolicialSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Policial
+        fields = "__all__"
+

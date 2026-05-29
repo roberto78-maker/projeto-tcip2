@@ -148,3 +148,18 @@ class OficioPersonalizado(models.Model):
 
     def __str__(self):
         return f"Ofício {self.numero_oficio}/{self.ano_oficio} - {self.assunto}"
+
+
+class Policial(models.Model):
+    nome = models.CharField(max_length=200, db_index=True)
+    rg = models.CharField(max_length=50, unique=True, db_index=True)
+    patente = models.CharField(max_length=50, blank=True, null=True)
+    unidade_origem = models.CharField(max_length=100, blank=True, null=True)
+
+    class Meta:
+        verbose_name = "Policial"
+        verbose_name_plural = "Policiais"
+
+    def __str__(self):
+        return f"{self.patente or ''} {self.nome} (RG: {self.rg})"
+
