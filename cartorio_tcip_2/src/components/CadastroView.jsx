@@ -88,7 +88,9 @@ export default function CadastroView() {
             paddingRight: "10px",
           }}
         >
-          {CRIMES_GERAIS.map((crime) => (
+          {CRIMES_GERAIS.map((crime) => {
+            const isDestaque = crime === "Perturbação do Sossego: Artigo 42 da LCP" || crime === "Drogas para Consumo Pessoal: Artigo 28 da Lei 11.343/06";
+            return (
             <label
               key={crime}
               style={{
@@ -96,8 +98,8 @@ export default function CadastroView() {
                 alignItems: "center",
                 gap: "10px",
                 fontSize: "12px",
-                color: crime === "Perturbação do Sossego: Artigo 42 da LCP" ? "#1e293b" : "#475569",
-                fontWeight: crime === "Perturbação do Sossego: Artigo 42 da LCP" ? "bold" : "normal",
+                color: isDestaque ? "#1e293b" : "#475569",
+                fontWeight: isDestaque ? "bold" : "normal",
                 cursor: "pointer",
                 padding: "6px",
                 borderRadius: "6px",
@@ -109,9 +111,9 @@ export default function CadastroView() {
                 checked={crimesSelecionados.includes(crime)}
                 onChange={(e) => toggleCrime(crime, e.target.checked)}
               />
-              {crime === "Perturbação do Sossego: Artigo 42 da LCP" ? <strong>{crime}</strong> : crime}
+              {isDestaque ? <strong>{crime}</strong> : crime}
             </label>
-          ))}
+          )})}
         </div>
 
         <div style={{ width: "100%", display: "flex", justifyContent: "center", marginTop: "15px" }}>
