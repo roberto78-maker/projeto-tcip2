@@ -509,11 +509,11 @@ export default function CadastroView() {
                 </FormGroup>
               </div>
 
-              <FormGroup label="NOME DO POLICIAL *" id="modal-nome">
+              <FormGroup label="NOME DE GUERRA *" id="modal-nome">
                 <input
                   type="text"
                   id="modal-nome"
-                  placeholder="Nome de guerra ou completo..."
+                  placeholder="Apenas Nome de Guerra!"
                   style={inputStyle}
                   value={novoPolicial.nome}
                   onChange={(e) => setNovoPolicial({ ...novoPolicial, nome: e.target.value.toUpperCase() })}
