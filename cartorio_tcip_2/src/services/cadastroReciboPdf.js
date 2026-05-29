@@ -103,15 +103,9 @@ export async function gerarReciboCadastroPdf(dados, numeroRecibo, anoRecibo, ass
 
   doc.setFontSize(10);
   listaCrimes.forEach((crime) => {
-    if (crime === "Perturbação do Sossego: Artigo 42 da LCP") {
-      doc.setFont("helvetica", "bold");
-    } else {
-      doc.setFont("helvetica", "normal");
-    }
     doc.text(`* ${crime}`, marginX + 5, currY);
     currY += 4;
   });
-  doc.setFont("helvetica", "normal");
   currY += 8;
 
   const bodyTable = materiais.map((item, index) => {
