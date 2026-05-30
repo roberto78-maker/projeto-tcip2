@@ -2,8 +2,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { excluirApreensao, updateApreensao, removerPdf, invalidateApreensaoCache } from "../services/api.js";
 import { usePagedList } from "./usePagedList.js";
 
-function buildFilters(busca) {
+function buildFilters(abaAtiva, busca) {
   const filters = { status: "conferencia" };
+
+  if (abaAtiva === "PENDENCIAS") {
+    filters.processo = "(ERRO - DATA DE AUDIENCIA)";
+  } else {
+    filters.excluir_processo = "(ERRO - DATA DE AUDIENCIA)";
+  }
 
   if (busca.trim()) {
     filters.search = busca.trim();
@@ -13,6 +19,7 @@ function buildFilters(busca) {
 }
 
 export function useTriagem() {
+  const [abaAtiva, setAbaAtiva] = useState("CORRETOS");
   const [valorBusca, setValorBusca] = useState("");
   const [busca, setBusca] = useState("");
   const [itemSelecionado, setItemSelecionado] = useState(null);
@@ -27,7 +34,7 @@ export function useTriagem() {
     };
   }, []);
 
-  const filters = useMemo(() => buildFilters(busca), [busca]);
+  const filters = useMemo(() => buildFilters(abaAtiva, busca), [abaAtiva, busca]);
 
   const {
     itens,
@@ -137,6 +144,8 @@ export function useTriagem() {
   };
 
   return {
+    abaAtiva,
+    setAbaAtiva,
     busca: valorBusca,
     itemSelecionado,
     itemParaExcluir,
