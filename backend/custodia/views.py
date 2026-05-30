@@ -202,13 +202,13 @@ class ApreensaoFilter(django_filters.FilterSet):
         """Filters by active tab on triagem (correct processes vs errors)."""
         if value == "PENDENCIAS":
             return queryset.filter(
-                Q(processo__icontains="(ERRO - DATA DE AUDIENCIA)") |
-                Q(vara__icontains="OUTROS JUIZADOS - ERRO MATERIAL")
+                Q(processo__icontains="(ERRO - DATA DE AUDIENCIA)")
+                | Q(vara__icontains="OUTROS JUIZADOS - ERRO MATERIAL")
             )
         elif value == "CORRETOS":
             return queryset.exclude(
-                Q(processo__icontains="(ERRO - DATA DE AUDIENCIA)") |
-                Q(vara__icontains="OUTROS JUIZADOS - ERRO MATERIAL")
+                Q(processo__icontains="(ERRO - DATA DE AUDIENCIA)")
+                | Q(vara__icontains="OUTROS JUIZADOS - ERRO MATERIAL")
             )
         return queryset
 
