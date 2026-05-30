@@ -146,7 +146,7 @@ export function montarPayloadApreensao(form, material) {
     data_fato: form.dataFato || null,
     tem_apreensao: material.tipo !== "NENHUM",
     status:
-      form.processo === "(ERRO - DATA DE AUDIENCIA)"
+      (form.processo === "(ERRO - DATA DE AUDIENCIA)" || form.vara === "OUTROS JUIZADOS - ERRO MATERIAL")
         ? "conferencia"
         : (material.tipo === "NENHUM" || (material.tipo !== "DROGA" && (!material.substancia || form.fielDepositario)))
           ? "arquivado"
