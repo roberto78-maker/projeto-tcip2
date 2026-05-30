@@ -170,7 +170,7 @@ export async function gerarOficioEncaminhamentoPdf(item) {
 
   // Formatação do Número do Processo (+ .8.16.0021)
   let procStr = item.processo || "NAO INFORMADO";
-  if (procStr !== "NAO INFORMADO" && !procStr.endsWith(".8.16.0021")) {
+  if (procStr !== "NAO INFORMADO" && !procStr.includes("ERRO") && !procStr.endsWith(".8.16.0021")) {
     procStr = `${procStr}.8.16.0021`;
   }
 

@@ -113,6 +113,9 @@ export function TriagemTable({
     } catch (err) {
       console.error("Erro ao gerar recibo:", err);
       alert("Erro ao gerar recibo: " + (err.message || err));
+    } finally {
+      setGerandoRecibo(null);
+    }
   };
 
   const handleArquivarComOficio = async (item) => {
