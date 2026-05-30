@@ -23,6 +23,19 @@ export function useTriagem() {
   const [totalPendencias, setTotalPendencias] = useState(0);
   const debounceRef = useRef(null);
 
+  const filters = useMemo(() => buildFilters(abaAtiva, busca), [abaAtiva, busca]);
+
+  const {
+    itens,
+    loading,
+    loadingMore,
+    hasMore,
+    totalCount,
+    erro,
+    carregarMais,
+    recarregar,
+  } = usePagedList(filters);
+
   const carregarTotalPendencias = useCallback(async () => {
     try {
       const res = await getApreensoesPaginado({
@@ -51,19 +64,6 @@ export function useTriagem() {
       }
     };
   }, []);
-
-  const filters = useMemo(() => buildFilters(abaAtiva, busca), [abaAtiva, busca]);
-
-  const {
-    itens,
-    loading,
-    loadingMore,
-    hasMore,
-    totalCount,
-    erro,
-    carregarMais,
-    recarregar,
-  } = usePagedList(filters);
 
   const handleBuscaChange = (value) => {
     setValorBusca(value);
