@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { excluirApreensao, updateApreensao, removerPdf, invalidateApreensaoCache } from "../services/api.js";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { excluirApreensao, updateApreensao, removerPdf, invalidateApreensaoCache, getApreensoesPaginado } from "../services/api.js";
 import { usePagedList } from "./usePagedList.js";
 
 function buildFilters(abaAtiva, busca) {
@@ -20,7 +20,29 @@ export function useTriagem() {
   const [busca, setBusca] = useState("");
   const [itemSelecionado, setItemSelecionado] = useState(null);
   const [itemParaExcluir, setItemParaExcluir] = useState(null);
+  const [totalPendencias, setTotalPendencias] = useState(0);
   const debounceRef = useRef(null);
+
+  const carregarTotalPendencias = useCallback(async () => {
+    try {
+      const res = await getApreensoesPaginado({
+        filters: { status: "conferencia", triagem_aba: "PENDENCIAS" }
+      });
+      setTotalPendencias(res.count || 0);
+    } catch (e) {
+      console.error("Erro ao carregar total de pendências:", e);
+    }
+  }, []);
+
+  useEffect(() => {
+    carregarTotalPendencias();
+  }, [carregarTotalPendencias]);
+
+  useEffect(() => {
+    if (abaAtiva === "PENDENCIAS" && totalCount !== null) {
+      setTotalPendencias(totalCount);
+    }
+  }, [abaAtiva, totalCount]);
 
   useEffect(() => {
     return () => {
@@ -71,6 +93,7 @@ export function useTriagem() {
       });
       fecharModalDespacho();
       recarregar();
+      carregarTotalPendencias();
     } catch (error) {
       console.error(error);
       alert("Erro ao despachar item.");
@@ -84,6 +107,7 @@ export function useTriagem() {
       await excluirApreensao(itemParaExcluir.id, motivo);
       fecharModalExclusao();
       recarregar();
+      carregarTotalPendencias();
       alert("Registro excluido com sucesso.");
     } catch (error) {
       alert(error.message);
@@ -97,6 +121,7 @@ export function useTriagem() {
         status: "arquivado",
       });
       recarregar();
+      carregarTotalPendencias();
     } catch (error) {
       console.error(error);
       throw error;
@@ -122,6 +147,7 @@ export function useTriagem() {
       alert("Documento anexado com sucesso!");
       invalidateApreensaoCache();
       recarregar();
+      carregarTotalPendencias();
     } catch (e) {
       alert(e.message || "Erro ao fazer upload.");
     }
@@ -134,6 +160,7 @@ export function useTriagem() {
       alert("PDF removido com sucesso!");
       invalidateApreensaoCache();
       recarregar();
+      carregarTotalPendencias();
     } catch (e) {
       alert(e.message || "Erro ao remover PDF.");
     }
@@ -150,6 +177,7 @@ export function useTriagem() {
     loadingMore,
     hasMore,
     totalCount,
+    totalPendencias,
     erro,
     carregarMais,
     handleBuscaChange,
