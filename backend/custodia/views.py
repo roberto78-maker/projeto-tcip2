@@ -179,6 +179,7 @@ class ApreensaoFilter(django_filters.FilterSet):
     bou = django_filters.CharFilter(field_name="bou", lookup_expr="icontains")
     processo = django_filters.CharFilter(field_name="processo", lookup_expr="icontains")
     excluir_processo = django_filters.CharFilter(method="filter_excluir_processo")
+    triagem_aba = django_filters.CharFilter(method="filter_triagem_aba")
     data_inicio = django_filters.DateFilter(field_name="data_fato", lookup_expr="gte")
     data_fim = django_filters.DateFilter(field_name="data_fato", lookup_expr="lte")
     natureza = django_filters.CharFilter(field_name="natureza")
@@ -197,6 +198,20 @@ class ApreensaoFilter(django_filters.FilterSet):
             return queryset.exclude(processo__icontains=value)
         return queryset
 
+    def filter_triagem_aba(self, queryset, name, value):
+        """Filters by active tab on triagem (correct processes vs errors)."""
+        if value == "PENDENCIAS":
+            return queryset.filter(
+                Q(processo__icontains="(ERRO - DATA DE AUDIENCIA)") |
+                Q(vara__icontains="OUTROS JUIZADOS - ERRO MATERIAL")
+            )
+        elif value == "CORRETOS":
+            return queryset.exclude(
+                Q(processo__icontains="(ERRO - DATA DE AUDIENCIA)") |
+                Q(vara__icontains="OUTROS JUIZADOS - ERRO MATERIAL")
+            )
+        return queryset
+
     class Meta:
         model = Apreensao
         fields = [
@@ -206,6 +221,7 @@ class ApreensaoFilter(django_filters.FilterSet):
             "bou",
             "processo",
             "excluir_processo",
+            "triagem_aba",
             "natureza",
             "excluir_natureza",
             "tem_apreensao",

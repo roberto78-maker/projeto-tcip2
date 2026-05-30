@@ -5,11 +5,7 @@ import { usePagedList } from "./usePagedList.js";
 function buildFilters(abaAtiva, busca) {
   const filters = { status: "conferencia" };
 
-  if (abaAtiva === "PENDENCIAS") {
-    filters.processo = "(ERRO - DATA DE AUDIENCIA)";
-  } else {
-    filters.excluir_processo = "(ERRO - DATA DE AUDIENCIA)";
-  }
+  filters.triagem_aba = abaAtiva;
 
   if (busca.trim()) {
     filters.search = busca.trim();
