@@ -1,5 +1,5 @@
 export const NATUREZAS = [
-  { id: "DROGAS", label: "💊 ENTORPECENTES (DROGAS)", temApreensao: true },
+  { id: "DROGAS", label: "💊 ENTORPECENTES", temApreensao: true },
   { id: "GERAL", label: "⚖️ TERMOS GERAIS (AMEAÇA, SOM, OUTROS)", temApreensao: false }
 ];
 

@@ -190,8 +190,8 @@ export default function CofreView() {
         {/* Tabs */}
         <div style={{ display: "flex", gap: "5px" }}>
           {[
-            { id: "DROGAS",  label: "💊 ENTORPECENTES (DROGAS)", cor: "#10b981" },
-            { id: "OBJETOS", label: "📢 OBJETOS DIVERSOS (SOM/EQUIP.)", cor: "#3b82f6" },
+            { id: "DROGAS",  label: "💊 ENTORPECENTES", cor: "#10b981" },
+            { id: "OBJETOS", label: "📢 OBJETOS DIVERSOS", cor: "#3b82f6" },
           ].map(({ id, label, cor }) => (
             <button
               key={id}
