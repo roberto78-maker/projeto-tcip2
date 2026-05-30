@@ -119,7 +119,9 @@ export async function gerarReciboCadastroPdf(dados, numeroRecibo, anoRecibo, ass
           ? "DROGA - "
           : item.tipo === "SOM"
             ? "SOM - "
-            : "OBJETO - ";
+            : item.tipo === "ARMA_BRANCA"
+              ? "ARMA BRANCA - "
+              : "OBJETO - ";
       descFinal = `${prefixo}${item.substancia ? item.substancia.toUpperCase() : ""}`;
     }
 

@@ -366,7 +366,9 @@ export default function CadastroView() {
                     ? "4px solid #10b981"
                     : material.tipo === "SOM"
                       ? "4px solid #f59e0b"
-                      : "4px solid #3b82f6",
+                      : material.tipo === "ARMA_BRANCA"
+                        ? "4px solid #64748b"
+                        : "4px solid #3b82f6",
               }}
             >
               <AutocompleteInput
@@ -384,10 +386,11 @@ export default function CadastroView() {
                 value={material.tipo}
                 onChange={(e) => updateMaterialTipo(material.id, e.target.value)}
               >
-                <option value="OBJETO">OBJETO</option>
-                <option value="DROGA">DROGA</option>
                 <option value="SOM">APARELHO DE SOM</option>
+                <option value="ARMA_BRANCA">ARMA BRANCA</option>
+                <option value="DROGA">DROGA</option>
                 <option value="NENHUM">NENHUM</option>
+                <option value="OBJETO">OBJETO</option>
               </select>
 
               {material.tipo === "DROGA" ? (

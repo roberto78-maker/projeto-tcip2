@@ -82,6 +82,9 @@ export function atualizarMaterialPorTipo(material, tipo) {
   } else if (tipo === "SOM") {
     substancia = "";
     unidadePeso = "Unid";
+  } else if (tipo === "ARMA_BRANCA") {
+    substancia = "";
+    unidadePeso = "Unid";
   } else if (tipo === "NENHUM") {
     substancia = "NAO HA APREENSAO";
     unidadePeso = "Unid";
