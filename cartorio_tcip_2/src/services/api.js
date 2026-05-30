@@ -88,6 +88,7 @@ export async function getApreensoesPaginado({ filters = {}, nextUrl = null } = {
                                   params.append("tem_apreensao",    filters.tem_apreensao);
     if (filters.search)           params.append("search",           filters.search);
     if (filters.ordering)         params.append("ordering",         filters.ordering);
+    if (filters.triagem_aba)      params.append("triagem_aba",      filters.triagem_aba);
     const qs = params.toString();
     url = qs ? `${API_URL}?${qs}` : API_URL;
   }
