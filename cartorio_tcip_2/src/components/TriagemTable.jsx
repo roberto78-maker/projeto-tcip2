@@ -268,7 +268,7 @@ export function TriagemTable({
                     >
                       {gerandoRecibo === item.id ? "..." : "RECIBO"}
                     </button>
-                    {item.processo === "(ERRO - DATA DE AUDIENCIA)" ? (
+                    {item.processo === "(ERRO - DATA DE AUDIENCIA)" || item.vara === "OUTROS JUIZADOS - ERRO MATERIAL" ? (
                       <button
                         className="btn-green"
                         onClick={() => handleArquivarComOficio(item)}
