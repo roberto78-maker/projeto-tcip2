@@ -80,7 +80,7 @@ export default function ConferenciaView() {
           {[
             {
               id: "CORRETOS",
-              label: "⚖️ PROCESSOS CORRETOS",
+              label: "⚖️ PROCESSOS",
               corActiveBg: "#3b82f6",
               corActiveText: "white",
               corInactiveBg: "#e2e8f0",
@@ -88,7 +88,7 @@ export default function ConferenciaView() {
             },
             {
               id: "PENDENCIAS",
-              label: "⚠️ PENDÊNCIAS (ERRO DE DATA)",
+              label: "⚠️ PENDÊNCIAS",
               corActiveBg: "#ef4444",
               corActiveText: "white",
               corInactiveBg: "#fee2e2",
