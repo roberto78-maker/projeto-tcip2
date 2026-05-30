@@ -42,6 +42,7 @@ export default function CadastroView() {
     operador,
     crimesSelecionados,
     fielDepositario,
+    isErroDataAudiencia,
     dataFato,
     bou,
     processo,
@@ -72,6 +73,7 @@ export default function CadastroView() {
     handleRgChange,
     handleSelecionarPolicial,
     handleFielDepositarioChange,
+    handleErroDataAudienciaChange,
     handleMaterialReuChange,
     handleMaterialSubstanciaChange,
     handleMaterialDescricaoChange,
@@ -200,9 +202,42 @@ export default function CadastroView() {
             <input type="text" id="bou" name="bou" style={inputStyle} value={bou} onChange={(e) => handleBouChange(e.target.value)} />
           </FormGroup>
 
-          <FormGroup label="PROJUDI *" id="processo">
-            <input type="text" id="processo" name="processo" style={inputStyle} value={processo} onChange={(e) => handleProcessoChange(e.target.value)} />
-          </FormGroup>
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <FormGroup label="PROJUDI *" id="processo">
+              <input
+                type="text"
+                id="processo"
+                name="processo"
+                style={{
+                  ...inputStyle,
+                  background: isErroDataAudiencia ? "#e2e8f0" : "white",
+                  cursor: isErroDataAudiencia ? "not-allowed" : "text",
+                }}
+                value={processo}
+                onChange={(e) => handleProcessoChange(e.target.value)}
+                disabled={isErroDataAudiencia}
+              />
+            </FormGroup>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                fontSize: "11px",
+                color: "#475569",
+                fontWeight: "600",
+                cursor: "pointer",
+                marginTop: "2px",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={isErroDataAudiencia || false}
+                onChange={(e) => handleErroDataAudienciaChange(e.target.checked)}
+              />
+              Sem número (Erro de Data de Audiência)
+            </label>
+          </div>
 
           <FormGroup label="JUIZADO DESTINO *" id="vara">
             <select id="vara" name="vara" style={inputStyle} value={vara} onChange={(e) => handleVaraChange(e.target.value)}>

@@ -87,6 +87,19 @@ export function useTriagem() {
     }
   };
 
+  const confirmarArquivamento = async (id, item) => {
+    try {
+      await updateApreensao(id, {
+        ...item,
+        status: "arquivado",
+      });
+      recarregar();
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
   return {
     busca: valorBusca,
     itemSelecionado,
@@ -105,5 +118,6 @@ export function useTriagem() {
     fecharModalExclusao,
     confirmarDespacho,
     confirmarExclusao,
+    confirmarArquivamento,
   };
 }
