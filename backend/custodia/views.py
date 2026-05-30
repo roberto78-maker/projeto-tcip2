@@ -178,6 +178,7 @@ class ApreensaoFilter(django_filters.FilterSet):
     reu = django_filters.CharFilter(field_name="reu", lookup_expr="icontains")
     bou = django_filters.CharFilter(field_name="bou", lookup_expr="icontains")
     processo = django_filters.CharFilter(field_name="processo", lookup_expr="icontains")
+    excluir_processo = django_filters.CharFilter(method="filter_excluir_processo")
     data_inicio = django_filters.DateFilter(field_name="data_fato", lookup_expr="gte")
     data_fim = django_filters.DateFilter(field_name="data_fato", lookup_expr="lte")
     natureza = django_filters.CharFilter(field_name="natureza")
@@ -190,6 +191,12 @@ class ApreensaoFilter(django_filters.FilterSet):
             return queryset.exclude(natureza=value)
         return queryset
 
+    def filter_excluir_processo(self, queryset, name, value):
+        """Excludes records whose processo contains `value`."""
+        if value:
+            return queryset.exclude(processo__icontains=value)
+        return queryset
+
     class Meta:
         model = Apreensao
         fields = [
@@ -198,6 +205,7 @@ class ApreensaoFilter(django_filters.FilterSet):
             "reu",
             "bou",
             "processo",
+            "excluir_processo",
             "natureza",
             "excluir_natureza",
             "tem_apreensao",
