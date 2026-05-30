@@ -35,6 +35,7 @@ export function TriagemTable({
   carregarMais,
   abrirModalDespacho,
   abrirModalExclusao,
+  confirmarArquivamento,
 }) {
   const [gerandoOficio, setGerandoOficio] = useState(null);
   const [gerandoRecibo, setGerandoRecibo] = useState(null);
@@ -112,8 +113,23 @@ export function TriagemTable({
     } catch (err) {
       console.error("Erro ao gerar recibo:", err);
       alert("Erro ao gerar recibo: " + (err.message || err));
-    } finally {
-      setGerandoRecibo(null);
+  };
+
+  const handleArquivarComOficio = async (item) => {
+    if (!item.numero_oficio) {
+      alert("É necessário gerar o ofício de justificativa primeiro.");
+      return;
+    }
+    const confirmado = window.confirm(
+      `Deseja realmente arquivar este registro com a justificativa do Ofício nº ${item.numero_oficio}/${item.ano_oficio}?`
+    );
+    if (!confirmado) return;
+
+    try {
+      await confirmarArquivamento(item.id, item);
+      alert("Registro arquivado com sucesso!");
+    } catch (err) {
+      console.error("Erro ao arquivar:", err);
     }
   };
 
@@ -217,9 +233,28 @@ export function TriagemTable({
                     >
                       {gerandoRecibo === item.id ? "..." : "RECIBO"}
                     </button>
-                    <button className="btn-green" onClick={() => abrirModalDespacho(item)}>
-                      TRIAR
-                    </button>
+                    {item.processo === "(ERRO - DATA DE AUDIENCIA)" ? (
+                      <button
+                        className="btn-green"
+                        onClick={() => handleArquivarComOficio(item)}
+                        disabled={!item.numero_oficio}
+                        style={{
+                          background: item.numero_oficio ? "#10b981" : "#cbd5e1",
+                          cursor: item.numero_oficio ? "pointer" : "not-allowed",
+                        }}
+                        title={
+                          item.numero_oficio
+                            ? "Arquivar este processo com a justificativa do ofício"
+                            : "Necessário gerar o ofício de justificativa primeiro"
+                        }
+                      >
+                        ARQUIVAR
+                      </button>
+                    ) : (
+                      <button className="btn-green" onClick={() => abrirModalDespacho(item)}>
+                        TRIAR
+                      </button>
+                    )}
                     <button
                       className="btn-outline-red"
                       onClick={() => abrirModalExclusao(item)}
