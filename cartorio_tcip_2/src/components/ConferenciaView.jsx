@@ -22,6 +22,7 @@ export default function ConferenciaView() {
     fecharModalExclusao,
     confirmarDespacho,
     confirmarExclusao,
+    confirmarArquivamento,
   } = useTriagem();
 
   return (
@@ -93,6 +94,7 @@ export default function ConferenciaView() {
         carregarMais={carregarMais}
         abrirModalDespacho={abrirModalDespacho}
         abrirModalExclusao={abrirModalExclusao}
+        confirmarArquivamento={confirmarArquivamento}
       />
     </div>
   );
