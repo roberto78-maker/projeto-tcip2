@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { excluirApreensao, updateApreensao } from "../services/api.js";
+import { excluirApreensao, updateApreensao, removerPdf, invalidateApreensaoCache } from "../services/api.js";
 import { usePagedList } from "./usePagedList.js";
 
 function buildFilters(busca) {
@@ -100,6 +100,42 @@ export function useTriagem() {
     }
   };
 
+  const handleFileUpload = async (id, file) => {
+    if (!file) return;
+    try {
+      const formData = new FormData();
+      formData.append("arquivo_pdf", file);
+      const user = JSON.parse(localStorage.getItem("usuario_logado") || "{}");
+      const baseUrl = import.meta.env.VITE_API_URL || "";
+      const res = await fetch(`${baseUrl}/api/apreensoes/${id}/upload_pdf/`, {
+        method: "POST",
+        headers: user.access ? { Authorization: `Bearer ${user.access}` } : {},
+        body: formData,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Erro ao fazer upload.");
+      }
+      alert("Documento anexado com sucesso!");
+      invalidateApreensaoCache();
+      recarregar();
+    } catch (e) {
+      alert(e.message || "Erro ao fazer upload.");
+    }
+  };
+
+  const handleRemoverPdf = async (id) => {
+    if (!window.confirm("Deseja realmente remover o PDF anexado?")) return;
+    try {
+      await removerPdf(id);
+      alert("PDF removido com sucesso!");
+      invalidateApreensaoCache();
+      recarregar();
+    } catch (e) {
+      alert(e.message || "Erro ao remover PDF.");
+    }
+  };
+
   return {
     busca: valorBusca,
     itemSelecionado,
@@ -119,5 +155,7 @@ export function useTriagem() {
     confirmarDespacho,
     confirmarExclusao,
     confirmarArquivamento,
+    handleFileUpload,
+    handleRemoverPdf,
   };
 }
