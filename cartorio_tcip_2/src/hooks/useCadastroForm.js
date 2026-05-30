@@ -91,6 +91,14 @@ export function useCadastroForm() {
     }));
   };
   const handleFielDepositarioChange = (checked) => updateField("fielDepositario", checked);
+  const handleErroDataAudienciaChange = (checked) => {
+    updateField("isErroDataAudiencia", checked);
+    if (checked) {
+      updateField("processo", "(ERRO - DATA DE AUDIENCIA)");
+    } else {
+      updateField("processo", "");
+    }
+  };
 
   const handleMaterialReuChange = (id, value) => updateMaterial(id, "reu", upper(value));
   const handleMaterialSubstanciaChange = (id, value) => updateMaterial(id, "substancia", value);
@@ -173,6 +181,7 @@ export function useCadastroForm() {
     operador: getUsuario()?.username?.toUpperCase() || "",
     crimesSelecionados: form.crimesSelecionados,
     fielDepositario: form.fielDepositario,
+    isErroDataAudiencia: form.isErroDataAudiencia,
     dataFato: form.dataFato,
     bou: form.bou,
     processo: form.processo,
@@ -207,6 +216,7 @@ export function useCadastroForm() {
     handleRgChange,
     handleSelecionarPolicial,
     handleFielDepositarioChange,
+    handleErroDataAudienciaChange,
     handleMaterialReuChange,
     handleMaterialSubstanciaChange,
     handleMaterialDescricaoChange,
