@@ -36,6 +36,8 @@ export function TriagemTable({
   abrirModalDespacho,
   abrirModalExclusao,
   confirmarArquivamento,
+  handleFileUpload,
+  handleRemoverPdf,
 }) {
   const [gerandoOficio, setGerandoOficio] = useState(null);
   const [gerandoRecibo, setGerandoRecibo] = useState(null);
@@ -119,12 +121,15 @@ export function TriagemTable({
   };
 
   const handleArquivarComOficio = async (item) => {
-    if (!item.numero_oficio) {
-      alert("É necessário gerar o ofício de justificativa primeiro.");
+    if (!item.numero_oficio && !item.arquivo_pdf_url) {
+      alert("É necessário gerar o ofício de justificativa ou anexar o documento PDF primeiro.");
       return;
     }
+    const justificativa = item.numero_oficio
+      ? `Ofício nº ${item.numero_oficio}/${item.ano_oficio}`
+      : "documento anexado";
     const confirmado = window.confirm(
-      `Deseja realmente arquivar este registro com a justificativa do Ofício nº ${item.numero_oficio}/${item.ano_oficio}?`
+      `Deseja realmente arquivar este registro com a justificativa (${justificativa})?`
     );
     if (!confirmado) return;
 
@@ -146,20 +151,21 @@ export function TriagemTable({
             <th style={{ color: "white", border: "none" }}>NOTICIADO</th>
             <th style={{ color: "white", border: "none" }}>SUBSTANCIA</th>
             <th style={{ color: "white", border: "none" }}>PESO EST. (G)</th>
+            <th style={{ color: "white", border: "none" }}>DOCUMENTOS</th>
             <th style={{ color: "white", border: "none", textAlign: "right" }}>ACAO</th>
           </tr>
         </thead>
         <tbody>
           {loading && (
             <tr>
-              <td colSpan="6" style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
+              <td colSpan="7" style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
                 Carregando registros...
               </td>
             </tr>
           )}
           {!loading && itens.length === 0 && (
             <tr>
-              <td colSpan="6" style={{ textAlign: "center", padding: "30px", color: "#64748b" }}>
+              <td colSpan="7" style={{ textAlign: "center", padding: "30px", color: "#64748b" }}>
                 Nenhum material pendente de triagem.
               </td>
             </tr>
@@ -179,6 +185,32 @@ export function TriagemTable({
                 </td>
                 <td style={{ color: "#dc2626", fontWeight: "600" }}>
                   {formatarPesoDisplay(item.peso, item.unidade)}
+                </td>
+                <td>
+                  {item.arquivo_pdf_url ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <a href={item.arquivo_pdf_url} target="_blank" rel="noreferrer" style={{ fontSize: "11px", color: "#10b981", fontWeight: "700", textDecoration: "none" }}>
+                        📄 VER PDF
+                      </a>
+                      <button
+                        onClick={() => handleRemoverPdf(item.id)}
+                        style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: "12px", padding: 0 }}
+                        title="Remover PDF"
+                      >
+                        ❌
+                      </button>
+                    </div>
+                  ) : (
+                    <label style={{ cursor: "pointer", color: "#3b82f6", fontSize: "11px", fontWeight: "700" }}>
+                      📎 ANEXAR
+                      <input
+                        type="file"
+                        accept="application/pdf"
+                        style={{ display: "none" }}
+                        onChange={(e) => handleFileUpload(item.id, e.target.files[0])}
+                      />
+                    </label>
+                  )}
                 </td>
                 <td style={{ textAlign: "right" }}>
                   <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
@@ -240,15 +272,15 @@ export function TriagemTable({
                       <button
                         className="btn-green"
                         onClick={() => handleArquivarComOficio(item)}
-                        disabled={!item.numero_oficio}
+                        disabled={!item.numero_oficio && !item.arquivo_pdf_url}
                         style={{
-                          background: item.numero_oficio ? "#10b981" : "#cbd5e1",
-                          cursor: item.numero_oficio ? "pointer" : "not-allowed",
+                          background: (item.numero_oficio || item.arquivo_pdf_url) ? "#10b981" : "#cbd5e1",
+                          cursor: (item.numero_oficio || item.arquivo_pdf_url) ? "pointer" : "not-allowed",
                         }}
                         title={
-                          item.numero_oficio
+                          (item.numero_oficio || item.arquivo_pdf_url)
                             ? "Arquivar este processo com a justificativa do ofício"
-                            : "Necessário gerar o ofício de justificativa primeiro"
+                            : "Necessário gerar o ofício de justificativa ou anexar o documento primeiro"
                         }
                       >
                         ARQUIVAR
