@@ -18,6 +18,7 @@ export function criarEstadoInicialCadastro() {
   return {
     crimesSelecionados: [],
     fielDepositario: false,
+    isErroDataAudiencia: false,
     dataFato: "",
     bou: `${new Date().getFullYear()}/`,
     processo: "",
@@ -145,9 +146,11 @@ export function montarPayloadApreensao(form, material) {
     data_fato: form.dataFato || null,
     tem_apreensao: material.tipo !== "NENHUM",
     status:
-      material.tipo === "NENHUM" || (material.tipo !== "DROGA" && (!material.substancia || form.fielDepositario))
-        ? "arquivado"
-        : "conferencia",
+      form.processo === "(ERRO - DATA DE AUDIENCIA)"
+        ? "conferencia"
+        : (material.tipo === "NENHUM" || (material.tipo !== "DROGA" && (!material.substancia || form.fielDepositario)))
+          ? "arquivado"
+          : "conferencia",
     lacre: material.lacre || "",
     vara: form.vara || "",
     policial: `${form.patente} ${form.policial}`,
