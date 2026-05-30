@@ -15,6 +15,7 @@ export default function ConferenciaView() {
     loadingMore,
     hasMore,
     totalCount,
+    totalPendencias,
     erro,
     carregarMais,
     handleBuscaChange,
@@ -80,7 +81,11 @@ export default function ConferenciaView() {
           {[
             {
               id: "CORRETOS",
-              label: "⚖️ PROCESSOS",
+              label: (
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span>⚖️ PROCESSOS</span>
+                </div>
+              ),
               corActiveBg: "#3b82f6",
               corActiveText: "white",
               corInactiveBg: "#e2e8f0",
@@ -88,7 +93,27 @@ export default function ConferenciaView() {
             },
             {
               id: "PENDENCIAS",
-              label: "⚠️ PENDÊNCIAS",
+              label: (
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span>⚠️ PENDÊNCIAS</span>
+                  {totalPendencias > 0 && (
+                    <span
+                      style={{
+                        background: abaAtiva === "PENDENCIAS" ? "white" : "#ef4444",
+                        color: abaAtiva === "PENDENCIAS" ? "#ef4444" : "white",
+                        borderRadius: "10px",
+                        padding: "2px 8px",
+                        fontSize: "11px",
+                        fontWeight: "800",
+                        lineHeight: "1",
+                        boxShadow: "0 1px 2px rgba(0,0,0,0.15)",
+                      }}
+                    >
+                      {totalPendencias}
+                    </span>
+                  )}
+                </div>
+              ),
               corActiveBg: "#ef4444",
               corActiveText: "white",
               corInactiveBg: "#fee2e2",
