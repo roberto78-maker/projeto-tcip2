@@ -99,11 +99,16 @@ export default function ConferenciaView() {
                   {totalPendencias > 0 && (
                     <span
                       style={{
-                        background: "#fbbf24",
+                        background: "#facc15",
                         color: "#1e293b",
-                        borderRadius: "12px",
-                        padding: "3px 9px",
-                        fontSize: "13px",
+                        borderRadius: "9999px",
+                        minWidth: "24px",
+                        height: "24px",
+                        padding: "0 6px",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "15px",
                         fontWeight: "800",
                         lineHeight: "1",
                         boxShadow: "0 1px 2px rgba(0,0,0,0.15)",
