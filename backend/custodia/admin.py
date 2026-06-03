@@ -61,7 +61,13 @@ class ApreensaoAdmin(admin.ModelAdmin):
         ),
         (
             "📅 Datas",
-            {"fields": ("data_fato", "data_criacao",), "classes": ("collapse",)},
+            {
+                "fields": (
+                    "data_fato",
+                    "data_criacao",
+                ),
+                "classes": ("collapse",),
+            },
         ),
         (
             "📄 Documentação (Ofício)",
