@@ -27,8 +27,7 @@ class ApreensaoAdmin(admin.ModelAdmin):
     )
     list_filter = ("status", "substancia", "vara", "data_criacao")
     search_fields = ("bou", "processo", "reu", "substancia", "vara", "policial")
-    readonly_fields = ("data_fato",
-        "data_criacao", "arquivo_pdf_url", "arquivo_pdf")
+    readonly_fields = ("data_fato", "data_criacao", "arquivo_pdf_url", "arquivo_pdf")
     list_per_page = 30
     ordering = ("-data_criacao",)
     inlines = [HistoricoInline]
@@ -63,8 +62,13 @@ class ApreensaoAdmin(admin.ModelAdmin):
         ),
         (
             "­ƒôà Datas",
-            {"fields": ("data_fato",
-        "data_criacao",), "classes": ("collapse",)},
+            {
+                "fields": (
+                    "data_fato",
+                    "data_criacao",
+                ),
+                "classes": ("collapse",),
+            },
         ),
         (
             "­ƒôä Documenta├º├úo (Of├¡cio)",
@@ -123,8 +127,7 @@ class LoteIncineracaoAdmin(admin.ModelAdmin):
         "data_fato",
         "data_criacao",
     )
-    readonly_fields = ("data_fato",
-        "data_criacao", "protocolo")
+    readonly_fields = ("data_fato", "data_criacao", "protocolo")
     search_fields = ("protocolo", "origem")
     list_filter = ("ano", "origem")
     ordering = ("-numero",)
