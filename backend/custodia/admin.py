@@ -33,19 +33,19 @@ class ApreensaoAdmin(admin.ModelAdmin):
 
     fieldsets = (
         (
-            "­ƒôï Identifica├º├úo",
+            "Identificação",
             {"fields": ("processo", "bou", "reu", "vara", "policial", "lacre")},
         ),
         (
-            "­ƒº¬ Material",
+            "Material",
             {"fields": ("substancia", "peso", "unidade", "descricao")},
         ),
         (
-            "­ƒôü Documentos",
+            "Documentos",
             {"fields": ("arquivo_pdf", "arquivo_pdf_url")},
         ),
         (
-            "­ƒôª Cust├│dia",
+            "Custódia",
             {
                 "fields": (
                     "status",
@@ -56,11 +56,11 @@ class ApreensaoAdmin(admin.ModelAdmin):
             },
         ),
         (
-            "ÔØî Exclus├úo",
+            "Exclusão",
             {"fields": ("motivo_exclusao",), "classes": ("collapse",)},
         ),
         (
-            "­ƒôà Datas",
+            "Datas",
             {
                 "fields": (
                     "data_fato",
@@ -70,7 +70,7 @@ class ApreensaoAdmin(admin.ModelAdmin):
             },
         ),
         (
-            "­ƒôä Documenta├º├úo (Of├¡cio)",
+            "Documentação (Ofício)",
             {"fields": ("numero_oficio", "ano_oficio")},
         ),
     )
@@ -89,11 +89,11 @@ class ApreensaoAdmin(admin.ModelAdmin):
             "excluido": "#ef4444",
         }
         labels = {
-            "conferencia": "Aguardando Confer├¬ncia",
+            "conferencia": "Aguardando Conferência",
             "cofre": "No Cofre",
             "incineracao": "P. Queima",
             "queima_pronta": "Incinerado",
-            "excluido": "Exclu├¡do",
+            "excluido": "Excluído",
         }
         cor = cores.get(obj.status, "#6b7280")
         label = labels.get(obj.status, obj.status)
@@ -107,7 +107,7 @@ class ApreensaoAdmin(admin.ModelAdmin):
     status_badge.short_description = "Status"
 
     def has_add_permission(self, request):
-        # Somente superusu├írios podem criar registros pelo admin
+        # Somente superusuários podem criar registros pelo admin
         return request.user.is_superuser
 
     def has_delete_permission(self, request, obj=None):
@@ -154,7 +154,7 @@ class HistoricoAdmin(admin.ModelAdmin):
     ordering = ("-data",)
 
     def has_add_permission(self, request):
-        return False  # Hist├│rico nunca deve ser criado manualmente
+        return False  # Histórico nunca deve ser criado manualmente
 
     def has_delete_permission(self, request, obj=None):
         return request.user.is_superuser or request.user.is_staff
