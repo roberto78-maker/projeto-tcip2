@@ -21,6 +21,7 @@ class ApreensaoAdmin(admin.ModelAdmin):
         "peso_formatado",
         "status_badge",
         "vara",
+        "data_fato",
         "data_criacao",
     )
     list_filter = ("status", "substancia", "vara", "data_criacao")
@@ -60,7 +61,7 @@ class ApreensaoAdmin(admin.ModelAdmin):
         ),
         (
             "📅 Datas",
-            {"fields": ("data_criacao",), "classes": ("collapse",)},
+            {"fields": ("data_fato", "data_criacao",), "classes": ("collapse",)},
         ),
         (
             "📄 Documentação (Ofício)",
