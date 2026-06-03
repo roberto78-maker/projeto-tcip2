@@ -8,6 +8,7 @@ class LoteIncineracao(models.Model):
     class Meta:
         verbose_name = "Lote de Incineração"
         verbose_name_plural = "Lotes de Incineração"
+
     numero = models.IntegerField()
     ano = models.IntegerField()
     protocolo = models.CharField(max_length=100, unique=True)
@@ -30,6 +31,7 @@ class Apreensao(models.Model):
     class Meta:
         verbose_name = "Apreensão"
         verbose_name_plural = "Apreensões"
+
     # Tipos de Natureza (Define o Fluxo)
     NATUREZA_CHOICES = [
         ("DROGAS", "Tráfico / Posse de Drogas"),
@@ -119,6 +121,7 @@ class Historico(models.Model):
     class Meta:
         verbose_name = "Histórico"
         verbose_name_plural = "Históricos"
+
     apreensao = models.ForeignKey(
         Apreensao, on_delete=models.CASCADE, related_name="historico"
     )
@@ -163,6 +166,7 @@ class Policial(models.Model):
     class Meta:
         verbose_name = "Policial"
         verbose_name_plural = "Policiais"
+
     nome = models.CharField(max_length=200, db_index=True)
     rg = models.CharField(max_length=50, unique=True, db_index=True)
     patente = models.CharField(max_length=50, blank=True, null=True)
