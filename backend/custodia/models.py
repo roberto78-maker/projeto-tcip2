@@ -168,9 +168,5 @@ class Policial(models.Model):
     patente = models.CharField(max_length=50, blank=True, null=True)
     unidade_origem = models.CharField(max_length=100, blank=True, null=True)
 
-    class Meta:
-        verbose_name = "Policial"
-        verbose_name_plural = "Policiais"
-
     def __str__(self):
         return f"{self.patente or ''} {self.nome} (RG: {self.rg})"
