@@ -61,13 +61,7 @@ class ApreensaoAdmin(admin.ModelAdmin):
         ),
         (
             "­ƒôà Datas",
-            {
-                "fields": (
-                    "data_fato",
-                    "data_criacao",
-                ),
-                "classes": ("collapse",),
-            },
+            {"fields": ("data_fato", "data_criacao",), "classes": ("collapse",)},
         ),
         (
             "­ƒôä Documenta├º├úo (Of├¡cio)",
