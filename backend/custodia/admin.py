@@ -22,12 +22,11 @@ class ApreensaoAdmin(admin.ModelAdmin):
         "status_badge",
         "vara",
         "data_fato",
-        "data_fato",
         "data_criacao",
     )
     list_filter = ("status", "substancia", "vara", "data_criacao")
     search_fields = ("bou", "processo", "reu", "substancia", "vara", "policial")
-    readonly_fields = ("data_fato", "data_criacao", "arquivo_pdf_url", "arquivo_pdf")
+    readonly_fields = ("data_criacao", "arquivo_pdf_url", "arquivo_pdf")
     list_per_page = 30
     ordering = ("-data_criacao",)
     inlines = [HistoricoInline]
@@ -62,13 +61,7 @@ class ApreensaoAdmin(admin.ModelAdmin):
         ),
         (
             "­ƒôà Datas",
-            {
-                "fields": (
-                    "data_fato",
-                    "data_criacao",
-                ),
-                "classes": ("collapse",),
-            },
+            {"fields": ("data_fato", "data_criacao",), "classes": ("collapse",)},
         ),
         (
             "­ƒôä Documenta├º├úo (Of├¡cio)",
