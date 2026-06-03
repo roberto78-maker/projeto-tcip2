@@ -123,11 +123,9 @@ class LoteIncineracaoAdmin(admin.ModelAdmin):
         "ano",
         "origem",
         "total_itens",
-        "data_fato",
-        "data_fato",
         "data_criacao",
     )
-    readonly_fields = ("data_fato", "data_criacao", "protocolo")
+    readonly_fields = ("data_criacao", "protocolo")
     search_fields = ("protocolo", "origem")
     list_filter = ("ano", "origem")
     ordering = ("-numero",)
