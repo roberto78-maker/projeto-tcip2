@@ -6,28 +6,41 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('custodia', '0019_policial'),
+        ("custodia", "0019_policial"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='apreensao',
-            options={'verbose_name': 'Apreensão', 'verbose_name_plural': 'Apreensões'},
+            name="apreensao",
+            options={"verbose_name": "Apreensão", "verbose_name_plural": "Apreensões"},
         ),
         migrations.AlterModelOptions(
-            name='historicalapreensao',
-            options={'get_latest_by': ('history_date', 'history_id'), 'ordering': ('-history_date', '-history_id'), 'verbose_name': 'historical Apreensão', 'verbose_name_plural': 'historical Apreensões'},
+            name="historicalapreensao",
+            options={
+                "get_latest_by": ("history_date", "history_id"),
+                "ordering": ("-history_date", "-history_id"),
+                "verbose_name": "historical Apreensão",
+                "verbose_name_plural": "historical Apreensões",
+            },
         ),
         migrations.AlterModelOptions(
-            name='historicalloteincineracao',
-            options={'get_latest_by': ('history_date', 'history_id'), 'ordering': ('-history_date', '-history_id'), 'verbose_name': 'historical Lote de Incineração', 'verbose_name_plural': 'historical Lotes de Incineração'},
+            name="historicalloteincineracao",
+            options={
+                "get_latest_by": ("history_date", "history_id"),
+                "ordering": ("-history_date", "-history_id"),
+                "verbose_name": "historical Lote de Incineração",
+                "verbose_name_plural": "historical Lotes de Incineração",
+            },
         ),
         migrations.AlterModelOptions(
-            name='historico',
-            options={'verbose_name': 'Histórico', 'verbose_name_plural': 'Históricos'},
+            name="historico",
+            options={"verbose_name": "Histórico", "verbose_name_plural": "Históricos"},
         ),
         migrations.AlterModelOptions(
-            name='loteincineracao',
-            options={'verbose_name': 'Lote de Incineração', 'verbose_name_plural': 'Lotes de Incineração'},
+            name="loteincineracao",
+            options={
+                "verbose_name": "Lote de Incineração",
+                "verbose_name_plural": "Lotes de Incineração",
+            },
         ),
     ]
