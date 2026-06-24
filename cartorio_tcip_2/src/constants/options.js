@@ -25,6 +25,7 @@ export const CRIMES_GERAIS = [
   "Permitir a Condução de Veiculo a Não Habilitado: Artigo 310 do CTB",
   "Perturbação do Sossego: Artigo 42 da LCP",
   "Porte Ilegal de Arma Branca: Artigo 19 da LCP",
+  "Posse, Fabricação, Transporte, Venda e Compra Ilegal de Fogos e Explosivos: Artigo 253 do CP",
   "Resistência: Artigo 329 do CP",
   "Trafegar em Velocidade Incompatível Gerando Perigo de Dano: Artigo 311 do CTB",
   "Vias de Fato: Artigo 21 da LCP",
