@@ -53,6 +53,7 @@ export const SUBSTANCIAS = [
 ];
 
 export const UNIDADES_PM = [
+  "5º CRPM",
   "BOPE",
   "BPEC",
   "BPFRON",
@@ -64,6 +65,7 @@ export const UNIDADES_PM = [
   "DEAEV",
   "GOTRAN",
   "P2",
+  "P2/5ºCRPM",
   "PATRULHA RURAL",
   "ROCAM",
   "RONE",
