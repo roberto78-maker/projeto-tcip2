@@ -47,3 +47,65 @@ class ApreensaoTest(TestCase):
 
         history = self.apreensao.history.latest()
         self.assertEqual(history.status, "deposito")
+
+
+import uuid
+from django.urls import reverse
+from django.utils import timezone
+from datetime import timedelta
+
+class AssinaturaSecurancaTest(TestCase):
+    def setUp(self):
+        self.token_valido = uuid.uuid4()
+        self.apreensao = Apreensao.objects.create(
+            processo="002",
+            bou="BOU-002",
+            reu="Jane Doe",
+            substancia="Cocaine",
+            peso=2.0,
+            unidade="kg",
+            token_assinatura=self.token_valido,
+            token_expira_em=timezone.now() + timedelta(minutes=30),
+        )
+
+    def test_receber_assinatura_token_correto(self):
+        """Verifica que assinatura é salva com token correto"""
+        url = reverse("assinatura_receber")
+        data = {
+            "token": str(self.token_valido),
+            "bou": "BOU-002",
+            "assinatura_base64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+        }
+        response = self.client.post(url, data, content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.apreensao.refresh_from_db()
+        self.assertTrue(self.apreensao.assinatura_base64.startswith("data:image/"))
+
+    def test_receber_assinatura_token_incorreto(self):
+        """Verifica que erro é retornado com token incorreto para o BOU"""
+        url = reverse("assinatura_receber")
+        token_errado = uuid.uuid4()
+        data = {
+            "token": str(token_errado),
+            "bou": "BOU-002",
+            "assinatura_base64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+        }
+        response = self.client.post(url, data, content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+        self.apreensao.refresh_from_db()
+        self.assertTrue(not self.apreensao.assinatura_base64)
+
+    def test_status_assinatura_token_incorreto(self):
+        """Verifica que status de assinatura retorna assinado=False com token incorreto"""
+        url = reverse("assinatura_status")
+        token_errado = uuid.uuid4()
+        
+        # Define uma assinatura na apreensão para simular que está assinado no DB
+        self.apreensao.assinatura_base64 = "data:image/png;base64,fake"
+        self.apreensao.save()
+
+        # Tenta buscar usando o BOU mas com token errado
+        response = self.client.get(f"{url}?token={token_errado}&bou=BOU-002")
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.json()["assinado"])
+
