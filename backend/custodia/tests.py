@@ -109,3 +109,20 @@ class AssinaturaSecurancaTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFalse(response.json()["assinado"])
 
+    def test_apreensao_create_validation_error(self):
+        """Verifica que erros de validação retornam 400 em vez de 500"""
+        url = reverse("apreensao-list")
+        from django.contrib.auth.models import User
+        user = User.objects.create_user(username="testuser", password="password")
+        self.client.force_login(user)
+
+        data = {
+            "processo": "003",
+            "bou": "BOU-003",
+            "reu": "Mary Doe",
+            "peso": "invalido",  # causa ValidationError no serializer
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("peso", response.json())
+
