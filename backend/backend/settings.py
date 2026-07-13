@@ -24,9 +24,19 @@ if not DEBUG:
 else:
     X_FRAME_OPTIONS = "SAMEORIGIN"
 
-ALLOWED_HOSTS = ["*"]
-
-RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
+ALLOWED_HOSTS = []
+if DEBUG:
+    ALLOWED_HOSTS = ["*"]
+else:
+    # Em produção, restringe aos hosts autorizados
+    ALLOWED_HOSTS = ["localhost", "127.0.0.1", "backend-tcip.onrender.com"]
+    env_hosts = os.environ.get("ALLOWED_HOSTS")
+    if env_hosts:
+        ALLOWED_HOSTS.extend([h.strip() for h in env_hosts.split(",")])
+    
+    RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
+    if RENDER_EXTERNAL_HOSTNAME:
+        ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 INSTALLED_APPS = [
     "django.contrib.admin",

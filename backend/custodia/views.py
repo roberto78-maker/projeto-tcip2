@@ -16,6 +16,8 @@ from django.db import transaction
 from django.db.models import Count, Max, Q, Sum, Case, When, F, FloatField
 from django.http import HttpResponse
 from django.utils import timezone
+from django.utils.text import get_valid_filename
+from django.utils.html import escape
 from django_filters import rest_framework as django_filters
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
@@ -33,6 +35,7 @@ from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.exceptions import APIException
 
 
 from .models import Apreensao, LoteIncineracao, Historico, OficioPersonalizado, Policial
@@ -77,8 +80,13 @@ def upload_documento(arquivo, *, public_id, folder, request=None):
         return upload_result.get("secure_url")
 
     original_name = getattr(arquivo, "name", "documento.bin")
-    filename = original_name.replace("\\", "_").replace("/", "_").replace(" ", "_")
-    storage_path = f"{folder}/{public_id}_{filename}"
+    name_part, ext_part = os.path.splitext(original_name)
+    safe_name = get_valid_filename(name_part)
+    safe_ext = get_valid_filename(ext_part.lstrip(".")).lower()
+    filename = f"{safe_name}.{safe_ext}" if safe_ext else safe_name
+    
+    safe_public_id = get_valid_filename(str(public_id))
+    storage_path = f"{folder}/{safe_public_id}_{filename}"
     saved_path = default_storage.save(storage_path, arquivo).replace("\\", "/")
     relative_url = default_storage.url(saved_path)
 
@@ -272,6 +280,8 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         try:
             return super().create(request, *args, **kwargs)
+        except APIException:
+            raise
         except Exception as e:
             tb = traceback.format_exc()
             logger.error(f"ERRO CR\u00cdTICO ao criar apreens\u00e3o: {str(e)}\n{tb}")
@@ -283,6 +293,8 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         try:
             return super().update(request, *args, **kwargs)
+        except APIException:
+            raise
         except Exception as e:
             logger.error(f"Erro ao atualizar apreens\u00e3o: {str(e)}")
             return Response(
@@ -317,33 +329,45 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
 
         agora = timezone.now()
 
-        lote_aberto = (
-            LoteIncineracao.objects.filter(apreensoes__status="incineracao")
-            .annotate(qtd=Count("apreensoes"))
-            .filter(qtd__lt=20)
-            .order_by("numero")
-            .first()
-        )
-
-        if lote_aberto:
-            ultimo_lote = lote_aberto
-        else:
-            ultimo_referencia = LoteIncineracao.objects.order_by("-numero").first()
-            novo_numero = (ultimo_referencia.numero + 1) if ultimo_referencia else 1
-            protocolo = f"1CART6BPM-{str(novo_numero).zfill(6)}.{agora.year}"
-            ultimo_lote = LoteIncineracao.objects.create(
-                numero=novo_numero, ano=agora.year, protocolo=protocolo
+        with transaction.atomic():
+            # Bloqueia todos os lotes ativos para evitar race conditions na contagem/criação
+            lotes_candidatos = list(
+                LoteIncineracao.objects.filter(
+                    apreensoes__status="incineracao"
+                ).distinct().select_for_update()
             )
 
-        apreensao.lote_incineracao = ultimo_lote
-        apreensao.status = "incineracao"
-        apreensao.save()
+            # Procura em memória o primeiro lote com menos de 20 itens
+            lote_aberto = None
+            for lote in lotes_candidatos:
+                if lote.apreensoes.filter(status="incineracao").count() < 20:
+                    lote_aberto = lote
+                    break
 
-        Historico.objects.create(
-            apreensao=apreensao,
-            usuario=request.user if request.user.is_authenticated else None,
-            acao=f"Destinou para incineração (Lote {ultimo_lote.protocolo})",
-        )
+            if lote_aberto:
+                ultimo_lote = lote_aberto
+            else:
+                # Bloqueia o último lote para garantir a numeração sequencial
+                ultimo_referencia = (
+                    LoteIncineracao.objects.select_for_update()
+                    .order_by("-numero")
+                    .first()
+                )
+                novo_numero = (ultimo_referencia.numero + 1) if ultimo_referencia else 1
+                protocolo = f"1CART6BPM-{str(novo_numero).zfill(6)}.{agora.year}"
+                ultimo_lote = LoteIncineracao.objects.create(
+                    numero=novo_numero, ano=agora.year, protocolo=protocolo
+                )
+
+            apreensao.lote_incineracao = ultimo_lote
+            apreensao.status = "incineracao"
+            apreensao.save()
+
+            Historico.objects.create(
+                apreensao=apreensao,
+                usuario=request.user if request.user.is_authenticated else None,
+                acao=f"Destinou para incineração (Lote {ultimo_lote.protocolo})",
+            )
 
         logger.info(
             f"Apreens\u00e3o {apreensao.id} destinada para incinera\u00e7\u00e3o "
@@ -513,12 +537,14 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
                     }
                 )
 
-            # Bloqueia as linhas do ano atual para leitura exclusiva
-            ultimo_recibo = (
-                Apreensao.objects.select_for_update()
-                .filter(ano_recibo=ano_atual)
-                .aggregate(Max("numero_recibo"))["numero_recibo__max"]
+            # Bloqueia a linha com o maior número para garantir consistência e evitar race conditions
+            ultimo_registro = (
+                Apreensao.objects.filter(ano_recibo=ano_atual, numero_recibo__isnull=False)
+                .select_for_update()
+                .order_by("-numero_recibo")
+                .first()
             )
+            ultimo_recibo = ultimo_registro.numero_recibo if ultimo_registro else 0
 
             novo_numero = (ultimo_recibo + 1) if ultimo_recibo else 1
 
@@ -634,18 +660,21 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
                 return Response(ApreensaoSerializer(apreensao).data)
 
             # Bloqueia e busca o maior número do ano
-            ultimo_oficio_apreensao = (
-                Apreensao.objects.select_for_update()
-                .filter(ano_oficio=ano_atual)
-                .aggregate(Max("numero_oficio"))["numero_oficio__max"]
-                or 0
+            ultimo_reg_apreensao = (
+                Apreensao.objects.filter(ano_oficio=ano_atual, numero_oficio__isnull=False)
+                .select_for_update()
+                .order_by("-numero_oficio")
+                .first()
             )
-            ultimo_oficio_personalizado = (
-                OficioPersonalizado.objects.select_for_update()
-                .filter(ano_oficio=ano_atual)
-                .aggregate(Max("numero_oficio"))["numero_oficio__max"]
-                or 0
+            ultimo_oficio_apreensao = ultimo_reg_apreensao.numero_oficio if ultimo_reg_apreensao else 0
+
+            ultimo_reg_personalizado = (
+                OficioPersonalizado.objects.filter(ano_oficio=ano_atual, numero_oficio__isnull=False)
+                .select_for_update()
+                .order_by("-numero_oficio")
+                .first()
             )
+            ultimo_oficio_personalizado = ultimo_reg_personalizado.numero_oficio if ultimo_reg_personalizado else 0
 
             ultimo_oficio = max(ultimo_oficio_apreensao, ultimo_oficio_personalizado)
             novo_numero = (ultimo_oficio + 1) if ultimo_oficio > 0 else 100
@@ -723,7 +752,7 @@ class RelatorioIncineracaoView(APIView):
         qs = _aplicar_filtros_relatorio(Apreensao.objects.all(), request.GET)
 
         try:
-            detalhado = qs.values(
+            detalhado = list(qs.values(
                 "id",
                 "bou",
                 "natureza",
@@ -740,7 +769,7 @@ class RelatorioIncineracaoView(APIView):
                 "lote_incineracao__numero",
                 "lote_incineracao__data_criacao",
                 "arquivo_pdf_url",
-            ).order_by("-data_fato", "-data_criacao")[:500]
+            ).order_by("-data_fato", "-data_criacao")[:500])
         except Exception as e:
             logger.error(f"Erro ao consultar radar: {str(e)}")
             return Response(
@@ -912,19 +941,19 @@ class RelatorioIncineracaoPDFView(APIView):
         )
         filtros_usados = []
         if vara:
-            filtros_usados.append(f"Juizado: {vara}")
+            filtros_usados.append(f"Juizado: {escape(vara)}")
         if substancia:
-            filtros_usados.append(f"Subst\u00e2ncia: {substancia}")
+            filtros_usados.append(f"Subst\u00e2ncia: {escape(substancia)}")
         if natureza:
-            filtros_usados.append(f"Natureza: {natureza}")
+            filtros_usados.append(f"Natureza: {escape(natureza)}")
         if status_filter:
-            filtros_usados.append(f"Status: {status_filter}")
+            filtros_usados.append(f"Status: {escape(status_filter)}")
         if bou:
-            filtros_usados.append(f"BOU: {bou}")
+            filtros_usados.append(f"BOU: {escape(bou)}")
         if processo:
-            filtros_usados.append(f"Processo: {processo}")
+            filtros_usados.append(f"Processo: {escape(processo)}")
         if reu:
-            filtros_usados.append(f"R\u00e9u/Autor: {reu}")
+            filtros_usados.append(f"R\u00e9u/Autor: {escape(reu)}")
 
         filtros_str = " | ".join(filtros_usados) if filtros_usados else "Nenhum"
 
@@ -1341,14 +1370,13 @@ class ReceberAssinaturaView(APIView):
         cache.set(cache_key, assinatura_b64, timeout=1800)
 
         if bou:
-            # Tenta buscar registros já existentes com esse BOU
-            apreensoes = Apreensao.objects.filter(bou=bou)
+            # Tenta buscar registros já existentes com esse BOU e token correspondente
+            apreensoes = Apreensao.objects.filter(bou=bou, token_assinatura=token)
             if apreensoes.exists():
                 # Verifica expiração usando o primeiro registro
-                primeiro = apreensoes.filter(token_expira_em__isnull=False).first()
+                primeiro = apreensoes.first()
                 if (
-                    primeiro
-                    and primeiro.token_expira_em
+                    primeiro.token_expira_em
                     and primeiro.token_expira_em < agora
                 ):
                     return Response(
@@ -1357,10 +1385,15 @@ class ReceberAssinaturaView(APIView):
                     )
                 count = apreensoes.update(assinatura_base64=assinatura_b64)
                 logger.info(
-                    f"[Assinatura] Assinatura salva via BOU '{bou}' "
+                    f"[Assinatura] Assinatura salva via BOU '{bou}' e token '{token}' "
                     f"em {count} registro(s)."
                 )
                 return Response({"ok": True, "registros": count})
+            elif Apreensao.objects.filter(bou=bou).exists():
+                return Response(
+                    {"error": "Token não corresponde ao BOU informado."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         # Fallback: busca pelo token UUID diretamente
         apreensoes_token = Apreensao.objects.filter(token_assinatura=token)
@@ -1431,10 +1464,10 @@ class StatusAssinaturaView(APIView):
                 }
             )
 
-        # 2. Busca por BOU (registros mais recentes) ou por token
+        # 2. Busca por BOU (registros mais recentes) e token correspondente
         if bou:
             apreensao = (
-                Apreensao.objects.filter(bou=bou).order_by("-data_criacao").first()
+                Apreensao.objects.filter(bou=bou, token_assinatura=token).order_by("-data_criacao").first()
             )
         else:
             apreensao = Apreensao.objects.filter(token_assinatura=token).first()
@@ -1470,18 +1503,21 @@ class OficioPersonalizadoViewSet(viewsets.ModelViewSet):
 
         with transaction.atomic():
             # Pegar o maior numero
-            ultimo_oficio_apreensao = (
-                Apreensao.objects.select_for_update()
-                .filter(ano_oficio=ano_atual)
-                .aggregate(Max("numero_oficio"))["numero_oficio__max"]
-                or 0
+            ultimo_reg_apreensao = (
+                Apreensao.objects.filter(ano_oficio=ano_atual, numero_oficio__isnull=False)
+                .select_for_update()
+                .order_by("-numero_oficio")
+                .first()
             )
-            ultimo_oficio_personalizado = (
-                OficioPersonalizado.objects.select_for_update()
-                .filter(ano_oficio=ano_atual)
-                .aggregate(Max("numero_oficio"))["numero_oficio__max"]
-                or 0
+            ultimo_oficio_apreensao = ultimo_reg_apreensao.numero_oficio if ultimo_reg_apreensao else 0
+
+            ultimo_reg_personalizado = (
+                OficioPersonalizado.objects.filter(ano_oficio=ano_atual, numero_oficio__isnull=False)
+                .select_for_update()
+                .order_by("-numero_oficio")
+                .first()
             )
+            ultimo_oficio_personalizado = ultimo_reg_personalizado.numero_oficio if ultimo_reg_personalizado else 0
 
             ultimo_oficio = max(ultimo_oficio_apreensao, ultimo_oficio_personalizado)
             novo_numero = (ultimo_oficio + 1) if ultimo_oficio > 0 else 100
