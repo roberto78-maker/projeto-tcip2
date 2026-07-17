@@ -67,7 +67,7 @@ export const UNIDADES_PM = [
   "GAECO",
   "GOTRAN",
   "OUTRO LOCAL",
-  "P2",
+  "P2/6ºBPM",
   "P2/5ºCRPM",
   "PATRULHA RURAL",
   "ROCAM",
