@@ -64,6 +64,7 @@ export const UNIDADES_PM = [
   "CPU",
   "DEAEV",
   "GOTRAN",
+  "OUTRO LOCAL",
   "P2",
   "P2/5ºCRPM",
   "PATRULHA RURAL",
@@ -71,6 +72,8 @@ export const UNIDADES_PM = [
   "RONE",
   "ROTAM",
   "RPA",
+  "RPA - LINDOESTE",
+  "RPA SANTA TEREZA DO OESTE",
   "TRANSITO"
 ];
 
