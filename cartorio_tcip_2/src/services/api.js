@@ -459,7 +459,7 @@ export async function addPolicial(policialData) {
     } catch {}
     throw new Error(msg);
   }
-  return await res.json();
+  return await parseResponseJson(res);
 }
 
 export async function deletePolicial(id) {
