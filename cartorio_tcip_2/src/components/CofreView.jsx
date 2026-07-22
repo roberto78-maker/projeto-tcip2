@@ -346,31 +346,41 @@ export default function CofreView() {
               </tbody>
             </table>
 
-            {/* Load more */}
-            {(hasMore || loadingMore) && (
-              <div style={{ textAlign: "center", paddingTop: "24px" }}>
-                <button
-                  onClick={carregarMais}
-                  disabled={loadingMore}
-                  style={{
-                    padding: "10px 32px", borderRadius: "8px",
-                    border:   `2px solid ${corAba}`, background: "white",
-                    color:    corAba, fontWeight: "700", fontSize: "13px",
-                    cursor:   loadingMore ? "not-allowed" : "pointer",
-                    opacity:  loadingMore ? 0.6 : 1, transition: "all 0.2s",
-                  }}
-                >
-                  {loadingMore
-                    ? "⏳ Carregando..."
-                    : `📄 Carregar mais (${totalCount - shown} restantes)`}
-                </button>
-              </div>
-            )}
-
-            {/* End of list */}
-            {!hasMore && !loading && itens.length > 0 && (
-              <div style={{ textAlign: "center", paddingTop: "20px", fontSize: "12px", color: "#94a3b8" }}>
-                ✓ Todos os {shown} registro{shown !== 1 ? "s" : ""} carregados.
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "15px 0", marginTop: "15px", borderTop: "1px solid #e2e8f0" }}>
+                <span style={{ fontSize: "13px", color: "#64748b", fontWeight: "600" }}>
+                  Mostrando {indexOfFirstItem + 1} a {indexOfLastItem} de {totalCount} registros
+                </span>
+                <div style={{ display: "flex", gap: "10px" }}>
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1 || loading}
+                    style={{
+                      padding: "8px 16px", borderRadius: "6px",
+                      border: "1px solid #cbd5e1", background: currentPage === 1 || loading ? "#f1f5f9" : "white",
+                      color: currentPage === 1 || loading ? "#94a3b8" : "#334155", fontWeight: "600", fontSize: "13px",
+                      cursor: currentPage === 1 || loading ? "not-allowed" : "pointer", transition: "all 0.2s",
+                    }}
+                  >
+                    Anterior
+                  </button>
+                  <span style={{ padding: "8px 12px", fontSize: "13px", fontWeight: "700", color: "#0f172a", background: "#f8fafc", borderRadius: "6px", border: "1px solid #e2e8f0" }}>
+                    Página {currentPage} de {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages || loading}
+                    style={{
+                      padding: "8px 16px", borderRadius: "6px",
+                      border: "1px solid #cbd5e1", background: currentPage === totalPages || loading ? "#f1f5f9" : "white",
+                      color: currentPage === totalPages || loading ? "#94a3b8" : "#334155", fontWeight: "600", fontSize: "13px",
+                      cursor: currentPage ===Pages || loading ? "not-allowed" : "pointer", transition: "all 0.2s",
+                    }}
+                  >
+                    Próxima
+                  </button>
+                </div>
               </div>
             )}
           </div>
