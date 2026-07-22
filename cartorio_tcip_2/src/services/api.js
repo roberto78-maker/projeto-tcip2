@@ -267,11 +267,11 @@ export async function finalizarLote(loteId, file = null) {
     });
   
     if (!res.ok) {
-        const erro = await res.json();
+        const erro = await parseResponseJson(res);
         throw new Error(erro.error || "Erro ao excluir registro");
     }
   
-    return await res.json();
+    return await parseResponseJson(res);
   }
 
 // Helper para construir parâmetros de consulta de relatórios
@@ -304,7 +304,7 @@ export async function getRelatorioIncineracao(filtros = {}) {
     headers: getHeaders()
   });
   if (!res.ok) throw new Error("Erro ao buscar relatório de incineração");
-  return await res.json();
+  return await parseResponseJson(res);
 }
 
 export async function downloadRelatorioPdf(filtros = {}) {
@@ -352,7 +352,7 @@ export async function getUserProfile() {
     headers: getHeaders()
   });
   if (!res.ok) throw new Error("Erro ao buscar perfil do usuário");
-  return await res.json();
+  return await parseResponseJson(res);
 }
 
 // 🔢 GERAR NÚMERO DE OFÍCIO
@@ -363,11 +363,11 @@ export async function gerarNumeroOficio(id) {
   });
 
   if (!res.ok) {
-    const erro = await res.json();
+    const erro = await parseResponseJson(res);
     throw new Error(erro.error || "Erro ao gerar número de ofício");
   }
 
-  return await res.json();
+  return await parseResponseJson(res);
 }
 
 // 🔢 GERAR NÚMERO SEQUENCIAL DO RECIBO
@@ -379,11 +379,11 @@ export async function gerarNumeroRecibo(bou) {
   });
 
   if (!res.ok) {
-    const erro = await res.json();
+    const erro = await parseResponseJson(res);
     throw new Error(erro.error || "Erro ao gerar número de recibo");
   }
 
-  return await res.json();
+  return await parseResponseJson(res);
 }
 
 // 🔍 BUSCAR TODAS AS APREENSOES DE UM BOU (suporta paginação)
@@ -393,7 +393,7 @@ export async function getApreensoesPorBou(bou) {
   while (url) {
     const res = await fetch(url, { headers: getHeaders() });
     if (!res.ok) throw new Error("Erro ao buscar apreensões pelo BOU");
-    const data = await res.json();
+    const data = await parseResponseJson(res);
     if (data.results) {
       allResults = [...allResults, ...data.results];
       url = fixPaginationUrl(data.next);
@@ -419,7 +419,7 @@ export async function addOficioPersonalizado(data) {
     throw new Error("Erro ao criar ofício personalizado");
   }
 
-  return await res.json();
+  return await parseResponseJson(res);
 }
 
 // 👮 POLICIAIS (Banco de dados de policiais)
@@ -434,7 +434,7 @@ export async function getPoliciais(search = "") {
   if (!res.ok) {
     throw new Error("Erro ao buscar policiais");
   }
-  return await res.json();
+  return await parseResponseJson(res);
 }
 
 export async function addPolicial(policialData) {
