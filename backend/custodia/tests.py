@@ -98,7 +98,7 @@ class AssinaturaSecurancaTest(TestCase):
         """Verifica que status de assinatura retorna assinado=False com token incorreto"""
         url = reverse("assinatura_status")
         token_errado = uuid.uuid4()
-        
+
         # Define uma assinatura na apreensão para simular que está assinado no DB
         self.apreensao.assinatura_base64 = "data:image/png;base64,fake"
         self.apreensao.save()
@@ -112,6 +112,7 @@ class AssinaturaSecurancaTest(TestCase):
         """Verifica que erros de validação retornam 400 em vez de 500"""
         url = reverse("apreensao-list")
         from django.contrib.auth.models import User
+
         user = User.objects.create_user(username="testuser", password="password")
         self.client.force_login(user)
 
@@ -124,4 +125,3 @@ class AssinaturaSecurancaTest(TestCase):
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 400)
         self.assertIn("peso", response.json())
-

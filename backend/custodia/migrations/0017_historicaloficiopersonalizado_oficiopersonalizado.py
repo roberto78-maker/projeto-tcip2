@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("custodia", "0016_add_assinatura_eletronica"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),

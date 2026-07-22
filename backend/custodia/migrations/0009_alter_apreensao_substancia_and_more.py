@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("custodia", "0008_apreensao_natureza_apreensao_tem_apreensao_and_more"),
     ]

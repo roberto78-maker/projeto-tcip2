@@ -9,7 +9,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("custodia", "0011_apreensao_data_fato_historicalapreensao_data_fato"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),

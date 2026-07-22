@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("custodia", "0013_apreensao_ano_oficio_apreensao_numero_oficio_and_more"),
     ]

@@ -84,7 +84,7 @@ def upload_documento(arquivo, *, public_id, folder, request=None):
     safe_name = get_valid_filename(name_part)
     safe_ext = get_valid_filename(ext_part.lstrip(".")).lower()
     filename = f"{safe_name}.{safe_ext}" if safe_ext else safe_name
-    
+
     safe_public_id = get_valid_filename(str(public_id))
     storage_path = f"{folder}/{safe_public_id}_{filename}"
     saved_path = default_storage.save(storage_path, arquivo).replace("\\", "/")
@@ -332,9 +332,9 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
         with transaction.atomic():
             # Bloqueia todos os lotes ativos para evitar race conditions na contagem/criação
             lotes_candidatos = list(
-                LoteIncineracao.objects.filter(
-                    apreensoes__status="incineracao"
-                ).distinct().select_for_update()
+                LoteIncineracao.objects.filter(apreensoes__status="incineracao")
+                .distinct()
+                .select_for_update()
             )
 
             # Procura em memória o primeiro lote com menos de 20 itens
@@ -539,7 +539,9 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
 
             # Bloqueia a linha com o maior número para garantir consistência e evitar race conditions
             ultimo_registro = (
-                Apreensao.objects.filter(ano_recibo=ano_atual, numero_recibo__isnull=False)
+                Apreensao.objects.filter(
+                    ano_recibo=ano_atual, numero_recibo__isnull=False
+                )
                 .select_for_update()
                 .order_by("-numero_recibo")
                 .first()
@@ -661,20 +663,30 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
 
             # Bloqueia e busca o maior número do ano
             ultimo_reg_apreensao = (
-                Apreensao.objects.filter(ano_oficio=ano_atual, numero_oficio__isnull=False)
+                Apreensao.objects.filter(
+                    ano_oficio=ano_atual, numero_oficio__isnull=False
+                )
                 .select_for_update()
                 .order_by("-numero_oficio")
                 .first()
             )
-            ultimo_oficio_apreensao = ultimo_reg_apreensao.numero_oficio if ultimo_reg_apreensao else 0
+            ultimo_oficio_apreensao = (
+                ultimo_reg_apreensao.numero_oficio if ultimo_reg_apreensao else 0
+            )
 
             ultimo_reg_personalizado = (
-                OficioPersonalizado.objects.filter(ano_oficio=ano_atual, numero_oficio__isnull=False)
+                OficioPersonalizado.objects.filter(
+                    ano_oficio=ano_atual, numero_oficio__isnull=False
+                )
                 .select_for_update()
                 .order_by("-numero_oficio")
                 .first()
             )
-            ultimo_oficio_personalizado = ultimo_reg_personalizado.numero_oficio if ultimo_reg_personalizado else 0
+            ultimo_oficio_personalizado = (
+                ultimo_reg_personalizado.numero_oficio
+                if ultimo_reg_personalizado
+                else 0
+            )
 
             ultimo_oficio = max(ultimo_oficio_apreensao, ultimo_oficio_personalizado)
             novo_numero = (ultimo_oficio + 1) if ultimo_oficio > 0 else 100
@@ -752,24 +764,26 @@ class RelatorioIncineracaoView(APIView):
         qs = _aplicar_filtros_relatorio(Apreensao.objects.all(), request.GET)
 
         try:
-            detalhado = list(qs.values(
-                "id",
-                "bou",
-                "natureza",
-                "substancia",
-                "peso",
-                "unidade",
-                "vara",
-                "data_fato",
-                "data_criacao",
-                "status",
-                "processo",
-                "reu",
-                "motivo_exclusao",
-                "lote_incineracao__numero",
-                "lote_incineracao__data_criacao",
-                "arquivo_pdf_url",
-            ).order_by("-data_fato", "-data_criacao")[:500])
+            detalhado = list(
+                qs.values(
+                    "id",
+                    "bou",
+                    "natureza",
+                    "substancia",
+                    "peso",
+                    "unidade",
+                    "vara",
+                    "data_fato",
+                    "data_criacao",
+                    "status",
+                    "processo",
+                    "reu",
+                    "motivo_exclusao",
+                    "lote_incineracao__numero",
+                    "lote_incineracao__data_criacao",
+                    "arquivo_pdf_url",
+                ).order_by("-data_fato", "-data_criacao")[:500]
+            )
         except Exception as e:
             logger.error(f"Erro ao consultar radar: {str(e)}")
             return Response(
@@ -957,7 +971,7 @@ class RelatorioIncineracaoPDFView(APIView):
 
         filtros_str = " | ".join(filtros_usados) if filtros_usados else "Nenhum"
 
-        info = f"<b>{periodo_texto}</b><br/>" f"<b>Filtros Aplicados:</b> {filtros_str}"
+        info = f"<b>{periodo_texto}</b><br/><b>Filtros Aplicados:</b> {filtros_str}"
         elements.append(Paragraph(info, normal_style))
         elements.append(Spacer(1, 10))
 
@@ -1134,8 +1148,7 @@ class RelatorioIncineracaoPDFView(APIView):
             usuario = request.user.username.upper() if request.user else "SISTEMA"
             data_hora = timezone.now().strftime("%d/%m/%Y %H:%M")
             footer_text = (
-                f"Gerado por {usuario} em {data_hora} "
-                f"| Protocolo: AUD-{protocolo_hash}"
+                f"Gerado por {usuario} em {data_hora} | Protocolo: AUD-{protocolo_hash}"
             )
 
             canvas.drawString(30, 33, footer_text)
@@ -1375,10 +1388,7 @@ class ReceberAssinaturaView(APIView):
             if apreensoes.exists():
                 # Verifica expiração usando o primeiro registro
                 primeiro = apreensoes.first()
-                if (
-                    primeiro.token_expira_em
-                    and primeiro.token_expira_em < agora
-                ):
+                if primeiro.token_expira_em and primeiro.token_expira_em < agora:
                     return Response(
                         {"error": "Token expirado. Gere um novo QR Code."},
                         status=status.HTTP_400_BAD_REQUEST,
@@ -1414,8 +1424,7 @@ class ReceberAssinaturaView(APIView):
 
         count = apreensoes_token.update(assinatura_base64=assinatura_b64)
         logger.info(
-            f"[Assinatura] Assinatura salva via token {token} "
-            f"em {count} registro(s)."
+            f"[Assinatura] Assinatura salva via token {token} em {count} registro(s)."
         )
         return Response({"ok": True, "registros": count})
 
@@ -1467,7 +1476,9 @@ class StatusAssinaturaView(APIView):
         # 2. Busca por BOU (registros mais recentes) e token correspondente
         if bou:
             apreensao = (
-                Apreensao.objects.filter(bou=bou, token_assinatura=token).order_by("-data_criacao").first()
+                Apreensao.objects.filter(bou=bou, token_assinatura=token)
+                .order_by("-data_criacao")
+                .first()
             )
         else:
             apreensao = Apreensao.objects.filter(token_assinatura=token).first()
@@ -1504,20 +1515,30 @@ class OficioPersonalizadoViewSet(viewsets.ModelViewSet):
         with transaction.atomic():
             # Pegar o maior numero
             ultimo_reg_apreensao = (
-                Apreensao.objects.filter(ano_oficio=ano_atual, numero_oficio__isnull=False)
+                Apreensao.objects.filter(
+                    ano_oficio=ano_atual, numero_oficio__isnull=False
+                )
                 .select_for_update()
                 .order_by("-numero_oficio")
                 .first()
             )
-            ultimo_oficio_apreensao = ultimo_reg_apreensao.numero_oficio if ultimo_reg_apreensao else 0
+            ultimo_oficio_apreensao = (
+                ultimo_reg_apreensao.numero_oficio if ultimo_reg_apreensao else 0
+            )
 
             ultimo_reg_personalizado = (
-                OficioPersonalizado.objects.filter(ano_oficio=ano_atual, numero_oficio__isnull=False)
+                OficioPersonalizado.objects.filter(
+                    ano_oficio=ano_atual, numero_oficio__isnull=False
+                )
                 .select_for_update()
                 .order_by("-numero_oficio")
                 .first()
             )
-            ultimo_oficio_personalizado = ultimo_reg_personalizado.numero_oficio if ultimo_reg_personalizado else 0
+            ultimo_oficio_personalizado = (
+                ultimo_reg_personalizado.numero_oficio
+                if ultimo_reg_personalizado
+                else 0
+            )
 
             ultimo_oficio = max(ultimo_oficio_apreensao, ultimo_oficio_personalizado)
             novo_numero = (ultimo_oficio + 1) if ultimo_oficio > 0 else 100

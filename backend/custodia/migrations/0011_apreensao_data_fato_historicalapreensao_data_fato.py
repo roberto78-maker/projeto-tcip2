@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("custodia", "0010_alter_apreensao_arquivo_pdf_and_more"),
     ]
