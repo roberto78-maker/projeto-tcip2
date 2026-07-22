@@ -13,7 +13,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.files.storage import default_storage
 from django.db import transaction
-from django.db.models import Count, Max, Q, Sum, Case, When, F, FloatField
+from django.db.models import Count, Q, Sum, Case, When, F, FloatField
 from django.http import HttpResponse
 from django.utils import timezone
 from django.utils.text import get_valid_filename

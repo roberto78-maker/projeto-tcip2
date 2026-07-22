@@ -1,6 +1,10 @@
+import uuid
+from datetime import timedelta
 from django.test import TestCase
-from custodia.models import LoteIncineracao, Apreensao
 from django.contrib.auth.models import User
+from django.urls import reverse
+from django.utils import timezone
+from custodia.models import LoteIncineracao, Apreensao
 
 
 class LoteIncineracaoTest(TestCase):
@@ -48,11 +52,6 @@ class ApreensaoTest(TestCase):
         history = self.apreensao.history.latest()
         self.assertEqual(history.status, "deposito")
 
-
-import uuid
-from django.urls import reverse
-from django.utils import timezone
-from datetime import timedelta
 
 class AssinaturaSecurancaTest(TestCase):
     def setUp(self):
