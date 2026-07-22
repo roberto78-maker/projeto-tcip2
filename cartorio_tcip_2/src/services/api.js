@@ -160,7 +160,7 @@ export async function addApreensao(data) {
     throw new Error("Erro ao criar apreensão");
   }
 
-  return await res.json();
+  return await parseResponseJson(res);
 }
 
 // ✏️ ATUALIZAR (FormData)
@@ -185,7 +185,7 @@ export async function updateApreensao(id, data) {
     throw new Error("Erro ao atualizar apreensão");
   }
 
-  return await res.json();
+  return await parseResponseJson(res);
 }
 
 // 🗑️ REMOVER PDF
@@ -196,11 +196,11 @@ export async function removerPdf(id) {
   });
 
   if (!res.ok) {
-    const erro = await res.json();
+    const erro = await parseResponseJson(res);
     throw new Error(erro.error || "Erro ao remover PDF");
   }
 
-  return await res.json();
+  return await parseResponseJson(res);
 }
 
 // 📦 LOTES (suporta paginação)
@@ -209,7 +209,7 @@ export async function getLotes() {
     headers: getHeaders()
   });
   if (!res.ok) throw new Error("Erro ao buscar lotes");
-  const data = await res.json();
+  const data = await parseResponseJson(res);
   return data.results || data;
 }
 
@@ -219,7 +219,7 @@ export async function getDashboardStats() {
     headers: getHeaders()
   });
   if (!res.ok) throw new Error("Erro ao buscar estatísticas do dashboard");
-  return await res.json();
+  return await parseResponseJson(res);
 }
 
 // 🚀 DESTINAR INCINERAÇÃO (Action específica)
@@ -230,11 +230,11 @@ export async function destinarIncineracao(id) {
   });
 
   if (!res.ok) {
-    const erro = await res.json();
+    const erro = await parseResponseJson(res);
     throw new Error(erro.error || "Erro ao destinar para incineração");
   }
 
-  return await res.json();
+  return await parseResponseJson(res);
 }
 
 export async function finalizarLote(loteId, file = null) {
@@ -251,11 +251,11 @@ export async function finalizarLote(loteId, file = null) {
     });
   
     if (!res.ok) {
-      const erro = await res.json();
+      const erro = await parseResponseJson(res);
       throw new Error(erro.error || "Erro ao finalizar lote");
     }
   
-    return await res.json();
+    return await parseResponseJson(res);
   }
   
   // 🗑️ EXCLUIR (Lógica de cancelamento com motivo)
