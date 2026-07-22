@@ -375,7 +375,7 @@ export default function CofreView() {
                       padding: "8px 16px", borderRadius: "6px",
                       border: "1px solid #cbd5e1", background: currentPage === totalPages || loading ? "#f1f5f9" : "white",
                       color: currentPage === totalPages || loading ? "#94a3b8" : "#334155", fontWeight: "600", fontSize: "13px",
-                      cursor: currentPage ===Pages || loading ? "not-allowed" : "pointer", transition: "all 0.2s",
+                      cursor: currentPage === totalPages || loading ? "not-allowed" : "pointer", transition: "all 0.2s",
                     }}
                   >
                     Próxima
