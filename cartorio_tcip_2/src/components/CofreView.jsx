@@ -15,7 +15,7 @@ const formatarPesoDisplay = (valor, unidade) => {
 
 // ─── Build the backend filter object for the current tab ──────────────────────
 // All filtering happens in Django. The frontend never scans a local array.
-function buildFilters(abaAtiva, busca) {
+function buildFilters(abaAtiva, busca, page) {
   const f = { status: "cofre" };
   if (abaAtiva === "DROGAS") {
     f.natureza = "DROGAS";
@@ -24,6 +24,7 @@ function buildFilters(abaAtiva, busca) {
     // 🔍 Exibe todos os objetos (Som, Veículos, etc.) que não são drogas
   }
   if (busca.trim()) f.search = busca.trim();
+  if (page) f.page = page;
   return f;
 }
 
@@ -38,17 +39,18 @@ export default function CofreView() {
     return "DROGAS";
   });
   const [busca, setBusca]       = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   // ─── Misc ─────────────────────────────────────────────────────────────────
   const [obsVisivel, setObsVisivel] = useState(null);
   const debounceRef = useRef(null);
 
   // ─── Derived filters — memoised so the object reference is stable
-  // as long as abaAtiva and busca haven't actually changed.
+  // as long as abaAtiva, busca and currentPage haven't actually changed.
   // This prevents usePagedList from re-fetching on unrelated renders.
   const filters = useMemo(
-    () => buildFilters(abaAtiva, busca),
-    [abaAtiva, busca]
+    () => buildFilters(abaAtiva, busca, currentPage),
+    [abaAtiva, busca, currentPage]
   );
 
   // ─── Paginated data from hook (cache-aware) ───────────────────────────────
@@ -67,13 +69,20 @@ export default function CofreView() {
   } = usePagedList(filters);
 
   // ─── Tab switch: update state; the useMemo + hook handle the rest ─────────
-  const handleAbaChange = (novaAba) => setAbaAtiva(novaAba);
+  const handleAbaChange = (novaAba) => {
+    setAbaAtiva(novaAba);
+    setCurrentPage(1);
+  };
 
   // ─── Search: debounce 400 ms before updating state ────────────────────────
   const handleBuscaChange = (valor) => {
     setBusca(valor);
+    setCurrentPage(1);
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => setBusca(valor), 400);
+    debounceRef.current = setTimeout(() => {
+      setBusca(valor);
+      setCurrentPage(1);
+    }, 400);
   };
 
   // ─── Individual actions — all call recarregar() afterwards ───────────────
