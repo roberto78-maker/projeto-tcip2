@@ -144,6 +144,9 @@ export default function CofreView() {
   // ─── Derived values ───────────────────────────────────────────────────────
   const corAba  = abaAtiva === "DROGAS" ? "#10b981" : "#3b82f6";
   const shown   = itens.length;
+  const totalPages = totalCount ? Math.ceil(totalCount / 10) : 0;
+  const indexOfFirstItem = (currentPage - 1) * 10;
+  const indexOfLastItem = Math.min(currentPage * 10, totalCount);
 
   return (
     <div className="card" style={{ padding: "0", overflow: "hidden" }}>
@@ -170,7 +173,7 @@ export default function CofreView() {
               Gerencie entorpecentes e materiais apreendidos separadamente.
               {totalCount !== null && !loading && (
                 <span style={{ marginLeft: "12px", fontWeight: "600", color: corAba }}>
-                  {shown} de {totalCount} registro{totalCount !== 1 ? "s" : ""}
+                  Total: {totalCount} registro{totalCount !== 1 ? "s" : ""}
                 </span>
               )}
             </p>
