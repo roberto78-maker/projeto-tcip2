@@ -125,3 +125,44 @@ class AssinaturaSecurancaTest(TestCase):
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 400)
         self.assertIn("peso", response.json())
+
+    def test_destinar_incineracao(self):
+        """Verifica que o endpoint destinar_incineracao funciona corretamente"""
+        from django.contrib.auth.models import User
+        user = User.objects.create_user(username="testuser_incineracao", password="password")
+        self.client.force_login(user)
+
+        # 1. Deve falhar com 400 se não tiver PDF
+        url = reverse("apreensao-destinar-incineracao", kwargs={"pk": self.apreensao.id})
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("error", response.json())
+
+        # 2. Configura PDF na apreensão
+        self.apreensao.arquivo_pdf_url = "https://example.com/laudo.pdf"
+        self.apreensao.save()
+
+        # 3. Deve ter sucesso e criar o lote se não houver lote aberto
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 200)
+        self.apreensao.refresh_from_db()
+        self.assertEqual(self.apreensao.status, "incineracao")
+        self.assertIsNotNone(self.apreensao.lote_incineracao)
+        self.assertEqual(self.apreensao.lote_incineracao.numero, 1)
+
+        # 4. Outra apreensão deve ir para o mesmo lote (pois tem menos de 20 itens)
+        apreensao2 = Apreensao.objects.create(
+            processo="002",
+            bou="BOU-002",
+            reu="Jane Doe",
+            substancia="Cannabis",
+            peso=2.5,
+            unidade="kg",
+            arquivo_pdf_url="https://example.com/laudo2.pdf",
+        )
+        url2 = reverse("apreensao-destinar-incineracao", kwargs={"pk": apreensao2.id})
+        response2 = self.client.post(url2)
+        self.assertEqual(response2.status_code, 200)
+        apreensao2.refresh_from_db()
+        self.assertEqual(apreensao2.lote_incineracao, self.apreensao.lote_incineracao)
+

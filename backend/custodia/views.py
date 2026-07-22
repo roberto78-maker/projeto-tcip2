@@ -330,10 +330,16 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
         agora = timezone.now()
 
         with transaction.atomic():
-            # Bloqueia todos os lotes ativos para evitar race conditions na contagem/criação
-            lotes_candidatos = list(
-                LoteIncineracao.objects.filter(apreensoes__status="incineracao")
+            # Bloqueia todos os lotes ativos para evitar race conditions na contagem/criação.
+            # Evita o uso de .distinct() direto com .select_for_update(), que não é suportado pelo PostgreSQL.
+            lotes_ativos_ids = (
+                Apreensao.objects.filter(status="incineracao")
+                .exclude(lote_incineracao__isnull=True)
+                .values_list("lote_incineracao_id", flat=True)
                 .distinct()
+            )
+            lotes_candidatos = list(
+                LoteIncineracao.objects.filter(id__in=lotes_ativos_ids)
                 .select_for_update()
             )
 
