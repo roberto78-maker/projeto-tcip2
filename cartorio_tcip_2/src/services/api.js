@@ -16,6 +16,17 @@ function getHeaders(isFormData = false) {
   return headers;
 }
 
+// 🛡️ Helper para processar respostas JSON de forma segura (tratando HTML de erro)
+async function parseResponseJson(res) {
+  const contentType = res.headers.get("content-type");
+  if (!contentType || !contentType.includes("application/json")) {
+    throw new Error(
+      "O servidor retornou uma resposta inválida (HTML). Verifique se você está conectado à rede correta ou se o firewall está bloqueando o acesso."
+    );
+  }
+  return await res.json();
+}
+
 // 🛡️ Helper para manter a paginação dentro do Proxy do Vite
 function fixPaginationUrl(nextUrl) {
   if (!nextUrl) return null;
@@ -43,7 +54,7 @@ export async function getApreensoes(options = {}) {
       console.error("Erro GET:", erro);
       throw new Error("Erro ao buscar apreensões");
     }
-    const data = await res.json();
+    const data = await parseResponseJson(res);
     return data.results || data;
   }
 
@@ -57,7 +68,7 @@ export async function getApreensoes(options = {}) {
       console.error("Erro GET multipágina:", erro);
       throw new Error("Erro ao buscar apreensões multipágina");
     }
-    const data = await res.json();
+    const data = await parseResponseJson(res);
     
     if (data.results) {
       allResults = [...allResults, ...data.results];
@@ -107,7 +118,7 @@ export async function getApreensoesPaginado({ filters = {}, nextUrl = null } = {
     console.error("Erro GET paginado:", erro);
     throw new Error("Erro ao buscar apreensoes");
   }
-  const data = await res.json();
+  const data = await parseResponseJson(res);
   const result = {
     results: data.results || data,
     next:    fixPaginationUrl(data.next),
