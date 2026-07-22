@@ -1,6 +1,17 @@
 const USER_KEY = "usuario_logado";
 const BASE_URL = import.meta.env.VITE_API_URL || "";
 
+// 🛡️ Helper para processar respostas JSON de forma segura (tratando HTML de erro)
+async function parseResponseJson(res) {
+  const contentType = res.headers.get("content-type");
+  if (!contentType || !contentType.includes("application/json")) {
+    throw new Error(
+      "O servidor retornou uma resposta inválida (HTML). Verifique se você está conectado à rede correta ou se o firewall está bloqueando o acesso."
+    );
+  }
+  return await res.json();
+}
+
 export async function login(username, password) {
   try {
     const res = await fetch(`${BASE_URL}/api/token/`, {
@@ -11,7 +22,7 @@ export async function login(username, password) {
 
     if (!res.ok) return false;
 
-    const data = await res.json();
+    const data = await parseResponseJson(res);
     // Armazena tokens e infos (role pode vir do token or outro endpoint se necessário)
     localStorage.setItem(USER_KEY, JSON.stringify({
       username,
@@ -60,7 +71,7 @@ export async function refrescarToken() {
       return false;
     }
 
-    const data = await res.json();
+    const data = await parseResponseJson(res);
     user.access = data.access;
     localStorage.setItem(USER_KEY, JSON.stringify(user));
     return true;
