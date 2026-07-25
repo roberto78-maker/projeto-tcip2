@@ -341,6 +341,23 @@ const styles = {
     fontSize: "13px",
     margin: 0,
   },
+  etapaBadgeContainer: {
+    display: "flex",
+    gap: "8px",
+    justifyContent: "center",
+    width: "100%",
+    maxWidth: "400px",
+  },
+  etapaBadge: {
+    flex: 1,
+    textAlign: "center",
+    padding: "6px 10px",
+    borderRadius: "8px",
+    fontSize: "12px",
+    fontWeight: "700",
+    border: "1px solid rgba(255, 255, 255, 0.15)",
+    transition: "all 0.3s ease",
+  },
   instrucaoBox: {
     display: "flex",
     alignItems: "center",
