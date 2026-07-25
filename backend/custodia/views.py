@@ -339,8 +339,9 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
                 .distinct()
             )
             lotes_candidatos = list(
-                LoteIncineracao.objects.filter(id__in=lotes_ativos_ids)
-                .select_for_update()
+                LoteIncineracao.objects.filter(
+                    id__in=lotes_ativos_ids
+                ).select_for_update()
             )
 
             # Procura em memória o primeiro lote com menos de 20 itens
