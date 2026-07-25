@@ -211,6 +211,8 @@ export function useCadastroForm() {
     tokenQR,
     urlQR,
     assinaturaBase64,
+    cartorarioSemToken,
+    setCartorarioSemToken,
     // Handlers
     adicionarMaterial,
     removerMaterial,

@@ -172,7 +172,11 @@ function salvarHistoricosFormulario(form) {
   });
 }
 
-export async function salvarCadastro(form, assinaturaBase64 = null) {
+export async function salvarCadastro(
+  form,
+  assinaturaBase64 = null,
+  assinaturaCartorarioBase64 = null
+) {
   const erroValidacao = validarCadastro(form);
   if (erroValidacao) {
     throw new Error(erroValidacao);
@@ -183,14 +187,24 @@ export async function salvarCadastro(form, assinaturaBase64 = null) {
     if (assinaturaBase64) {
       payload.assinatura_base64 = assinaturaBase64;
     }
+    if (assinaturaCartorarioBase64) {
+      payload.assinatura_cartorario_base64 = assinaturaCartorarioBase64;
+      payload.tipo_assinatura_cartorario = "MANUAL";
+    }
     await addApreensao(payload);
   }
 
   // Gerar número sequencial de recibo (controlado pelo banco de dados)
   const { numero_recibo, ano_recibo } = await gerarNumeroRecibo(form.bou);
 
-  // Passa a assinatura eletrônica para o PDF (pode ser null se não coletada)
-  await gerarReciboCadastroPdf(form, numero_recibo, ano_recibo, assinaturaBase64);
+  // Passa as assinaturas eletrônicas para o PDF
+  await gerarReciboCadastroPdf(
+    form,
+    numero_recibo,
+    ano_recibo,
+    assinaturaBase64,
+    assinaturaCartorarioBase64
+  );
   salvarHistoricosFormulario(form);
   invalidateApreensaoCache();
 
