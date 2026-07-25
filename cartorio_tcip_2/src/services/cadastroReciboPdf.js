@@ -20,7 +20,13 @@ export function formatarPesoDisplay(valor, unidade) {
   return `${num.toFixed(2).replace(".", ",")} ${unidade}`;
 }
 
-export async function gerarReciboCadastroPdf(dados, numeroRecibo, anoRecibo, assinaturaBase64 = null) {
+export async function gerarReciboCadastroPdf(
+  dados,
+  numeroRecibo,
+  anoRecibo,
+  assinaturaBase64 = null,
+  assinaturaCartorarioBase64 = null
+) {
   const {
     crimesSelecionados,
     materiais,
@@ -191,6 +197,22 @@ export async function gerarReciboCadastroPdf(dados, numeroRecibo, anoRecibo, ass
 
   const usuario = getUsuario();
   const nomeOperador = usuario?.username?.toUpperCase() || "ADMIN";
+
+  // ─── Campo de Assinatura — Recebedor / Cartorário (Direita) ──────────────
+  if (assinaturaCartorarioBase64) {
+    try {
+      doc.addImage(
+        assinaturaCartorarioBase64,
+        "PNG",
+        pageWidth - marginX - lineSize, // x: alinhado com a linha da direita
+        currY - 22,                     // y: 22pt acima da linha
+        lineSize,                       // largura = mesma da linha
+        20                              // altura = 20pt
+      );
+    } catch {
+      // Ignora erro de imagem
+    }
+  }
 
   doc.line(pageWidth - marginX - lineSize, currY, pageWidth - marginX, currY);
   doc.setFont("helvetica", "bold");
