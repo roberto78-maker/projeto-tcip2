@@ -56,6 +56,8 @@ export default function CadastroView() {
     showQRModal,
     tokenQR,
     urlQR,
+    cartorarioSemToken,
+    setCartorarioSemToken,
     adicionarMaterial,
     removerMaterial,
     toggleCrime,
@@ -450,6 +452,56 @@ export default function CadastroView() {
             </div>
           ))}
         </div>
+      </div>
+
+      <div
+        style={{
+          background: cartorarioSemToken ? "#fffbeb" : "#f8fafc",
+          border: `1px solid ${cartorarioSemToken ? "#fde68a" : "#e2e8f0"}`,
+          borderRadius: "8px",
+          padding: "12px 16px",
+          marginBottom: "16px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "10px",
+          transition: "all 0.2s ease",
+        }}
+      >
+        <div>
+          <strong style={{ fontSize: "14px", color: "#1e293b", display: "block" }}>
+            🔑 Assinatura do Cartorário / Recebedor
+          </strong>
+          <span style={{ fontSize: "12px", color: "#64748b" }}>
+            {cartorarioSemToken
+              ? "Modo substituição: O cartorário assinará manualmente em tela junto ao entregador."
+              : "Modo padrão: Cartorário titular assina com certificado digital / chave token no recibo."}
+          </span>
+        </div>
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            cursor: "pointer",
+            fontWeight: "700",
+            fontSize: "13px",
+            color: cartorarioSemToken ? "#b45309" : "#1d4ed8",
+            background: cartorarioSemToken ? "#fef3c7" : "#eff6ff",
+            padding: "6px 12px",
+            borderRadius: "6px",
+            border: `1px solid ${cartorarioSemToken ? "#fcd34d" : "#bfdbfe"}`,
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={cartorarioSemToken}
+            onChange={(e) => setCartorarioSemToken(e.target.checked)}
+            style={{ width: "16px", height: "16px", cursor: "pointer" }}
+          />
+          {cartorarioSemToken ? "✍️ Sem Token (Assinar em tela)" : "🔑 Com Token Digital"}
+        </label>
       </div>
 
       <button
