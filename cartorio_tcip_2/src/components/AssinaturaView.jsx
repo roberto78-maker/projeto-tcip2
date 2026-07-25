@@ -15,13 +15,17 @@ export default function AssinaturaView() {
   const [sucesso, setSucesso] = useState(false);
   const [erro, setErro] = useState("");
 
-  // Lê os parâmetros da URL
+  // Suporte a 2 etapas quando sem_token === "true"
   const params = new URLSearchParams(window.location.search);
   const token = params.get("token") || "";
   const bou = params.get("bou") || "";
+  const semTokenCartorario = params.get("sem_token") === "true";
 
-  // Configura o canvas para alta resolução (Retina/DPI)
-  useEffect(() => {
+  const [etapa, setEtapa] = useState(1); // 1 = Entregador, 2 = Cartorário
+  const [assinaturaEntregadorB64, setAssinaturaEntregadorB64] = useState(null);
+
+  // Re-inicializa canvas ao trocar de etapa ou montar
+  const inicializarCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -38,7 +42,12 @@ export default function AssinaturaView() {
     ctx.lineWidth = 2.5;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
+    setTemAssinatura(false);
   }, []);
+
+  useEffect(() => {
+    inicializarCanvas();
+  }, [inicializarCanvas, etapa]);
 
   // Obtém posição correta dentro do canvas (touch ou mouse)
   const getPosicao = (e, canvas) => {
@@ -80,20 +89,25 @@ export default function AssinaturaView() {
   }, []);
 
   const limparCanvas = () => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.strokeStyle = "#1e3a8a";
-    ctx.lineWidth = 2.5;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    setTemAssinatura(false);
+    inicializarCanvas();
     setErro("");
+  };
+
+  const avancarParaEtapa2 = () => {
+    if (!temAssinatura) {
+      setErro("Por favor, assine antes de prosseguir para a próxima assinatura.");
+      return;
+    }
+    const canvas = canvasRef.current;
+    const b64 = canvas.toDataURL("image/png");
+    setAssinaturaEntregadorB64(b64);
+    setErro("");
+    setEtapa(2);
+  };
+
+  const voltarParaEtapa1 = () => {
+    setErro("");
+    setEtapa(1);
   };
 
   const confirmarAssinatura = async () => {
@@ -111,8 +125,16 @@ export default function AssinaturaView() {
 
     try {
       const canvas = canvasRef.current;
-      const assinaturaBase64 = canvas.toDataURL("image/png");
-      await enviarAssinatura(token, bou, assinaturaBase64);
+      const assinaturaAtualB64 = canvas.toDataURL("image/png");
+
+      if (semTokenCartorario) {
+        // Modo 2 etapas: entregador (salvo no estado) + cartorário (canvas atual)
+        await enviarAssinatura(token, bou, assinaturaEntregadorB64, assinaturaAtualB64);
+      } else {
+        // Modo padrão: apenas entregador
+        await enviarAssinatura(token, bou, assinaturaAtualB64);
+      }
+
       setSucesso(true);
     } catch (err) {
       setErro(err.message || "Erro ao enviar assinatura. Tente novamente.");
@@ -129,7 +151,9 @@ export default function AssinaturaView() {
           <div style={styles.successIcon}>✅</div>
           <h1 style={styles.successTitle}>Assinatura Confirmada!</h1>
           <p style={styles.successText}>
-            Sua assinatura foi registrada com sucesso no sistema do cartório.
+            {semTokenCartorario
+              ? "As assinaturas do entregador e do cartorário foram registradas com sucesso."
+              : "Sua assinatura foi registrada com sucesso no sistema do cartório."}
           </p>
           <p style={styles.successSub}>Pode fechar esta janela.</p>
         </div>
@@ -151,11 +175,39 @@ export default function AssinaturaView() {
         )}
       </div>
 
+      {/* Indicador de Etapas (se sem_token = true) */}
+      {semTokenCartorario && (
+        <div style={styles.etapaBadgeContainer}>
+          <span
+            style={{
+              ...styles.etapaBadge,
+              background: etapa === 1 ? "#3b82f6" : "#1e293b",
+              color: etapa === 1 ? "#ffffff" : "#94a3b8",
+            }}
+          >
+            1. Policial Entregador {etapa === 2 && "✓"}
+          </span>
+          <span
+            style={{
+              ...styles.etapaBadge,
+              background: etapa === 2 ? "#d97706" : "#1e293b",
+              color: etapa === 2 ? "#ffffff" : "#94a3b8",
+            }}
+          >
+            2. Cartorário Recebedor
+          </span>
+        </div>
+      )}
+
       {/* Instrução */}
       <div style={styles.instrucaoBox}>
         <span style={styles.instrucaoIcon}>✍️</span>
         <p style={styles.instrucaoText}>
-          Assine abaixo com o dedo, conforme sua assinatura usual.
+          {semTokenCartorario
+            ? etapa === 1
+              ? "PASSO 1 DE 2: Assinatura do Policial / Entregador"
+              : "PASSO 2 DE 2: Assinatura do Recebedor / Cartorário"
+            : "Assine abaixo com o dedo, conforme sua assinatura usual."}
         </p>
       </div>
 
@@ -178,7 +230,11 @@ export default function AssinaturaView() {
           <div style={styles.canvasPlaceholder}>
             <span style={{ fontSize: "32px", opacity: 0.3 }}>✍️</span>
             <span style={{ color: "#94a3b8", fontSize: "13px" }}>
-              Assine aqui
+              {semTokenCartorario
+                ? etapa === 1
+                  ? "Assinatura do Policial Entregador"
+                  : "Assinatura do Cartorário Recebedor"
+                : "Assine aqui"}
             </span>
           </div>
         )}
@@ -189,26 +245,51 @@ export default function AssinaturaView() {
 
       {/* Botões */}
       <div style={styles.botoesRow}>
-        <button
-          id="btn-limpar-assinatura"
-          onClick={limparCanvas}
-          style={styles.btnLimpar}
-          disabled={enviando}
-        >
-          🔄 Limpar
-        </button>
-        <button
-          id="btn-confirmar-assinatura"
-          onClick={confirmarAssinatura}
-          style={{
-            ...styles.btnConfirmar,
-            opacity: enviando ? 0.7 : 1,
-            cursor: enviando ? "not-allowed" : "pointer",
-          }}
-          disabled={enviando}
-        >
-          {enviando ? "Enviando..." : "✅ Confirmar Assinatura"}
-        </button>
+        {semTokenCartorario && etapa === 2 ? (
+          <button
+            onClick={voltarParaEtapa1}
+            style={styles.btnLimpar}
+            disabled={enviando}
+          >
+            ⬅️ Voltar Etapa 1
+          </button>
+        ) : (
+          <button
+            id="btn-limpar-assinatura"
+            onClick={limparCanvas}
+            style={styles.btnLimpar}
+            disabled={enviando}
+          >
+            🔄 Limpar
+          </button>
+        )}
+
+        {semTokenCartorario && etapa === 1 ? (
+          <button
+            id="btn-avancar-etapa"
+            onClick={avancarParaEtapa2}
+            style={{
+              ...styles.btnConfirmar,
+              background: "#3b82f6",
+            }}
+          >
+            Próxima Assinatura ➔
+          </button>
+        ) : (
+          <button
+            id="btn-confirmar-assinatura"
+            onClick={confirmarAssinatura}
+            style={{
+              ...styles.btnConfirmar,
+              background: semTokenCartorario ? "#d97706" : "#10b981",
+              opacity: enviando ? 0.7 : 1,
+              cursor: enviando ? "not-allowed" : "pointer",
+            }}
+            disabled={enviando}
+          >
+            {enviando ? "Enviando..." : "✅ Confirmar Assinaturas"}
+          </button>
+        )}
       </div>
 
       <p style={styles.rodape}>
