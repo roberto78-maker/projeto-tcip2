@@ -1300,6 +1300,7 @@ class GerarTokenAssinaturaView(APIView):
 
     def post(self, request):
         bou = request.data.get("bou", "").strip()
+        sem_token = request.data.get("sem_token_cartorario", False)
         if not bou:
             return Response(
                 {"error": "BOU é obrigatório."},
@@ -1326,10 +1327,12 @@ class GerarTokenAssinaturaView(APIView):
             "FRONTEND_URL", "https://projeto-tcip2.vercel.app"
         )
         url_celular = f"{frontend_base}/assinar?token={token}&bou={bou}"
+        if sem_token:
+            url_celular += "&sem_token=true"
 
         logger.info(
             f"[Assinatura] Token {token} gerado para BOU '{bou}'. "
-            f"Expira em: {expira_em}"
+            f"Sem token cartorário: {sem_token}. Expira em: {expira_em}"
         )
 
         return Response(
@@ -1354,6 +1357,9 @@ class ReceberAssinaturaView(APIView):
     def post(self, request):
         token_str = request.data.get("token", "").strip()
         assinatura_b64 = request.data.get("assinatura_base64", "").strip()
+        assinatura_cartorario_b64 = request.data.get(
+            "assinatura_cartorario_base64", ""
+        ).strip()
         bou = request.data.get("bou", "").strip()
 
         # Validações básicas
@@ -1364,12 +1370,19 @@ class ReceberAssinaturaView(APIView):
             )
         if not assinatura_b64:
             return Response(
-                {"error": "Assinatura não pode estar em branco."},
+                {"error": "Assinatura do entregador não pode estar em branco."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         if not assinatura_b64.startswith("data:image/"):
             return Response(
                 {"error": "Formato de assinatura inválido."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if assinatura_cartorario_b64 and not assinatura_cartorario_b64.startswith(
+            "data:image/"
+        ):
+            return Response(
+                {"error": "Formato da assinatura do cartorário inválido."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -1385,8 +1398,20 @@ class ReceberAssinaturaView(APIView):
         agora = timezone.now()
 
         # Guarda a assinatura temporariamente em cache por 30 minutos (1800s)
+        cache_data = {
+            "assinatura_base64": assinatura_b64,
+            "assinatura_cartorario_base64": assinatura_cartorario_b64 or None,
+            "tipo_assinatura_cartorario": (
+                "MANUAL" if assinatura_cartorario_b64 else "TOKEN"
+            ),
+        }
         cache_key = f"assinatura_{token_str}"
-        cache.set(cache_key, assinatura_b64, timeout=1800)
+        cache.set(cache_key, cache_data, timeout=1800)
+
+        update_fields = {"assinatura_base64": assinatura_b64}
+        if assinatura_cartorario_b64:
+            update_fields["assinatura_cartorario_base64"] = assinatura_cartorario_b64
+            update_fields["tipo_assinatura_cartorario"] = "MANUAL"
 
         if bou:
             # Tenta buscar registros já existentes com esse BOU e token correspondente
@@ -1399,7 +1424,7 @@ class ReceberAssinaturaView(APIView):
                         {"error": "Token expirado. Gere um novo QR Code."},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
-                count = apreensoes.update(assinatura_base64=assinatura_b64)
+                count = apreensoes.update(**update_fields)
                 logger.info(
                     f"[Assinatura] Assinatura salva via BOU '{bou}' e token '{token}' "
                     f"em {count} registro(s)."
@@ -1415,7 +1440,6 @@ class ReceberAssinaturaView(APIView):
         apreensoes_token = Apreensao.objects.filter(token_assinatura=token)
         if not apreensoes_token.exists():
             # Token ainda válido sem registros — salva uma entrada temporária
-            # O token ficará disponível para o polling via status endpoint
             logger.warning(
                 f"[Assinatura] Token {token} recebido sem registros vinculados."
             )
@@ -1428,7 +1452,7 @@ class ReceberAssinaturaView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        count = apreensoes_token.update(assinatura_base64=assinatura_b64)
+        count = apreensoes_token.update(**update_fields)
         logger.info(
             f"[Assinatura] Assinatura salva via token {token} em {count} registro(s)."
         )
@@ -1472,12 +1496,28 @@ class StatusAssinaturaView(APIView):
         assinatura_cache = cache.get(cache_key)
 
         if assinatura_cache:
-            return Response(
-                {
-                    "assinado": True,
-                    "assinatura_base64": assinatura_cache,
-                }
-            )
+            if isinstance(assinatura_cache, dict):
+                return Response(
+                    {
+                        "assinado": True,
+                        "assinatura_base64": assinatura_cache.get("assinatura_base64"),
+                        "assinatura_cartorario_base64": assinatura_cache.get(
+                            "assinatura_cartorario_base64"
+                        ),
+                        "tipo_assinatura_cartorario": assinatura_cache.get(
+                            "tipo_assinatura_cartorario", "TOKEN"
+                        ),
+                    }
+                )
+            else:
+                return Response(
+                    {
+                        "assinado": True,
+                        "assinatura_base64": assinatura_cache,
+                        "assinatura_cartorario_base64": None,
+                        "tipo_assinatura_cartorario": "TOKEN",
+                    }
+                )
 
         # 2. Busca por BOU (registros mais recentes) e token correspondente
         if bou:
@@ -1490,12 +1530,25 @@ class StatusAssinaturaView(APIView):
             apreensao = Apreensao.objects.filter(token_assinatura=token).first()
 
         if not apreensao:
-            return Response({"assinado": False, "assinatura_base64": None})
+            return Response(
+                {
+                    "assinado": False,
+                    "assinatura_base64": None,
+                    "assinatura_cartorario_base64": None,
+                    "tipo_assinatura_cartorario": "TOKEN",
+                }
+            )
 
         # Verifica expiração
         if apreensao.token_expira_em and apreensao.token_expira_em < agora:
             return Response(
-                {"assinado": False, "expirado": True, "assinatura_base64": None}
+                {
+                    "assinado": False,
+                    "expirado": True,
+                    "assinatura_base64": None,
+                    "assinatura_cartorario_base64": None,
+                    "tipo_assinatura_cartorario": "TOKEN",
+                }
             )
 
         assinado = bool(apreensao.assinatura_base64)
@@ -1503,6 +1556,12 @@ class StatusAssinaturaView(APIView):
             {
                 "assinado": assinado,
                 "assinatura_base64": apreensao.assinatura_base64 if assinado else None,
+                "assinatura_cartorario_base64": (
+                    apreensao.assinatura_cartorario_base64 if assinado else None
+                ),
+                "tipo_assinatura_cartorario": (
+                    apreensao.tipo_assinatura_cartorario if assinado else "TOKEN"
+                ),
             }
         )
 
