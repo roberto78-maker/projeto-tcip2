@@ -80,6 +80,22 @@ class AssinaturaSecurancaTest(TestCase):
         self.apreensao.refresh_from_db()
         self.assertTrue(self.apreensao.assinatura_base64.startswith("data:image/"))
 
+    def test_receber_assinatura_dupla_cartorario_sem_token(self):
+        """Verifica que a assinatura do cartorário também é salva quando enviada"""
+        url = reverse("assinatura_receber")
+        data = {
+            "token": str(self.token_valido),
+            "bou": "BOU-002",
+            "assinatura_base64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+            "assinatura_cartorario_base64": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+        }
+        response = self.client.post(url, data, content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.apreensao.refresh_from_db()
+        self.assertTrue(self.apreensao.assinatura_base64.startswith("data:image/"))
+        self.assertTrue(self.apreensao.assinatura_cartorario_base64.startswith("data:image/"))
+        self.assertEqual(self.apreensao.tipo_assinatura_cartorario, "MANUAL")
+
     def test_receber_assinatura_token_incorreto(self):
         """Verifica que erro é retornado com token incorreto para o BOU"""
         url = reverse("assinatura_receber")
