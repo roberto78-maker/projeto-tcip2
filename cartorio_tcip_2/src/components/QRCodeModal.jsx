@@ -14,6 +14,7 @@ const EXPIRACAO_MINUTOS = 30;
 export default function QRCodeModal({ token, urlQr, bou, onSucesso, onCancelar }) {
   const [assinado, setAssinado] = useState(false);
   const [assinaturaBase64, setAssinaturaBase64] = useState(null);
+  const [assinaturaCartorarioBase64, setAssinaturaCartorarioBase64] = useState(null);
   const [expirado, setExpirado] = useState(false);
   const [segundosRestantes, setSegundosRestantes] = useState(
     EXPIRACAO_MINUTOS * 60
@@ -38,6 +39,7 @@ export default function QRCodeModal({ token, urlQr, bou, onSucesso, onCancelar }
       if (dados.assinado && dados.assinatura_base64) {
         setAssinado(true);
         setAssinaturaBase64(dados.assinatura_base64);
+        setAssinaturaCartorarioBase64(dados.assinatura_cartorario_base64 || null);
         clearInterval(pollingRef.current);
         clearInterval(countdownRef.current);
       }
@@ -185,21 +187,33 @@ export default function QRCodeModal({ token, urlQr, bou, onSucesso, onCancelar }
               A assinatura do policial foi registrada com sucesso.
             </p>
 
-            {/* Miniatura da assinatura */}
-            {assinaturaBase64 && (
-              <div style={styles.miniatura}>
-                <p style={styles.miniaturaLabel}>Prévia da Assinatura:</p>
-                <img
-                  src={assinaturaBase64}
-                  alt="Assinatura coletada"
-                  style={styles.miniaturaImg}
-                />
-              </div>
-            )}
+            {/* Miniatura das assinaturas */}
+            <div style={{ display: "flex", gap: "10px", justifyContent: "center", width: "100%", margin: "10px 0" }}>
+              {assinaturaBase64 && (
+                <div style={{ ...styles.miniatura, flex: 1 }}>
+                  <p style={styles.miniaturaLabel}>Entregador (Policial):</p>
+                  <img
+                    src={assinaturaBase64}
+                    alt="Assinatura Entregador"
+                    style={styles.miniaturaImg}
+                  />
+                </div>
+              )}
+              {assinaturaCartorarioBase64 && (
+                <div style={{ ...styles.miniatura, flex: 1 }}>
+                  <p style={styles.miniaturaLabel}>Cartorário (Recebedor):</p>
+                  <img
+                    src={assinaturaCartorarioBase64}
+                    alt="Assinatura Cartorário"
+                    style={styles.miniaturaImg}
+                  />
+                </div>
+              )}
+            </div>
 
             <button
               id="btn-finalizar-com-assinatura"
-              onClick={() => onSucesso(assinaturaBase64)}
+              onClick={() => onSucesso({ assinaturaBase64, assinaturaCartorarioBase64 })}
               style={styles.btnFinalizar}
             >
               ⬇️ Finalizar e Baixar Recibo PDF
