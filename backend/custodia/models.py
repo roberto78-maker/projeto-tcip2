@@ -103,6 +103,9 @@ class Apreensao(models.Model):
     # ─── Assinatura Eletrônica ──────────────────────────────────────────────
     # Imagem da assinatura a punho coletada via celular (canvas → Base64)
     assinatura_base64 = models.TextField(blank=True, null=True)
+    # Assinatura manuscrita do cartorário (caso não use chave token)
+    assinatura_cartorario_base64 = models.TextField(blank=True, null=True)
+    tipo_assinatura_cartorario = models.CharField(max_length=20, default="TOKEN")
     # Token UUID de sessão gerado ao exibir o QR Code (expira em 30 min)
     token_assinatura = models.UUIDField(blank=True, null=True, db_index=True)
     token_expira_em = models.DateTimeField(blank=True, null=True)
