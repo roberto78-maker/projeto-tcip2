@@ -22,6 +22,7 @@ export function useCadastroForm() {
   const [tokenQR, setTokenQR] = useState("");
   const [urlQR, setUrlQR] = useState("");
   const [assinaturaBase64, setAssinaturaBase64] = useState(null);
+  const [cartorarioSemToken, setCartorarioSemToken] = useState(false);
 
   const updateField = (field, value) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -125,7 +126,10 @@ export function useCadastroForm() {
 
     setSalvando(true);
     try {
-      const { token, url_qr } = await gerarTokenAssinatura(form.bou);
+      const { token, url_qr } = await gerarTokenAssinatura(
+        form.bou,
+        cartorarioSemToken
+      );
       setTokenQR(token);
       setUrlQR(url_qr);
       setShowQRModal(true);
@@ -138,18 +142,28 @@ export function useCadastroForm() {
 
   /**
    * ETAPA 2: Chamado pelo QRCodeModal quando a assinatura chega.
-   * Salva os registros no banco, gera o PDF com a assinatura e faz download.
+   * Salva os registros no banco, gera o PDF com as assinaturas e faz download.
    */
-  const handleFinalizarComAssinatura = async (assinatura) => {
+  const handleFinalizarComAssinatura = async (dadosAssinatura) => {
     if (isSubmitting.current) return;
     isSubmitting.current = true;
     setShowQRModal(false);
     setSalvando(true);
 
     try {
+      const entB64 =
+        typeof dadosAssinatura === "string"
+          ? dadosAssinatura
+          : dadosAssinatura?.assinaturaBase64;
+      const cartB64 =
+        typeof dadosAssinatura === "object"
+          ? dadosAssinatura?.assinaturaCartorarioBase64
+          : null;
+
       const { mensagem, proximoEstado } = await salvarCadastro(
         form,
-        assinatura
+        entB64,
+        cartB64
       );
       setAssinaturaBase64(null);
       alert(mensagem);

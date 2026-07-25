@@ -11,9 +11,10 @@ const API_BASE = import.meta.env.VITE_API_URL || "";
  * Gera um token UUID de sessão no backend para o QR Code.
  * Chamado pelo PC do cartório (requer JWT).
  * @param {string} bou - Número do BOU (ex: "2026/786")
+ * @param {boolean} semTokenCartorario - Se true, indica que o cartorário assinará em tela no celular
  * @returns {{ token, url_qr, expira_em }}
  */
-export async function gerarTokenAssinatura(bou) {
+export async function gerarTokenAssinatura(bou, semTokenCartorario = false) {
   const usuario = getUsuario();
   const jwt = usuario?.access || "";
   const resp = await fetch(`${API_BASE}/api/assinatura/gerar-token/`, {
@@ -22,7 +23,7 @@ export async function gerarTokenAssinatura(bou) {
       "Content-Type": "application/json",
       Authorization: `Bearer ${jwt}`,
     },
-    body: JSON.stringify({ bou }),
+    body: JSON.stringify({ bou, sem_token_cartorario: semTokenCartorario }),
   });
 
   if (!resp.ok) {
@@ -38,7 +39,7 @@ export async function gerarTokenAssinatura(bou) {
  * Chamado pelo PC a cada 3 segundos — endpoint público, sem JWT.
  * @param {string} token - UUID da sessão
  * @param {string} bou   - BOU do cadastro
- * @returns {{ assinado: boolean, assinatura_base64: string|null, expirado?: boolean }}
+ * @returns {{ assinado: boolean, assinatura_base64: string|null, assinatura_cartorario_base64?: string|null, tipo_assinatura_cartorario?: string }}
  */
 export async function verificarStatusAssinatura(token, bou) {
   const params = new URLSearchParams({ token });
@@ -59,16 +60,32 @@ export async function verificarStatusAssinatura(token, bou) {
 /**
  * Envia a assinatura em Base64 do celular para o backend.
  * Chamado pela tela do celular — endpoint público, sem JWT.
- * @param {string} token          - UUID da sessão
- * @param {string} bou            - BOU do cadastro
- * @param {string} assinatura_b64 - String Base64 do canvas (data:image/png;base64,...)
+ * @param {string} token                     - UUID da sessão
+ * @param {string} bou                       - BOU do cadastro
+ * @param {string} assinatura_b64            - Base64 da assinatura do entregador
+ * @param {string} [assinatura_cartorario_b64] - Base64 da assinatura do cartorário (opcional)
  * @returns {{ ok: boolean, registros: number }}
  */
-export async function enviarAssinatura(token, bou, assinatura_b64) {
+export async function enviarAssinatura(
+  token,
+  bou,
+  assinatura_b64,
+  assinatura_cartorario_b64 = null
+) {
+  const payload = {
+    token,
+    bou,
+    assinatura_base64: assinatura_b64,
+  };
+
+  if (assinatura_cartorario_b64) {
+    payload.assinatura_cartorario_base64 = assinatura_cartorario_b64;
+  }
+
   const resp = await fetch(`${API_BASE}/api/assinatura/receber/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token, bou, assinatura_base64: assinatura_b64 }),
+    body: JSON.stringify(payload),
   });
 
   if (!resp.ok) {
