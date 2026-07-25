@@ -4,9 +4,9 @@ Script de backup automático do banco de dados SQLite
 Execute: python backup.py
 """
 
+import json
 import os
 import shutil
-import json
 from datetime import datetime
 from pathlib import Path
 

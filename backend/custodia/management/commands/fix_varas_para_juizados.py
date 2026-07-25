@@ -4,6 +4,7 @@ Management command to migrate old 'vara' values from
 """
 
 from django.core.management.base import BaseCommand
+
 from custodia.models import Apreensao
 
 MAPA_VARAS = {

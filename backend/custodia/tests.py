@@ -1,10 +1,12 @@
 import uuid
 from datetime import timedelta
-from django.test import TestCase
+
 from django.contrib.auth.models import User
+from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
-from custodia.models import LoteIncineracao, Apreensao
+
+from custodia.models import Apreensao, LoteIncineracao
 
 
 class LoteIncineracaoTest(TestCase):

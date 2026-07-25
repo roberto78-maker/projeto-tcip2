@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.db.models import Count
 from django.utils.html import format_html
-from .models import Apreensao, LoteIncineracao, Historico, Policial
+
+from .models import Apreensao, Historico, LoteIncineracao, Policial
 
 
 class HistoricoInline(admin.TabularInline):

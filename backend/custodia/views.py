@@ -13,11 +13,11 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.files.storage import default_storage
 from django.db import transaction
-from django.db.models import Count, Q, Sum, Case, When, F, FloatField
+from django.db.models import Case, Count, F, FloatField, Q, Sum, When
 from django.http import HttpResponse
 from django.utils import timezone
-from django.utils.text import get_valid_filename
 from django.utils.html import escape
+from django.utils.text import get_valid_filename
 from django_filters import rest_framework as django_filters
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
@@ -32,13 +32,12 @@ from reportlab.platypus import (
 )
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import APIException
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.exceptions import APIException
 
-
-from .models import Apreensao, LoteIncineracao, Historico, OficioPersonalizado, Policial
+from .models import Apreensao, Historico, LoteIncineracao, OficioPersonalizado, Policial
 from .serializers import (
     ApreensaoSerializer,
     LoteIncineracaoSerializer,
