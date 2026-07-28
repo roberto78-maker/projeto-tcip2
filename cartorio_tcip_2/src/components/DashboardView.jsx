@@ -179,7 +179,7 @@ export default function DashboardView() {
       {/* ── Row 1: Weight cards by stage ────────────────────────────────── */}
       <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }}>
         <TopCard
-          title="CUSTÓDIA (DEPÓSITO)"
+          title="DEPÓSITO"
           value={formatarPesoDisplay(stats.peso_cofre)}
           subtitle={`${stats.count_cofre} itens no depósito`}
           bg="#007bff"
