@@ -166,7 +166,7 @@ export default function LotesProntosView() {
     <div style={{ display: "flex", flexDirection: "column", gap: "25px" }}>
 
       <div className="card">
-        <h2 className="card-title">Incinerados</h2>
+        <h2 className="card-title">INCINERADOS</h2>
       </div>
 
       {lotesAgrupados.length === 0 && (

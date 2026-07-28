@@ -168,7 +168,7 @@ export default function CofreView() {
       <div style={{ padding: "25px", background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
           <div>
-            <h2 style={{ margin: 0, color: "#1e293b", fontSize: "20px" }}>📦 Central de Custódia / Depósito</h2>
+            <h2 style={{ margin: 0, color: "#1e293b", fontSize: "20px" }}>📦 DEPÓSITO</h2>
             <p style={{ margin: "5px 0 0 0", color: "#64748b", fontSize: "14px" }}>
               Gerencie entorpecentes e materiais apreendidos separadamente.
               {totalCount !== null && !loading && (

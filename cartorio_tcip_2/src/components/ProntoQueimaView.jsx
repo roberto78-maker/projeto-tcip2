@@ -353,7 +353,7 @@ export default function ProntoQueimaView() {
       )}
 
       <div className="card">
-        <h2 className="card-title">Lotes</h2>
+        <h2 className="card-title">LOTES</h2>
         <p className="card-subtitle">Listagem de materiais agrupados em lotes para destruição oficial.</p>
       </div>
 

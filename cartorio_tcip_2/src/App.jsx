@@ -164,74 +164,74 @@ export default function App() {
           className={`sidebar-btn ${view === 'dashboard' ? 'active' : ''}`}
           onClick={() => changeView("dashboard")}
         >
-          <span style={{ fontSize: "16px" }}>⏱</span> Dashboard
+          <span style={{ fontSize: "16px" }}>⏱</span> DASHBOARD
         </button>
-
+ 
         <div className="sidebar-section">OPERACIONAL</div>
-
+ 
         <button
           className={`sidebar-btn ${view === 'cadastro' ? 'active' : ''}`}
           onClick={() => changeView("cadastro")}
         >
           <span style={{ fontSize: "16px" }}>📝</span> CADASTRO
         </button>
-
+ 
         <button
           className={`sidebar-btn ${view === 'conferencia' ? 'active' : ''}`}
           onClick={() => changeView("conferencia")}
         >
-          <span style={{ fontSize: "16px" }}>⚖️</span> Triagem
+          <span style={{ fontSize: "16px" }}>⚖️</span> TRIAGEM
         </button>
-
+ 
         <div className="sidebar-section">COFRE</div>
-
+ 
         <button
           className={`sidebar-btn ${view === 'deposito' ? 'active' : ''}`}
           onClick={() => changeView("deposito")}
         >
-          <span style={{ fontSize: "16px" }}>🗄️</span> Depósito
+          <span style={{ fontSize: "16px" }}>🗄️</span> DEPÓSITO
         </button>
-
+ 
         <div className="sidebar-section">INCINERAÇÃO</div>
-
+ 
         <button
           className={`sidebar-btn ${view === 'incineracao' ? 'active' : ''}`}
           onClick={() => changeView("incineracao")}
         >
-          <span style={{ fontSize: "16px" }}>📦</span> Lotes
+          <span style={{ fontSize: "16px" }}>📦</span> LOTES
         </button>
-
+ 
         <button
           className={`sidebar-btn ${view === 'lotes_prontos' ? 'active' : ''}`}
           onClick={() => changeView("lotes_prontos")}
         >
-          <span style={{ fontSize: "16px" }}>🔥</span> Incinerados
+          <span style={{ fontSize: "16px" }}>🔥</span> INCINERADOS
         </button>
-
+ 
         <div className="sidebar-section">RELATÓRIOS</div>
-
+ 
         <button
           className={`sidebar-btn ${view === 'auditoria' ? 'active' : ''}`}
           onClick={() => changeView("auditoria")}
         >
-          <span style={{ fontSize: "16px" }}>📊</span> Auditoria
+          <span style={{ fontSize: "16px" }}>📊</span> BUSCA PROCESSUAL
         </button>
-
+ 
         <button
           className={`sidebar-btn ${view === 'oficios' ? 'active' : ''}`}
           onClick={() => changeView("oficios")}
         >
-          <span style={{ fontSize: "16px" }}>📄</span> Ofícios
+          <span style={{ fontSize: "16px" }}>📄</span> OFÍCIOS
         </button>
-
+ 
         <div style={{ flex: 1 }}></div>
-
+ 
         <button
           className="sidebar-btn"
           style={{ borderTop: "1px solid rgba(255,255,255,0.1)", color: "#f87171" }}
           onClick={handleLogout}
         >
-          Sair
+          SAIR
         </button>
 
       </div>

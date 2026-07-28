@@ -294,7 +294,7 @@ export default function AuditoriaView() {
     <div style={{ padding: "10px", paddingBottom: "50px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
         <div>
-          <h2 style={{ fontSize: "24px", margin: 0, fontWeight: "700" }}>🔎 Radar e Buscas de Processos (Auditoria)</h2>
+          <h2 style={{ fontSize: "24px", margin: 0, fontWeight: "700" }}>🔎 BUSCA PROCESSUAL</h2>
           <p style={{ margin: 0, color: "#64748b", fontSize: "14px" }}>
             Pesquisa global avançada para encontrar onde cada droga ou processo se encontra no sistema.
           </p>
