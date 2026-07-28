@@ -187,7 +187,7 @@ export default function DashboardView() {
           onClick={() => navigateTo("deposito", "DROGAS")}
         />
         <TopCard
-          title="LOTES EM FORMAÇÃO"
+          title="LOTE"
           value={formatarPesoDisplay(stats.peso_incineracao)}
           subtitle={`${stats.lotes_em_formacao} lotes (${stats.count_incineracao} itens)`}
           bg="#ffb000"
@@ -195,7 +195,7 @@ export default function DashboardView() {
           onClick={() => navigateTo("incineracao")}
         />
         <TopCard
-          title="INCINERADOS NO PERÍODO"
+          title="INCINERADOS"
           value={formatarPesoDisplay(stats.peso_queima_pronta)}
           subtitle={`${stats.lotes_incinerados} lotes (${stats.count_queima_pronta} itens)`}
           bg="#28a745"
