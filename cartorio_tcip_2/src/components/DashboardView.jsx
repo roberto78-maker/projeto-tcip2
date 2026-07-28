@@ -42,7 +42,7 @@ const TopCard = ({ title, value, subtitle, bg, icon, onClick }) => (
       <span style={{ fontSize: "20px", opacity: 0.8 }}>{icon}</span>
     </div>
     <div style={{ fontSize: "28px", fontWeight: "700", marginBottom: "8px" }}>{value}</div>
-    <div style={{ fontSize: "12px", opacity: 0.9 }}>{subtitle}</div>
+    <div style={{ fontSize: "13px", opacity: 0.95 }}>{subtitle}</div>
   </div>
 );
 
@@ -181,7 +181,7 @@ export default function DashboardView() {
         <TopCard
           title="DEPÓSITO"
           value={formatarPesoDisplay(stats.peso_cofre)}
-          subtitle={`${stats.count_cofre} itens no depósito`}
+          subtitle={<><strong>{stats.count_cofre}</strong> itens no depósito</>}
           bg="#007bff"
           icon="📦"
           onClick={() => navigateTo("deposito", "DROGAS")}
@@ -189,7 +189,7 @@ export default function DashboardView() {
         <TopCard
           title="LOTES"
           value={formatarPesoDisplay(stats.peso_incineracao)}
-          subtitle={`${stats.lotes_em_formacao} lotes (${stats.count_incineracao} itens)`}
+          subtitle={<><strong>{stats.lotes_em_formacao}</strong> lotes (<strong>{stats.count_incineracao}</strong> itens)</>}
           bg="#ffb000"
           icon="⚖️"
           onClick={() => navigateTo("incineracao")}
@@ -197,7 +197,7 @@ export default function DashboardView() {
         <TopCard
           title="INCINERADOS"
           value={formatarPesoDisplay(stats.peso_queima_pronta)}
-          subtitle={`${stats.lotes_incinerados} lotes (${stats.count_queima_pronta} itens)`}
+          subtitle={<><strong>{stats.lotes_incinerados}</strong> lotes (<strong>{stats.count_queima_pronta}</strong> itens)</>}
           bg="#28a745"
           icon="🔥"
           onClick={() => navigateTo("lotes_prontos")}
@@ -209,7 +209,7 @@ export default function DashboardView() {
         <TopCard
           title="APARELHOS DE SOM"
           value={stats.count_som_cofre}
-          subtitle={`${stats.count_som} recebidos no período`}
+          subtitle={<><strong>{stats.count_som}</strong> recebidos no período</>}
           bg="#8b5cf6"
           icon="🔊"
           onClick={() => navigateTo("deposito", "OBJETOS")}
@@ -217,7 +217,7 @@ export default function DashboardView() {
         <TopCard
           title="FACAS / ARMAS BRANCAS"
           value={stats.count_facas_cofre}
-          subtitle={`${stats.count_facas} recebidas no período`}
+          subtitle={<><strong>{stats.count_facas}</strong> recebidas no período</>}
           bg="#ef4444"
           icon="🗡️"
           onClick={() => navigateTo("deposito", "OBJETOS")}
@@ -225,7 +225,7 @@ export default function DashboardView() {
         <TopCard
           title="OUTROS OBJETOS"
           value={stats.count_outros_cofre}
-          subtitle={`${stats.count_outros} registrados no período`}
+          subtitle={<><strong>{stats.count_outros}</strong> registrados no período</>}
           bg="#64748b"
           icon="⚙️"
           onClick={() => navigateTo("deposito", "OBJETOS")}
