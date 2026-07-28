@@ -187,7 +187,7 @@ export default function DashboardView() {
           onClick={() => navigateTo("deposito", "DROGAS")}
         />
         <TopCard
-          title="LOTE"
+          title="LOTES"
           value={formatarPesoDisplay(stats.peso_incineracao)}
           subtitle={`${stats.lotes_em_formacao} lotes (${stats.count_incineracao} itens)`}
           bg="#ffb000"
