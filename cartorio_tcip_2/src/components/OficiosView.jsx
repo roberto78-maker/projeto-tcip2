@@ -106,7 +106,7 @@ function OficiosView() {
     <div style={{ padding: "10px", paddingBottom: "50px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
         <div>
-          <h2 style={{ fontSize: "24px", margin: 0, fontWeight: "700" }}>📄 Gerador de Ofícios</h2>
+          <h2 style={{ fontSize: "24px", margin: 0, fontWeight: "700" }}>📄 GERADOR DE OFÍCIOS</h2>
           <p style={{ margin: 0, color: "#64748b", fontSize: "14px" }}>
             Criação de ofícios com numeração integrada e formatação ABNT automática.
           </p>
