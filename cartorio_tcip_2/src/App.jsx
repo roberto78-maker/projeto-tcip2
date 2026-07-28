@@ -16,6 +16,8 @@ import { isAutenticado, logout, getUsuario } from "./services/auth.js";
 
 const RelogioDigital = () => {
   const [hora, setHora] = useState(new Date());
+  const [copiedEmail, setCopiedEmail] = useState(false);
+  const [copiedPhone, setCopiedPhone] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setHora(new Date()), 1000);
@@ -25,10 +27,82 @@ const RelogioDigital = () => {
   const dataExtenso = hora.toLocaleDateString("pt-BR", { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   const dataFormatada = dataExtenso.charAt(0).toUpperCase() + dataExtenso.slice(1);
 
+  const copyToClipboard = (text, type) => {
+    navigator.clipboard.writeText(text);
+    if (type === "email") {
+      setCopiedEmail(true);
+      setTimeout(() => setCopiedEmail(false), 2000);
+    } else {
+      setCopiedPhone(true);
+      setTimeout(() => setCopiedPhone(false), 2000);
+    }
+  };
+
   return (
-    <div style={{ position: "absolute", top: "20px", left: "40px", color: "#64748b", fontSize: "12px", display: "flex", alignItems: "center", gap: "8px", fontWeight: "600", zIndex: 10 }}>
-      <span style={{ fontSize: "16px" }}>🕒</span>
-      {dataFormatada} • {hora.toLocaleTimeString("pt-BR")}
+    <div style={{ 
+      position: "absolute", 
+      top: "16px", 
+      left: "40px", 
+      right: "40px", 
+      color: "#64748b", 
+      fontSize: "12px", 
+      display: "flex", 
+      justifyContent: "space-between", 
+      alignItems: "center", 
+      fontWeight: "600", 
+      zIndex: 10,
+      borderBottom: "1px solid rgba(226, 232, 240, 0.6)",
+      paddingBottom: "8px"
+    }}>
+      {/* Relógio */}
+      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+        <span style={{ fontSize: "14px" }}>🕒</span>
+        {dataFormatada} • {hora.toLocaleTimeString("pt-BR")}
+      </div>
+
+      {/* Telefone (Centro) */}
+      <div 
+        onClick={() => copyToClipboard("(45) 3122-4025", "phone")}
+        style={{ 
+          display: "flex", 
+          alignItems: "center", 
+          gap: "6px", 
+          cursor: "pointer", 
+          padding: "4px 8px", 
+          borderRadius: "4px", 
+          transition: "background 0.2s, color 0.2s",
+          background: copiedPhone ? "#f0fdf4" : "transparent",
+          color: copiedPhone ? "#16a34a" : "#64748b"
+        }}
+        title="Clique para copiar o telefone"
+        onMouseEnter={(e) => { if(!copiedPhone) e.currentTarget.style.background = "#f1f5f9"; }}
+        onMouseLeave={(e) => { if(!copiedPhone) e.currentTarget.style.background = "transparent"; }}
+      >
+        <span>📞</span>
+        <span>{copiedPhone ? "Copiado!" : "(45) 3122-4025"}</span>
+      </div>
+
+      {/* E-mail (Direita) */}
+      <div 
+        onClick={() => copyToClipboard("6bpm-1cartorio@pm.pr.gov.br", "email")}
+        style={{ 
+          display: "flex", 
+          alignItems: "center", 
+          gap: "6px", 
+          cursor: "pointer", 
+          padding: "4px 8px", 
+          borderRadius: "4px", 
+          transition: "background 0.2s, color 0.2s",
+          background: copiedEmail ? "#f0fdf4" : "transparent",
+          color: copiedEmail ? "#16a34a" : "#64748b"
+        }}
+        title="Clique para copiar o e-mail"
+        onMouseEnter={(e) => { if(!copiedEmail) e.currentTarget.style.background = "#f1f5f9"; }}
+        onMouseLeave={(e) => { if(!copiedEmail) e.currentTarget.style.background = "transparent"; }}
+      >
+        <span>✉️</span>
+        <span>{copiedEmail ? "Copiado!" : "6bpm-1cartorio@pm.pr.gov.br"}</span>
+      </div>
     </div>
   );
 };
