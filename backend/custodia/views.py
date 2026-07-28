@@ -123,11 +123,20 @@ class DashboardStatsView(APIView):
             peso_incineracao=Sum(peso_expressao, filter=Q(status="incineracao")),
             peso_queima_pronta=Sum(peso_expressao, filter=Q(status="queima_pronta")),
             count_som=Count("id", filter=Q(natureza="SOM")),
+            count_som_cofre=Count("id", filter=Q(natureza="SOM", status="cofre")),
             count_outros=Count("id", filter=Q(natureza="OUTROS")),
+            count_outros_cofre=Count("id", filter=Q(natureza="OUTROS", status="cofre")),
             count_facas=Count(
                 "id",
                 filter=(
                     Q(substancia__icontains="faca") | Q(substancia__icontains="facão")
+                ),
+            ),
+            count_facas_cofre=Count(
+                "id",
+                filter=(
+                    (Q(substancia__icontains="faca") | Q(substancia__icontains="facão"))
+                    & Q(status="cofre")
                 ),
             ),
         )

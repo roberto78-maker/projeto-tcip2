@@ -67,8 +67,11 @@ const EMPTY_STATS = {
   peso_incineracao: 0,
   peso_queima_pronta: 0,
   count_som: 0,
+  count_som_cofre: 0,
   count_outros: 0,
+  count_outros_cofre: 0,
   count_facas: 0,
+  count_facas_cofre: 0,
   lotes_em_formacao: 0,
   lotes_incinerados: 0,
 };
