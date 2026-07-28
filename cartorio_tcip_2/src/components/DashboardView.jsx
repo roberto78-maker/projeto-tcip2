@@ -208,24 +208,24 @@ export default function DashboardView() {
       <div style={{ display: "flex", gap: "20px", marginBottom: "30px" }}>
         <TopCard
           title="APARELHOS DE SOM"
-          value={stats.count_som}
-          subtitle="recebidos no período"
+          value={stats.count_som_cofre}
+          subtitle={`${stats.count_som} recebidos no período`}
           bg="#8b5cf6"
           icon="🔊"
           onClick={() => navigateTo("deposito", "OBJETOS")}
         />
         <TopCard
           title="FACAS / ARMAS BRANCAS"
-          value={stats.count_facas}
-          subtitle="recebidas no período"
+          value={stats.count_facas_cofre}
+          subtitle={`${stats.count_facas} recebidas no período`}
           bg="#ef4444"
           icon="🗡️"
           onClick={() => navigateTo("deposito", "OBJETOS")}
         />
         <TopCard
           title="OUTROS OBJETOS"
-          value={stats.count_outros}
-          subtitle="registrados no período"
+          value={stats.count_outros_cofre}
+          subtitle={`${stats.count_outros} registrados no período`}
           bg="#64748b"
           icon="⚙️"
           onClick={() => navigateTo("deposito", "OBJETOS")}
