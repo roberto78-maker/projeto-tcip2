@@ -211,24 +211,24 @@ export default function DashboardView() {
       <div style={{ display: "flex", gap: "20px", marginBottom: "30px" }}>
         <TopCard
           title="APARELHOS DE SOM"
-          value={stats.count_som_cofre}
-          subtitle={<><strong>{stats.unid_som_cofre}</strong> un. em custódia (<strong>{stats.count_som}</strong> procs)</>}
+          value={stats.unid_som_cofre}
+          subtitle={<><strong>{stats.count_som_cofre}</strong> registros no depósito (<strong>{stats.count_som}</strong> no período)</>}
           bg="#8b5cf6"
           icon="🔊"
           onClick={() => navigateTo("deposito", "OBJETOS")}
         />
         <TopCard
           title="ARMAS BRANCAS / SIMULACROS"
-          value={stats.count_facas_cofre}
-          subtitle={<><strong>{stats.unid_facas_cofre}</strong> un. em custódia (<strong>{stats.count_facas}</strong> procs)</>}
+          value={stats.unid_facas_cofre}
+          subtitle={<><strong>{stats.count_facas_cofre}</strong> registros no depósito (<strong>{stats.count_facas}</strong> no período)</>}
           bg="#ef4444"
           icon="🗡️"
           onClick={() => navigateTo("deposito", "OBJETOS")}
         />
         <TopCard
           title="OUTROS OBJETOS"
-          value={stats.count_outros_cofre}
-          subtitle={<><strong>{stats.unid_outros_cofre}</strong> un. em custódia (<strong>{stats.count_outros}</strong> procs)</>}
+          value={stats.unid_outros_cofre}
+          subtitle={<><strong>{stats.count_outros_cofre}</strong> registros no depósito (<strong>{stats.count_outros}</strong> no período)</>}
           bg="#64748b"
           icon="⚙️"
           onClick={() => navigateTo("deposito", "OBJETOS")}
