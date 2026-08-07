@@ -212,15 +212,15 @@ export default function DashboardView() {
         <TopCard
           title="APARELHOS DE SOM"
           value={stats.count_som_cofre}
-          subtitle={<><strong>{stats.count_som}</strong> recebidos no período</>}
+          subtitle={<><strong>{stats.unid_som_cofre}</strong> un. em custódia (<strong>{stats.count_som}</strong> procs)</>}
           bg="#8b5cf6"
           icon="🔊"
           onClick={() => navigateTo("deposito", "OBJETOS")}
         />
         <TopCard
-          title="FACAS / ARMAS BRANCAS"
+          title="ARMAS BRANCAS / SIMULACROS"
           value={stats.count_facas_cofre}
-          subtitle={<><strong>{stats.count_facas}</strong> recebidas no período</>}
+          subtitle={<><strong>{stats.unid_facas_cofre}</strong> un. em custódia (<strong>{stats.count_facas}</strong> procs)</>}
           bg="#ef4444"
           icon="🗡️"
           onClick={() => navigateTo("deposito", "OBJETOS")}
@@ -228,7 +228,7 @@ export default function DashboardView() {
         <TopCard
           title="OUTROS OBJETOS"
           value={stats.count_outros_cofre}
-          subtitle={<><strong>{stats.count_outros}</strong> registrados no período</>}
+          subtitle={<><strong>{stats.unid_outros_cofre}</strong> un. em custódia (<strong>{stats.count_outros}</strong> procs)</>}
           bg="#64748b"
           icon="⚙️"
           onClick={() => navigateTo("deposito", "OBJETOS")}
