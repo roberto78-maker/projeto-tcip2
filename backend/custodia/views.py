@@ -139,12 +139,8 @@ class DashboardStatsView(APIView):
             count_som_cofre=Count("id", filter=Q(natureza="SOM", status="cofre")),
             unid_som_cofre=Sum("peso", filter=Q(natureza="SOM", status="cofre")),
             count_outros=Count("id", filter=Q(natureza="OUTROS") & ~filtro_armas),
-            count_outros_cofre=Count(
-                "id", filter=Q(natureza="OUTROS", status="cofre") & ~filtro_armas
-            ),
-            unid_outros_cofre=Sum(
-                "peso", filter=Q(natureza="OUTROS", status="cofre") & ~filtro_armas
-            ),
+            count_outros_cofre=Count("id", filter=Q(natureza="OUTROS", status="cofre") & ~filtro_armas),
+            unid_outros_cofre=Sum("peso", filter=Q(natureza="OUTROS", status="cofre") & ~filtro_armas),
             count_facas=Count("id", filter=filtro_armas),
             count_facas_cofre=Count("id", filter=filtro_armas & Q(status="cofre")),
             unid_facas_cofre=Sum("peso", filter=filtro_armas & Q(status="cofre")),
@@ -175,12 +171,8 @@ class DashboardStatsView(APIView):
 
 class LoteIncineracaoFilter(django_filters.FilterSet):
     ano = django_filters.CharFilter(field_name="ano")
-    protocolo = django_filters.CharFilter(
-        field_name="protocolo", lookup_expr="icontains"
-    )
-    data_inicio = django_filters.DateFilter(
-        field_name="data_criacao", lookup_expr="gte"
-    )
+    protocolo = django_filters.CharFilter(field_name="protocolo", lookup_expr="icontains")
+    data_inicio = django_filters.DateFilter(field_name="data_criacao", lookup_expr="gte")
     data_fim = django_filters.DateFilter(field_name="data_criacao", lookup_expr="lte")
 
     class Meta:
@@ -200,9 +192,7 @@ class LoteIncineracaoViewSet(viewsets.ModelViewSet):
 
 class ApreensaoFilter(django_filters.FilterSet):
     status = django_filters.CharFilter(field_name="status")
-    substancia = django_filters.CharFilter(
-        field_name="substancia", lookup_expr="icontains"
-    )
+    substancia = django_filters.CharFilter(field_name="substancia", lookup_expr="icontains")
     reu = django_filters.CharFilter(field_name="reu", lookup_expr="icontains")
     bou = django_filters.CharFilter(field_name="bou", lookup_expr="icontains")
     processo = django_filters.CharFilter(field_name="processo", lookup_expr="icontains")
@@ -266,9 +256,7 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
     pagination_class = StandardResultsSetPagination
 
     queryset = (
-        Apreensao.objects.select_related("lote_incineracao")
-        .prefetch_related("historico")
-        .order_by("-data_criacao")
+        Apreensao.objects.select_related("lote_incineracao").prefetch_related("historico").order_by("-data_criacao")
     )
     serializer_class = ApreensaoSerializer
     filterset_class = ApreensaoFilter
@@ -317,9 +305,7 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
             raise
         except Exception as e:
             logger.error(f"Erro ao atualizar apreens\u00e3o: {str(e)}")
-            return Response(
-                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=True, methods=["post"])
     def destinar_incineracao(self, request, pk=None):
@@ -327,23 +313,13 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
 
         if apreensao.natureza != "DROGAS":
             return Response(
-                {
-                    "error": (
-                        "Somente entorpecentes podem ser "
-                        "destinados \u00e0 incinera\u00e7\u00e3o."
-                    )
-                },
+                {"error": ("Somente entorpecentes podem ser destinados \u00e0 incinera\u00e7\u00e3o.")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         if not (apreensao.arquivo_pdf_url or apreensao.arquivo_pdf):
             return Response(
-                {
-                    "error": (
-                        "Arquivo PDF nao encontrado "
-                        "(Laudo/Certid\u00e3o obrigat\u00f3rio)."
-                    )
-                },
+                {"error": ("Arquivo PDF nao encontrado (Laudo/Certid\u00e3o obrigat\u00f3rio).")},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -358,11 +334,7 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
                 .values_list("lote_incineracao_id", flat=True)
                 .distinct()
             )
-            lotes_candidatos = list(
-                LoteIncineracao.objects.filter(
-                    id__in=lotes_ativos_ids
-                ).select_for_update()
-            )
+            lotes_candidatos = list(LoteIncineracao.objects.filter(id__in=lotes_ativos_ids).select_for_update())
 
             # Procura em memória o primeiro lote com menos de 20 itens
             lote_aberto = None
@@ -375,16 +347,10 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
                 ultimo_lote = lote_aberto
             else:
                 # Bloqueia o último lote para garantir a numeração sequencial
-                ultimo_referencia = (
-                    LoteIncineracao.objects.select_for_update()
-                    .order_by("-numero")
-                    .first()
-                )
+                ultimo_referencia = LoteIncineracao.objects.select_for_update().order_by("-numero").first()
                 novo_numero = (ultimo_referencia.numero + 1) if ultimo_referencia else 1
                 protocolo = f"1CART6BPM-{str(novo_numero).zfill(6)}.{agora.year}"
-                ultimo_lote = LoteIncineracao.objects.create(
-                    numero=novo_numero, ano=agora.year, protocolo=protocolo
-                )
+                ultimo_lote = LoteIncineracao.objects.create(numero=novo_numero, ano=agora.year, protocolo=protocolo)
 
             apreensao.lote_incineracao = ultimo_lote
             apreensao.status = "incineracao"
@@ -397,8 +363,7 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
             )
 
         logger.info(
-            f"Apreens\u00e3o {apreensao.id} destinada para incinera\u00e7\u00e3o "
-            f"no lote {ultimo_lote.protocolo}"
+            f"Apreens\u00e3o {apreensao.id} destinada para incinera\u00e7\u00e3o no lote {ultimo_lote.protocolo}"
         )
 
         return Response(ApreensaoSerializer(apreensao).data)
@@ -422,9 +387,7 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
         try:
             lote = LoteIncineracao.objects.get(id=lote_id)
         except LoteIncineracao.DoesNotExist:
-            return Response(
-                {"error": "Lote n\u00e3o encontrado"}, status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"error": "Lote n\u00e3o encontrado"}, status=status.HTTP_404_NOT_FOUND)
 
         if arquivo and arquivo.size > 2 * 1024 * 1024:
             return Response(
@@ -432,9 +395,7 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        apreensoes = Apreensao.objects.filter(
-            lote_incineracao=lote, status="incineracao"
-        )
+        apreensoes = Apreensao.objects.filter(lote_incineracao=lote, status="incineracao")
 
         if apreensoes.count() == 0:
             return Response(
@@ -446,10 +407,7 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
             url_cloudinary = None
 
             if arquivo:
-                logger.info(
-                    f"Iniciando upload \u00fanico ao Cloudinary "
-                    f"para o lote {lote.protocolo}..."
-                )
+                logger.info(f"Iniciando upload \u00fanico ao Cloudinary para o lote {lote.protocolo}...")
                 arquivo.seek(0)
                 url_cloudinary = upload_documento(
                     arquivo,
@@ -480,16 +438,12 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
                 )
 
             logger.info(
-                f"Lote {lote.protocolo} finalizado com {count} registros. "
-                f"URL doc: {url_cloudinary or 'Nenhum'}"
+                f"Lote {lote.protocolo} finalizado com {count} registros. URL doc: {url_cloudinary or 'Nenhum'}"
             )
 
             return Response(
                 {
-                    "message": (
-                        f"Incinera\u00e7\u00e3o Lote {lote.protocolo} "
-                        f"conclu\u00edda com sucesso."
-                    ),
+                    "message": (f"Incinera\u00e7\u00e3o Lote {lote.protocolo} conclu\u00edda com sucesso."),
                     "itens_finalizados": count,
                     "documento_anexado": bool(url_cloudinary),
                     "url_documento": url_cloudinary,
@@ -548,9 +502,7 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
 
         with transaction.atomic():
             # Verifica se já existe um recibo para esse BOU no ano atual
-            existente = Apreensao.objects.filter(
-                bou=bou, ano_recibo=ano_atual, numero_recibo__isnull=False
-            ).first()
+            existente = Apreensao.objects.filter(bou=bou, ano_recibo=ano_atual, numero_recibo__isnull=False).first()
 
             if existente:
                 Apreensao.objects.filter(bou=bou, numero_recibo__isnull=True).update(
@@ -566,9 +518,7 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
 
             # Bloqueia a linha com o maior número para garantir consistência e evitar race conditions
             ultimo_registro = (
-                Apreensao.objects.filter(
-                    ano_recibo=ano_atual, numero_recibo__isnull=False
-                )
+                Apreensao.objects.filter(ano_recibo=ano_atual, numero_recibo__isnull=False)
                 .select_for_update()
                 .order_by("-numero_recibo")
                 .first()
@@ -578,14 +528,11 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
             novo_numero = (ultimo_recibo + 1) if ultimo_recibo else 1
 
             # .update() retorna a contagem de linhas afetadas
-            count = Apreensao.objects.filter(
-                bou=bou, numero_recibo__isnull=True
-            ).update(numero_recibo=novo_numero, ano_recibo=ano_atual)
+            count = Apreensao.objects.filter(bou=bou, numero_recibo__isnull=True).update(
+                numero_recibo=novo_numero, ano_recibo=ano_atual
+            )
 
-        logger.info(
-            f"Recibo #{novo_numero}/{ano_atual} gerado para BOU {bou} "
-            f"({count} registros)"
-        )
+        logger.info(f"Recibo #{novo_numero}/{ano_atual} gerado para BOU {bou} ({count} registros)")
 
         return Response(
             {
@@ -630,13 +577,9 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
             apreensao.save(update_fields=["arquivo_pdf_url"])
 
             logger.info(f"PDF carregado para Apreens\u00e3o {apreensao.id}: {url}")
-            return Response(
-                {"arquivo_pdf_url": url, "message": "PDF carregado com sucesso."}
-            )
+            return Response({"arquivo_pdf_url": url, "message": "PDF carregado com sucesso."})
         except Exception as e:
-            logger.error(
-                f"Erro no upload do PDF para apreens\u00e3o {apreensao.id}: {e}"
-            )
+            logger.error(f"Erro no upload do PDF para apreens\u00e3o {apreensao.id}: {e}")
             return Response(
                 {"error": f"Falha no upload: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -690,30 +633,20 @@ class ApreensaoViewSet(viewsets.ModelViewSet):
 
             # Bloqueia e busca o maior número do ano
             ultimo_reg_apreensao = (
-                Apreensao.objects.filter(
-                    ano_oficio=ano_atual, numero_oficio__isnull=False
-                )
+                Apreensao.objects.filter(ano_oficio=ano_atual, numero_oficio__isnull=False)
                 .select_for_update()
                 .order_by("-numero_oficio")
                 .first()
             )
-            ultimo_oficio_apreensao = (
-                ultimo_reg_apreensao.numero_oficio if ultimo_reg_apreensao else 0
-            )
+            ultimo_oficio_apreensao = ultimo_reg_apreensao.numero_oficio if ultimo_reg_apreensao else 0
 
             ultimo_reg_personalizado = (
-                OficioPersonalizado.objects.filter(
-                    ano_oficio=ano_atual, numero_oficio__isnull=False
-                )
+                OficioPersonalizado.objects.filter(ano_oficio=ano_atual, numero_oficio__isnull=False)
                 .select_for_update()
                 .order_by("-numero_oficio")
                 .first()
             )
-            ultimo_oficio_personalizado = (
-                ultimo_reg_personalizado.numero_oficio
-                if ultimo_reg_personalizado
-                else 0
-            )
+            ultimo_oficio_personalizado = ultimo_reg_personalizado.numero_oficio if ultimo_reg_personalizado else 0
 
             ultimo_oficio = max(ultimo_oficio_apreensao, ultimo_oficio_personalizado)
             novo_numero = (ultimo_oficio + 1) if ultimo_oficio > 0 else 100
@@ -761,14 +694,10 @@ def _aplicar_filtros_relatorio(qs, params):
     if substancia == "__NENHUMA__":
         qs = qs.exclude(natureza="DROGAS")
     elif substancia:
-        qs = qs.filter(
-            Q(substancia__icontains=substancia) | Q(descricao__icontains=substancia)
-        )
+        qs = qs.filter(Q(substancia__icontains=substancia) | Q(descricao__icontains=substancia))
     if natureza:
         if natureza == "AMEACA":
-            qs = qs.filter(
-                Q(natureza="AMEACA") | Q(substancia__icontains="NÃO HÁ APREENSÃO")
-            )
+            qs = qs.filter(Q(natureza="AMEACA") | Q(substancia__icontains="NÃO HÁ APREENSÃO"))
         else:
             qs = qs.filter(natureza=natureza)
     if status_f:
@@ -834,11 +763,7 @@ class RelatorioIncineracaoView(APIView):
             if item.get("lote_incineracao__numero"):
                 lote_num = str(item["lote_incineracao__numero"]).zfill(2)
                 lote_dt = item.get("lote_incineracao__data_criacao")
-                lote_data = (
-                    timezone.localtime(lote_dt).strftime("%d/%m/%y")
-                    if lote_dt
-                    else "S/D"
-                )
+                lote_data = timezone.localtime(lote_dt).strftime("%d/%m/%y") if lote_dt else "S/D"
                 status_desc = f"{status_desc} (Lote {lote_num} - {lote_data})"
 
             # Fallback para data: usa data_fato, se nulo usa data_criacao
@@ -858,11 +783,7 @@ class RelatorioIncineracaoView(APIView):
                     "status_label": status_desc,
                     "motivo_exclusao": item["motivo_exclusao"],
                     "arquivo_pdf_url": item["arquivo_pdf_url"],
-                    "data": (
-                        timezone.localtime(data_exibicao).strftime("%Y-%m-%d")
-                        if data_exibicao
-                        else None
-                    ),
+                    "data": (timezone.localtime(data_exibicao).strftime("%Y-%m-%d") if data_exibicao else None),
                 }
             )
 
@@ -887,15 +808,11 @@ class RelatorioIncineracaoPDFView(APIView):
             total_itens=Count("id"),
             processos_unicos=Count("processo", distinct=True),
             reus_unicos=Count("reu", distinct=True),
-            peso_total=Sum(
-                peso_expressao, filter=Q(natureza="DROGAS") & ~Q(unidade="Unid")
-            ),
+            peso_total=Sum(peso_expressao, filter=Q(natureza="DROGAS") & ~Q(unidade="Unid")),
             count_som=Count("id", filter=Q(natureza="SOM")),
             count_facas=Count(
                 "id",
-                filter=(
-                    Q(substancia__icontains="faca") | Q(substancia__icontains="facão")
-                ),
+                filter=(Q(substancia__icontains="faca") | Q(substancia__icontains="facão")),
             ),
         )
 
@@ -956,12 +873,8 @@ class RelatorioIncineracaoPDFView(APIView):
             textColor=colors.HexColor("#1e3a8a"),
         )
 
-        elements.append(
-            Paragraph("POL\u00cdCIA MILITAR DO PARAN\u00c1 - 6\u00ba BPM", title_style)
-        )
-        elements.append(
-            Paragraph("PRIMEIRO CART\u00d3RIO - CASCAVEL", subtitle_title_style)
-        )
+        elements.append(Paragraph("POL\u00cdCIA MILITAR DO PARAN\u00c1 - 6\u00ba BPM", title_style))
+        elements.append(Paragraph("PRIMEIRO CART\u00d3RIO - CASCAVEL", subtitle_title_style))
 
         elements.append(
             Paragraph(
@@ -977,9 +890,7 @@ class RelatorioIncineracaoPDFView(APIView):
             )
         )
 
-        periodo_texto = (
-            f"Per\u00edodo: {data_inicio or 'In\u00edcio'} a {data_fim or 'Hoje'}"
-        )
+        periodo_texto = f"Per\u00edodo: {data_inicio or 'In\u00edcio'} a {data_fim or 'Hoje'}"
         filtros_usados = []
         if vara:
             filtros_usados.append(f"Juizado: {escape(vara)}")
@@ -1010,9 +921,7 @@ class RelatorioIncineracaoPDFView(APIView):
         ]
 
         if peso_total > 0:
-            resumo_data.append(
-                [f"Peso Estimado (Drogas): {peso_total:.2f}g".replace(".", ",")]
-            )
+            resumo_data.append([f"Peso Estimado (Drogas): {peso_total:.2f}g".replace(".", ",")])
 
         if count_som > 0 or count_facas > 0:
             objetos_str = []
@@ -1102,9 +1011,7 @@ class RelatorioIncineracaoPDFView(APIView):
                     if hasattr(item, "lote_incineracao") and item.lote_incineracao:
                         lote_num = str(item.lote_incineracao.numero).zfill(2)
                         lote_data = (
-                            timezone.localtime(
-                                item.lote_incineracao.data_criacao
-                            ).strftime("%d/%m/%y")
+                            timezone.localtime(item.lote_incineracao.data_criacao).strftime("%d/%m/%y")
                             if item.lote_incineracao.data_criacao
                             else "S/D"
                         )
@@ -1118,11 +1025,7 @@ class RelatorioIncineracaoPDFView(APIView):
                             item.substancia or "-",
                             f"{item.peso} {item.unidade}",
                             status_desc,
-                            (
-                                timezone.localtime(dt_exibicao).strftime("%d/%m/%Y")
-                                if dt_exibicao
-                                else "-"
-                            ),
+                            (timezone.localtime(dt_exibicao).strftime("%d/%m/%Y") if dt_exibicao else "-"),
                         ]
                     )
 
@@ -1161,9 +1064,7 @@ class RelatorioIncineracaoPDFView(APIView):
                 elements.append(Spacer(1, 10))
 
         protocolo_hash = (
-            "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
-            + "-"
-            + timezone.now().strftime("%H%M")
+            "".join(random.choices(string.ascii_uppercase + string.digits, k=6)) + "-" + timezone.now().strftime("%H%M")
         )
 
         def add_footer(canvas, doc):
@@ -1174,9 +1075,7 @@ class RelatorioIncineracaoPDFView(APIView):
 
             usuario = request.user.username.upper() if request.user else "SISTEMA"
             data_hora = timezone.now().strftime("%d/%m/%Y %H:%M")
-            footer_text = (
-                f"Gerado por {usuario} em {data_hora} | Protocolo: AUD-{protocolo_hash}"
-            )
+            footer_text = f"Gerado por {usuario} em {data_hora} | Protocolo: AUD-{protocolo_hash}"
 
             canvas.drawString(30, 33, footer_text)
             canvas.drawRightString(565, 33, f"P\u00e1gina {doc.page}")
@@ -1236,9 +1135,7 @@ class FixVarasParaJuizadosView(APIView):
 
     def post(self, request):
         if not request.user.is_superuser:
-            return Response(
-                {"error": "Acesso negado"}, status=status.HTTP_403_FORBIDDEN
-            )
+            return Response({"error": "Acesso negado"}, status=status.HTTP_403_FORBIDDEN)
 
         dry_run = request.data.get("dry_run", False)
         relatorio = []
@@ -1337,16 +1234,13 @@ class GerarTokenAssinaturaView(APIView):
             # BOU ainda não salvo: vamos gerar token sem vincular a registros.
             # O frontend salva os registros apenas após a assinatura.
             logger.info(
-                f"[Assinatura] Token gerado para BOU '{bou}' sem registros "
-                f"existentes (cadastro ainda não salvo)."
+                f"[Assinatura] Token gerado para BOU '{bou}' sem registros existentes (cadastro ainda não salvo)."
             )
         else:
             apreensoes.update(token_assinatura=token, token_expira_em=expira_em)
 
         # URL que o celular vai abrir ao escanear o QR Code
-        frontend_base = os.environ.get(
-            "FRONTEND_URL", "https://projeto-tcip2.vercel.app"
-        )
+        frontend_base = os.environ.get("FRONTEND_URL", "https://projeto-tcip2.vercel.app")
         url_celular = f"{frontend_base}/assinar?token={token}&bou={bou}"
         if sem_token:
             url_celular += "&sem_token=true"
@@ -1378,9 +1272,7 @@ class ReceberAssinaturaView(APIView):
     def post(self, request):
         token_str = request.data.get("token", "").strip()
         assinatura_b64 = request.data.get("assinatura_base64", "").strip()
-        assinatura_cartorario_b64 = request.data.get(
-            "assinatura_cartorario_base64", ""
-        ).strip()
+        assinatura_cartorario_b64 = request.data.get("assinatura_cartorario_base64", "").strip()
         bou = request.data.get("bou", "").strip()
 
         # Validações básicas
@@ -1399,9 +1291,7 @@ class ReceberAssinaturaView(APIView):
                 {"error": "Formato de assinatura inválido."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        if assinatura_cartorario_b64 and not assinatura_cartorario_b64.startswith(
-            "data:image/"
-        ):
+        if assinatura_cartorario_b64 and not assinatura_cartorario_b64.startswith("data:image/"):
             return Response(
                 {"error": "Formato da assinatura do cartorário inválido."},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -1422,9 +1312,7 @@ class ReceberAssinaturaView(APIView):
         cache_data = {
             "assinatura_base64": assinatura_b64,
             "assinatura_cartorario_base64": assinatura_cartorario_b64 or None,
-            "tipo_assinatura_cartorario": (
-                "MANUAL" if assinatura_cartorario_b64 else "TOKEN"
-            ),
+            "tipo_assinatura_cartorario": ("MANUAL" if assinatura_cartorario_b64 else "TOKEN"),
         }
         cache_key = f"assinatura_{token_str}"
         cache.set(cache_key, cache_data, timeout=1800)
@@ -1446,10 +1334,7 @@ class ReceberAssinaturaView(APIView):
                         status=status.HTTP_400_BAD_REQUEST,
                     )
                 count = apreensoes.update(**update_fields)
-                logger.info(
-                    f"[Assinatura] Assinatura salva via BOU '{bou}' e token '{token}' "
-                    f"em {count} registro(s)."
-                )
+                logger.info(f"[Assinatura] Assinatura salva via BOU '{bou}' e token '{token}' em {count} registro(s).")
                 return Response({"ok": True, "registros": count})
             elif Apreensao.objects.filter(bou=bou).exists():
                 return Response(
@@ -1461,9 +1346,7 @@ class ReceberAssinaturaView(APIView):
         apreensoes_token = Apreensao.objects.filter(token_assinatura=token)
         if not apreensoes_token.exists():
             # Token ainda válido sem registros — salva uma entrada temporária
-            logger.warning(
-                f"[Assinatura] Token {token} recebido sem registros vinculados."
-            )
+            logger.warning(f"[Assinatura] Token {token} recebido sem registros vinculados.")
             return Response({"ok": True, "registros": 0, "pendente": True})
 
         primeiro = apreensoes_token.first()
@@ -1474,9 +1357,7 @@ class ReceberAssinaturaView(APIView):
             )
 
         count = apreensoes_token.update(**update_fields)
-        logger.info(
-            f"[Assinatura] Assinatura salva via token {token} em {count} registro(s)."
-        )
+        logger.info(f"[Assinatura] Assinatura salva via token {token} em {count} registro(s).")
         return Response({"ok": True, "registros": count})
 
 
@@ -1522,12 +1403,8 @@ class StatusAssinaturaView(APIView):
                     {
                         "assinado": True,
                         "assinatura_base64": assinatura_cache.get("assinatura_base64"),
-                        "assinatura_cartorario_base64": assinatura_cache.get(
-                            "assinatura_cartorario_base64"
-                        ),
-                        "tipo_assinatura_cartorario": assinatura_cache.get(
-                            "tipo_assinatura_cartorario", "TOKEN"
-                        ),
+                        "assinatura_cartorario_base64": assinatura_cache.get("assinatura_cartorario_base64"),
+                        "tipo_assinatura_cartorario": assinatura_cache.get("tipo_assinatura_cartorario", "TOKEN"),
                     }
                 )
             else:
@@ -1542,11 +1419,7 @@ class StatusAssinaturaView(APIView):
 
         # 2. Busca por BOU (registros mais recentes) e token correspondente
         if bou:
-            apreensao = (
-                Apreensao.objects.filter(bou=bou, token_assinatura=token)
-                .order_by("-data_criacao")
-                .first()
-            )
+            apreensao = Apreensao.objects.filter(bou=bou, token_assinatura=token).order_by("-data_criacao").first()
         else:
             apreensao = Apreensao.objects.filter(token_assinatura=token).first()
 
@@ -1577,12 +1450,8 @@ class StatusAssinaturaView(APIView):
             {
                 "assinado": assinado,
                 "assinatura_base64": apreensao.assinatura_base64 if assinado else None,
-                "assinatura_cartorario_base64": (
-                    apreensao.assinatura_cartorario_base64 if assinado else None
-                ),
-                "tipo_assinatura_cartorario": (
-                    apreensao.tipo_assinatura_cartorario if assinado else "TOKEN"
-                ),
+                "assinatura_cartorario_base64": (apreensao.assinatura_cartorario_base64 if assinado else None),
+                "tipo_assinatura_cartorario": (apreensao.tipo_assinatura_cartorario if assinado else "TOKEN"),
             }
         )
 
@@ -1601,30 +1470,20 @@ class OficioPersonalizadoViewSet(viewsets.ModelViewSet):
         with transaction.atomic():
             # Pegar o maior numero
             ultimo_reg_apreensao = (
-                Apreensao.objects.filter(
-                    ano_oficio=ano_atual, numero_oficio__isnull=False
-                )
+                Apreensao.objects.filter(ano_oficio=ano_atual, numero_oficio__isnull=False)
                 .select_for_update()
                 .order_by("-numero_oficio")
                 .first()
             )
-            ultimo_oficio_apreensao = (
-                ultimo_reg_apreensao.numero_oficio if ultimo_reg_apreensao else 0
-            )
+            ultimo_oficio_apreensao = ultimo_reg_apreensao.numero_oficio if ultimo_reg_apreensao else 0
 
             ultimo_reg_personalizado = (
-                OficioPersonalizado.objects.filter(
-                    ano_oficio=ano_atual, numero_oficio__isnull=False
-                )
+                OficioPersonalizado.objects.filter(ano_oficio=ano_atual, numero_oficio__isnull=False)
                 .select_for_update()
                 .order_by("-numero_oficio")
                 .first()
             )
-            ultimo_oficio_personalizado = (
-                ultimo_reg_personalizado.numero_oficio
-                if ultimo_reg_personalizado
-                else 0
-            )
+            ultimo_oficio_personalizado = ultimo_reg_personalizado.numero_oficio if ultimo_reg_personalizado else 0
 
             ultimo_oficio = max(ultimo_oficio_apreensao, ultimo_oficio_personalizado)
             novo_numero = (ultimo_oficio + 1) if ultimo_oficio > 0 else 100
@@ -1641,9 +1500,7 @@ class OficioPersonalizadoViewSet(viewsets.ModelViewSet):
             )
 
         headers = self.get_success_headers(serializer.data)
-        return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
-        )
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class PolicialFilter(django_filters.FilterSet):
