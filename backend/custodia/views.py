@@ -1,12 +1,13 @@
 import io
 import logging
 import os
+import pytz
 import random
 import string
 import traceback
 import uuid as uuid_module
 from collections import defaultdict
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import cloudinary.uploader
 from django.conf import settings
@@ -1668,9 +1669,6 @@ class PolicialViewSet(viewsets.ModelViewSet):
     search_fields = ["nome", "rg"]
     pagination_class = None
 
-
-import pytz
-from datetime import datetime
 
 class DiarioServicoViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
