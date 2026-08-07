@@ -22,6 +22,7 @@ from custodia.views import (
     RelatorioIncineracaoView,
     StatusAssinaturaView,
     UserProfileView,
+    DiarioServicoViewSet,
 )
 
 # 🔒 Swagger só disponível em ambiente de desenvolvimento (DEBUG=True)
@@ -47,6 +48,7 @@ router.register(r"apreensoes", ApreensaoViewSet)
 router.register(r"lotes", LoteIncineracaoViewSet)
 router.register(r"oficios", OficioPersonalizadoViewSet)
 router.register(r"policiais", PolicialViewSet)
+router.register(r"diarios", DiarioServicoViewSet)
 
 # 🔐 URL do Admin customizada — dificulta ataques automatizados
 admin.site.site_header = "TCIP — Administração"

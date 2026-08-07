@@ -177,3 +177,22 @@ class Policial(models.Model):
 
     def __str__(self):
         return f"{self.patente or ''} {self.nome} (RG: {self.rg})"
+
+
+class DiarioServico(models.Model):
+    class Meta:
+        verbose_name = "Diário de Serviço"
+        verbose_name_plural = "Diários de Serviço"
+        ordering = ["-data_inicio"]
+
+    operador = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    data_inicio = models.DateTimeField(db_index=True)
+    data_fim = models.DateTimeField(db_index=True)
+    alteracoes = models.TextField(blank=True, default="")
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    data_atualizacao = models.DateTimeField(auto_now=True)
+
+    history = HistoricalRecords()
+
+    def __str__(self):
+        return f"Diário {self.data_inicio.strftime('%d/%m/%Y %H:%M')} - {self.operador.username if self.operador else 'Sem operador'}"

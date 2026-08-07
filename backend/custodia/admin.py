@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.db.models import Count
 from django.utils.html import format_html
 
-from .models import Apreensao, Historico, LoteIncineracao, Policial
+from .models import Apreensao, DiarioServico, Historico, LoteIncineracao, Policial
 
 
 class HistoricoInline(admin.TabularInline):
@@ -166,3 +166,10 @@ class PolicialAdmin(admin.ModelAdmin):
     list_display = ("patente", "nome", "rg", "unidade_origem")
     search_fields = ("nome", "rg", "unidade_origem")
     list_filter = ("patente", "unidade_origem")
+
+
+@admin.register(DiarioServico)
+class DiarioServicoAdmin(admin.ModelAdmin):
+    list_display = ("data_inicio", "data_fim", "operador", "data_criacao")
+    search_fields = ("operador__username", "alteracoes")
+    list_filter = ("data_inicio", "operador")

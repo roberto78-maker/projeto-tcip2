@@ -37,9 +37,10 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Apreensao, Historico, LoteIncineracao, OficioPersonalizado, Policial
+from .models import Apreensao, DiarioServico, Historico, LoteIncineracao, OficioPersonalizado, Policial
 from .serializers import (
     ApreensaoSerializer,
+    DiarioServicoSerializer,
     LoteIncineracaoSerializer,
     OficioPersonalizadoSerializer,
     PolicialSerializer,
@@ -1666,3 +1667,59 @@ class PolicialViewSet(viewsets.ModelViewSet):
     filterset_class = PolicialFilter
     search_fields = ["nome", "rg"]
     pagination_class = None
+
+
+import pytz
+from datetime import datetime
+
+class DiarioServicoViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = DiarioServico.objects.all().order_by("-data_inicio")
+    serializer_class = DiarioServicoSerializer
+    pagination_class = None
+
+    @action(detail=False, methods=["get", "post"], url_path="atual-ou-criar")
+    def atual_ou_criar(self, request):
+        tz = pytz.timezone("America/Sao_Paulo")
+        agora = timezone.now().astimezone(tz)
+
+        # Jornada A: 06h30 às 18h30
+        # Jornada B: 18h30 às 06h30
+        hoje_0630 = agora.replace(hour=6, minute=30, second=0, microsecond=0)
+        hoje_1830 = agora.replace(hour=18, minute=30, second=0, microsecond=0)
+
+        if agora >= hoje_1830:
+            data_inicio = hoje_1830
+            data_fim = hoje_1830 + timedelta(hours=12)
+        elif agora >= hoje_0630:
+            data_inicio = hoje_0630
+            data_fim = hoje_1830
+        else:
+            data_inicio = hoje_1830 - timedelta(hours=24)
+            data_fim = hoje_0630
+
+        diario = DiarioServico.objects.filter(data_inicio=data_inicio, data_fim=data_fim).first()
+
+        if not diario:
+            diario = DiarioServico.objects.create(
+                data_inicio=data_inicio,
+                data_fim=data_fim,
+                operador=request.user,
+                alteracoes=""
+            )
+
+        serializer = self.get_serializer(diario)
+        return Response(serializer.data)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        data_param = self.request.query_params.get("data")
+        if data_param:
+            try:
+                data_pesquisa = datetime.strptime(data_param, "%Y-%m-%d").date()
+                queryset = queryset.filter(
+                    data_inicio__date=data_pesquisa
+                )
+            except ValueError:
+                pass
+        return queryset

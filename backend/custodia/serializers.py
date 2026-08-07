@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Apreensao, Historico, LoteIncineracao, OficioPersonalizado, Policial
+from .models import Apreensao, DiarioServico, Historico, LoteIncineracao, OficioPersonalizado, Policial
 
 
 class HistoricoSerializer(serializers.ModelSerializer):
@@ -65,3 +65,32 @@ class PolicialSerializer(serializers.ModelSerializer):
     class Meta:
         model = Policial
         fields = "__all__"
+
+
+class DiarioServicoSerializer(serializers.ModelSerializer):
+    operador_nome = serializers.SerializerMethodField()
+
+    class Meta:
+        model = DiarioServico
+        fields = [
+            "id",
+            "operador",
+            "operador_nome",
+            "data_inicio",
+            "data_fim",
+            "alteracoes",
+            "data_criacao",
+            "data_atualizacao",
+        ]
+        read_only_fields = ["data_criacao", "data_atualizacao"]
+
+    def get_operador_nome(self, obj):
+        if not obj.operador:
+            return "N/A"
+        try:
+            profile = obj.operador.userprofile
+            if profile.full_name:
+                return profile.full_name
+        except Exception:
+            pass
+        return obj.operador.username.upper()

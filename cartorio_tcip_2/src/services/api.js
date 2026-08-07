@@ -489,3 +489,32 @@ export async function deletePolicial(id) {
 //
 //   return await res.json();
 // }
+
+
+// 📒 DIÁRIO DE SERVIÇO
+export async function getDiarioAtual() {
+  const res = await fetch(`${BASE_URL}/api/diarios/atual-ou-criar/`, {
+    headers: getHeaders()
+  });
+  if (!res.ok) throw new Error("Erro ao carregar diário da jornada atual");
+  return await parseResponseJson(res);
+}
+
+export async function salvarDiario(id, alteracoes) {
+  const res = await fetch(`${BASE_URL}/api/diarios/${id}/`, {
+    method: "PATCH",
+    headers: getHeaders(),
+    body: JSON.stringify({ alteracoes })
+  });
+  if (!res.ok) throw new Error("Erro ao salvar diário de serviço");
+  return await parseResponseJson(res);
+}
+
+export async function getDiariosPorData(dataStr) {
+  const res = await fetch(`${BASE_URL}/api/diarios/?data=${dataStr}`, {
+    headers: getHeaders()
+  });
+  if (!res.ok) throw new Error("Erro ao buscar diários por data");
+  const data = await parseResponseJson(res);
+  return data.results || data;
+}
