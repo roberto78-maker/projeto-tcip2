@@ -9,6 +9,7 @@ import AuditoriaView from "./components/AuditoriaView";
 import OficiosView from "./components/OficiosView";
 import LoginView from "./components/LoginView";
 import AssinaturaView from "./components/AssinaturaView";
+import DiarioServicoView from "./components/DiarioServicoView";
 
 import brasao from "./assets/brasao.png";
 
@@ -112,7 +113,7 @@ export default function App() {
   const [view, setView] = useState(() => {
     // Inicializa a view a partir do hash da URL, caso exista
     const hash = window.location.hash.replace("#/", "");
-    const viewsValidas = ["dashboard", "cadastro", "conferencia", "deposito", "incineracao", "lotes_prontos", "auditoria", "oficios"];
+    const viewsValidas = ["dashboard", "cadastro", "conferencia", "deposito", "incineracao", "lotes_prontos", "auditoria", "oficios", "diario"];
     return viewsValidas.includes(hash) ? hash : "dashboard";
   });
   const [logado, setLogado] = useState(isAutenticado());
@@ -206,6 +207,9 @@ export default function App() {
       case "oficios":
         return <OficiosView />;
 
+      case "diario":
+        return <DiarioServicoView />;
+
       default:
         return <h1>Erro de navegação</h1>;
     }
@@ -296,6 +300,13 @@ export default function App() {
           onClick={() => changeView("oficios")}
         >
           <span style={{ fontSize: "16px" }}>📄</span> OFÍCIOS
+        </button>
+
+        <button
+          className={`sidebar-btn ${view === 'diario' ? 'active' : ''}`}
+          onClick={() => changeView("diario")}
+        >
+          <span style={{ fontSize: "16px" }}>📒</span> DIÁRIO DE SERVIÇO
         </button>
  
         <div style={{ flex: 1 }}></div>
