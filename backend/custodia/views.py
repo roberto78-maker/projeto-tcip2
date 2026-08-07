@@ -112,38 +112,50 @@ class DashboardStatsView(APIView):
             output_field=FloatField(),
         )
 
+        filtro_armas = (
+            Q(substancia__icontains="faca")
+            | Q(substancia__icontains="facão")
+            | Q(substancia__icontains="simulacro")
+            | Q(substancia__icontains="arma")
+            | Q(substancia__icontains="pistola")
+            | Q(substancia__icontains="revólver")
+            | Q(substancia__icontains="garrucha")
+            | Q(substancia__icontains="espingarda")
+            | Q(substancia__icontains="canivete")
+            | Q(substancia__icontains="punhal")
+        )
+
         stats = Apreensao.objects.aggregate(
             total=Count("id"),
             count_conferencia=Count("id", filter=Q(status="conferencia")),
-            count_cofre=Count("id", filter=Q(status="cofre")),
-            count_incineracao=Count("id", filter=Q(status="incineracao")),
-            count_queima_pronta=Count("id", filter=Q(status="queima_pronta")),
+            count_cofre=Count("id", filter=Q(status="cofre", natureza="DROGAS")),
+            count_incineracao=Count("id", filter=Q(status="incineracao", natureza="DROGAS")),
+            count_queima_pronta=Count("id", filter=Q(status="queima_pronta", natureza="DROGAS")),
             count_excluido=Count("id", filter=Q(status="excluido")),
-            peso_cofre=Sum(peso_expressao, filter=Q(status="cofre")),
-            peso_incineracao=Sum(peso_expressao, filter=Q(status="incineracao")),
-            peso_queima_pronta=Sum(peso_expressao, filter=Q(status="queima_pronta")),
+            peso_cofre=Sum(peso_expressao, filter=Q(status="cofre", natureza="DROGAS")),
+            peso_incineracao=Sum(peso_expressao, filter=Q(status="incineracao", natureza="DROGAS")),
+            peso_queima_pronta=Sum(peso_expressao, filter=Q(status="queima_pronta", natureza="DROGAS")),
             count_som=Count("id", filter=Q(natureza="SOM")),
             count_som_cofre=Count("id", filter=Q(natureza="SOM", status="cofre")),
-            count_outros=Count("id", filter=Q(natureza="OUTROS")),
-            count_outros_cofre=Count("id", filter=Q(natureza="OUTROS", status="cofre")),
-            count_facas=Count(
-                "id",
-                filter=(
-                    Q(substancia__icontains="faca") | Q(substancia__icontains="facão")
-                ),
+            unid_som_cofre=Sum("peso", filter=Q(natureza="SOM", status="cofre")),
+            count_outros=Count("id", filter=Q(natureza="OUTROS") & ~filtro_armas),
+            count_outros_cofre=Count(
+                "id", filter=Q(natureza="OUTROS", status="cofre") & ~filtro_armas
             ),
-            count_facas_cofre=Count(
-                "id",
-                filter=(
-                    (Q(substancia__icontains="faca") | Q(substancia__icontains="facão"))
-                    & Q(status="cofre")
-                ),
+            unid_outros_cofre=Sum(
+                "peso", filter=Q(natureza="OUTROS", status="cofre") & ~filtro_armas
             ),
+            count_facas=Count("id", filter=filtro_armas),
+            count_facas_cofre=Count("id", filter=filtro_armas & Q(status="cofre")),
+            unid_facas_cofre=Sum("peso", filter=filtro_armas & Q(status="cofre")),
         )
 
         stats["peso_cofre"] = float(stats["peso_cofre"] or 0)
         stats["peso_incineracao"] = float(stats["peso_incineracao"] or 0)
         stats["peso_queima_pronta"] = float(stats["peso_queima_pronta"] or 0)
+        stats["unid_som_cofre"] = int(stats["unid_som_cofre"] or 0)
+        stats["unid_facas_cofre"] = int(stats["unid_facas_cofre"] or 0)
+        stats["unid_outros_cofre"] = int(stats["unid_outros_cofre"] or 0)
 
         lotes_stats = LoteIncineracao.objects.aggregate(
             lotes_em_formacao=Count(
