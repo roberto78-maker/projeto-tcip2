@@ -40,7 +40,7 @@ const RelogioDigital = () => {
   };
 
   return (
-    <div style={{ 
+    <div className="no-print" style={{ 
       position: "absolute", 
       top: "16px", 
       left: "40px", 
