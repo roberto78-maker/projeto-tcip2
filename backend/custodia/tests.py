@@ -190,3 +190,26 @@ class AssinaturaSecurancaTest(TestCase):
         self.assertEqual(response2.status_code, 200)
         apreensao2.refresh_from_db()
         self.assertEqual(apreensao2.lote_incineracao, self.apreensao.lote_incineracao)
+
+
+class DiarioServicoTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="operador_teste", password="password"
+        )
+        self.client.force_login(self.user)
+
+    def test_atual_ou_criar_endpoint(self):
+        """Verify that accessing the endpoint returns or creates a DiarioServico for the current shift"""
+        url = reverse("diarioservico-atual-ou-criar")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("id", response.json())
+        self.assertIn("data_inicio", response.json())
+        self.assertIn("data_fim", response.json())
+        self.assertEqual(response.json()["operador"], self.user.id)
+
+        # Second call should retrieve the same instance
+        response2 = self.client.get(url)
+        self.assertEqual(response2.status_code, 200)
+        self.assertEqual(response.json()["id"], response2.json()["id"])
