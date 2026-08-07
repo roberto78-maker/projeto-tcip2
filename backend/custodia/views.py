@@ -1,7 +1,6 @@
 import io
 import logging
 import os
-import pytz
 import random
 import string
 import traceback
@@ -10,6 +9,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 
 import cloudinary.uploader
+import pytz
 from django.conf import settings
 from django.core.cache import cache
 from django.core.files.storage import default_storage
