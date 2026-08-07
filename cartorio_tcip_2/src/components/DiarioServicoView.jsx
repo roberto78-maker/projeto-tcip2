@@ -153,7 +153,7 @@ export default function DiarioServicoView() {
   }
 
   return (
-    <div style={{ padding: "10px", paddingBottom: "80px" }}>
+    <div className="diario-view-root" style={{ padding: "10px", paddingBottom: "80px" }}>
       {/* Estilos para impressão local A4 */}
       <style>{`
         @media print {
@@ -177,9 +177,9 @@ export default function DiarioServicoView() {
             position: static !important;
           }
           
-          /* Oculta tudo que estiver dentro da main-content exceto a folha de impressão */
-          .main-content > *:not(.printable-sheet) {
-            display: none !important;
+          .diario-view-root {
+            padding: 0 !important;
+            margin: 0 !important;
           }
           
           /* Configura as margens físicas da página A4 no padrão do ofício (ABNT: Sup/Esq 3cm, Inf/Dir 2cm) */
