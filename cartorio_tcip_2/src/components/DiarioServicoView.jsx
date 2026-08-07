@@ -234,7 +234,7 @@ export default function DiarioServicoView() {
             </div>
           </div>
 
-          <div style={{ display: "flex", display: "flex", flexDirection: "column", gap: "8px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <label htmlFor="alteracoes" style={{ fontSize: "13px", fontWeight: "700", color: "#334155" }}>
                 Alterações no Serviço / Ocorrências da Jornada:
