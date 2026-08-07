@@ -157,31 +157,46 @@ export default function DiarioServicoView() {
       {/* Estilos para impressão local A4 */}
       <style>{`
         @media print {
-          /* Oculta tudo na tela principal do sistema */
-          body * {
-            visibility: hidden;
-            background: transparent !important;
-            box-shadow: none !important;
+          /* Oculta a barra lateral, menu de navegação e controles */
+          .sidebar, .no-print {
+            display: none !important;
           }
           
-          /* Exibe apenas a área de impressão */
-          .printable-sheet, .printable-sheet * {
-            visibility: visible;
+          /* Reseta o layout do app e do container principal */
+          .app-layout {
+            display: block !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+          
+          .main-content {
+            padding: 0 !important;
+            margin: 0 !important;
+            background: white !important;
+            overflow: visible !important;
+            position: static !important;
+          }
+          
+          /* Oculta tudo que estiver dentro da main-content exceto a folha de impressão */
+          .main-content > *:not(.printable-sheet) {
+            display: none !important;
+          }
+          
+          /* Configura as margens físicas da página A4 no padrão do ofício (ABNT: Sup/Esq 3cm, Inf/Dir 2cm) */
+          @page {
+            size: A4;
+            margin: 30mm 20mm 20mm 30mm;
           }
           
           .printable-sheet {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            padding: 30mm 20mm 20mm 30mm; /* Margens ABNT: Sup 3cm, Dir 2cm, Inf 2cm, Esq 3cm */
+            display: block !important;
+            position: relative !important;
+            width: 100% !important;
             background: white !important;
             color: black !important;
-            display: block !important;
-          }
-          
-          .no-print {
-            display: none !important;
+            font-family: "Arial", "Helvetica", sans-serif !important;
+            font-size: 12pt !important;
+            line-height: 1.6 !important;
           }
         }
       `}</style>
@@ -432,49 +447,56 @@ export default function DiarioServicoView() {
       {itemParaImprimir && (
         <div className="printable-sheet" style={{ display: "none" }}>
           {/* Cabeçalho idêntico ao Ofício */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1.5px solid #000000", paddingBottom: "15px", marginBottom: "25px" }}>
-            <img src={brasaoParana} alt="" style={{ height: "70px", width: "auto" }} />
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1.5px solid #000000", paddingBottom: "10px", marginBottom: "25px" }}>
+            <img src={brasaoParana} alt="" style={{ height: "80px", width: "auto" }} />
             <div style={{ textAlign: "center", flex: 1 }}>
-              <h4 style={{ margin: "2px 0", fontSize: "13px", fontWeight: "bold", color: "#000" }}>ESTADO DO PARANÁ</h4>
-              <h4 style={{ margin: "2px 0", fontSize: "13px", fontWeight: "bold", color: "#000" }}>POLÍCIA MILITAR</h4>
-              <h5 style={{ margin: "2px 0", fontSize: "12px", fontWeight: "bold", color: "#000" }}>5º COMANDO REGIONAL</h5>
-              <h5 style={{ margin: "2px 0", fontSize: "12px", fontWeight: "bold", color: "#000" }}>SEXTO BATALHÃO DE POLÍCIA MILITAR</h5>
-              <h6 style={{ margin: "2px 0", fontSize: "11px", fontWeight: "bold", color: "#000" }}>PRIMEIRO CARTORIO - TCIP</h6>
+              <div style={{ fontSize: "12pt", fontWeight: "bold", fontFamily: "Arial" }}>ESTADO DO PARANÁ</div>
+              <div style={{ fontSize: "12pt", fontWeight: "bold", fontFamily: "Arial", marginTop: "2px" }}>POLÍCIA MILITAR</div>
+              <div style={{ fontSize: "11pt", fontWeight: "bold", fontFamily: "Arial", color: "#000", marginTop: "2px" }}>5º COMANDO REGIONAL</div>
+              <div style={{ fontSize: "11pt", fontWeight: "bold", fontFamily: "Arial", color: "#000", marginTop: "2px" }}>SEXTO BATALHÃO DE POLÍCIA MILITAR</div>
+              <div style={{ fontSize: "10pt", fontWeight: "bold", fontFamily: "Arial", color: "#000", marginTop: "2px" }}>PRIMEIRO CARTÓRIO - TCIP</div>
             </div>
-            <img src={brasaoPM} alt="" style={{ height: "70px", width: "auto" }} />
+            <img src={brasaoPM} alt="" style={{ height: "80px", width: "auto" }} />
           </div>
 
-          {/* Título do Documento */}
-          <div style={{ textAlign: "center", marginBottom: "30px" }}>
-            <h3 style={{ margin: "0", fontSize: "16px", fontWeight: "bold", textDecoration: "underline" }}>
-              REGISTRO DE DIÁRIO DE SERVIÇO
-            </h3>
-            <p style={{ margin: "8px 0 0 0", fontSize: "12px", fontWeight: "bold" }}>
-              JORNADA: {formatarDataHora(itemParaImprimir.data_inicio)} a {formatarDataHora(itemParaImprimir.data_fim)}
-            </p>
+          {/* Local e Data (Alinhado à direita, padrão oficial) */}
+          <div style={{ textAlign: "right", fontSize: "12pt", fontFamily: "Arial", marginBottom: "30px", color: "#000" }}>
+            Cascavel, PR, {new Date(itemParaImprimir.data_inicio).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })}.
           </div>
 
-          {/* Dados do Operador */}
-          <div style={{ marginBottom: "25px", fontSize: "12px", border: "1px solid #000", padding: "10px" }}>
-            <strong>OPERADOR RESPONSÁVEL:</strong> {itemParaImprimir.operador_nome}<br />
-            <strong>DATA DE EMISSÃO:</strong> {new Date().toLocaleDateString("pt-BR")} às {new Date().toLocaleTimeString("pt-BR")}
+          {/* Título e Metadados da Jornada */}
+          <div style={{ marginBottom: "30px", fontSize: "12pt", fontFamily: "Arial", color: "#000", lineHeight: "1.5" }}>
+            <p style={{ margin: "0 0 8px 0" }}><strong>DOCUMENTO:</strong> REGISTRO DE DIÁRIO DE SERVIÇO</p>
+            <p style={{ margin: "0 0 8px 0" }}><strong>JORNADA:</strong> {formatarDataHora(itemParaImprimir.data_inicio)} a {formatarDataHora(itemParaImprimir.data_fim)}</p>
+            <p style={{ margin: "0" }}><strong>OPERADOR RESPONSÁVEL:</strong> {itemParaImprimir.operador_nome}</p>
           </div>
 
-          {/* Alterações / Ocorrências */}
-          <div style={{ marginBottom: "40px", fontSize: "12px", lineHeight: "1.8" }}>
-            <h4 style={{ fontSize: "13px", fontWeight: "bold", borderBottom: "1px solid #ccc", paddingBottom: "5px", marginBottom: "10px" }}>
-              ALTERAÇÕES E OCORRÊNCIAS REGISTRADAS:
-            </h4>
-            <div style={{ whiteSpace: "pre-wrap", textAlign: "justify" }}>
-              {itemParaImprimir.alteracoes || "SEM ALTERAÇÕES RELEVANTES NESTA JORNADA DE SERVIÇO."}
-            </div>
+          {/* Linha Divisória */}
+          <div style={{ borderBottom: "1px solid #000000", marginBottom: "25px" }}></div>
+
+          {/* Alterações / Ocorrências (Justificado e com recuo de parágrafo de 2.5cm) */}
+          <div style={{ fontSize: "12pt", fontFamily: "Arial", lineHeight: "1.8", textAlign: "justify", color: "#000", minHeight: "350px", marginBottom: "60px" }}>
+            {itemParaImprimir.alteracoes ? (
+              itemParaImprimir.alteracoes.split("\n").map((paragraph, index) => {
+                if (!paragraph.trim()) return null;
+                return (
+                  <p key={index} style={{ textIndent: "2.5cm", margin: "0 0 15px 0" }}>
+                    {paragraph}
+                  </p>
+                );
+              })
+            ) : (
+              <p style={{ textIndent: "2.5cm", margin: "0" }}>
+                SEM ALTERAÇÕES RELEVANTES NESTA JORNADA DE SERVIÇO.
+              </p>
+            )}
           </div>
 
-          {/* Espaço para Assinaturas */}
-          <div style={{ marginTop: "80px", display: "flex", justifyContent: "center", flexDirection: "column", alignItems: "center" }}>
-            <div style={{ borderTop: "1px solid #000", width: "250px", textAlign: "center", paddingTop: "5px" }}>
-              <span style={{ fontSize: "12px", fontWeight: "bold" }}>{itemParaImprimir.operador_nome}</span><br />
-              <span style={{ fontSize: "10px", color: "#555" }}>Operador de Cartório</span>
+          {/* Espaço para Assinaturas (Centralizado no final) */}
+          <div style={{ display: "flex", justifyContent: "center", flexDirection: "column", alignItems: "center", pageBreakInside: "avoid" }}>
+            <div style={{ borderTop: "1px solid #000000", width: "300px", textAlign: "center", paddingTop: "6px" }}>
+              <div style={{ fontSize: "12pt", fontWeight: "bold", color: "#000" }}>{itemParaImprimir.operador_nome}</div>
+              <div style={{ fontSize: "10pt", color: "#000", marginTop: "2px" }}>Operador do 1º Cartório - TCIP</div>
             </div>
           </div>
         </div>
