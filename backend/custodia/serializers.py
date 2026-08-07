@@ -1,6 +1,13 @@
 from rest_framework import serializers
 
-from .models import Apreensao, DiarioServico, Historico, LoteIncineracao, OficioPersonalizado, Policial
+from .models import (
+    Apreensao,
+    DiarioServico,
+    Historico,
+    LoteIncineracao,
+    OficioPersonalizado,
+    Policial,
+)
 
 
 class HistoricoSerializer(serializers.ModelSerializer):

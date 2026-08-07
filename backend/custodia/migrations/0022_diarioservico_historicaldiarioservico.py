@@ -9,49 +9,94 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('custodia', '0021_add_assinatura_cartorario'),
+        ("custodia", "0021_add_assinatura_cartorario"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='DiarioServico',
+            name="DiarioServico",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('data_inicio', models.DateTimeField(db_index=True)),
-                ('data_fim', models.DateTimeField(db_index=True)),
-                ('alteracoes', models.TextField(blank=True, default='')),
-                ('data_criacao', models.DateTimeField(auto_now_add=True)),
-                ('data_atualizacao', models.DateTimeField(auto_now=True)),
-                ('operador', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("data_inicio", models.DateTimeField(db_index=True)),
+                ("data_fim", models.DateTimeField(db_index=True)),
+                ("alteracoes", models.TextField(blank=True, default="")),
+                ("data_criacao", models.DateTimeField(auto_now_add=True)),
+                ("data_atualizacao", models.DateTimeField(auto_now=True)),
+                (
+                    "operador",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Diário de Serviço',
-                'verbose_name_plural': 'Diários de Serviço',
-                'ordering': ['-data_inicio'],
+                "verbose_name": "Diário de Serviço",
+                "verbose_name_plural": "Diários de Serviço",
+                "ordering": ["-data_inicio"],
             },
         ),
         migrations.CreateModel(
-            name='HistoricalDiarioServico',
+            name="HistoricalDiarioServico",
             fields=[
-                ('id', models.BigIntegerField(auto_created=True, blank=True, db_index=True, verbose_name='ID')),
-                ('data_inicio', models.DateTimeField(db_index=True)),
-                ('data_fim', models.DateTimeField(db_index=True)),
-                ('alteracoes', models.TextField(blank=True, default='')),
-                ('data_criacao', models.DateTimeField(blank=True, editable=False)),
-                ('data_atualizacao', models.DateTimeField(blank=True, editable=False)),
-                ('history_id', models.AutoField(primary_key=True, serialize=False)),
-                ('history_date', models.DateTimeField(db_index=True)),
-                ('history_change_reason', models.CharField(max_length=100, null=True)),
-                ('history_type', models.CharField(choices=[('+', 'Created'), ('~', 'Changed'), ('-', 'Deleted')], max_length=1)),
-                ('history_user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
-                ('operador', models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigIntegerField(
+                        auto_created=True, blank=True, db_index=True, verbose_name="ID"
+                    ),
+                ),
+                ("data_inicio", models.DateTimeField(db_index=True)),
+                ("data_fim", models.DateTimeField(db_index=True)),
+                ("alteracoes", models.TextField(blank=True, default="")),
+                ("data_criacao", models.DateTimeField(blank=True, editable=False)),
+                ("data_atualizacao", models.DateTimeField(blank=True, editable=False)),
+                ("history_id", models.AutoField(primary_key=True, serialize=False)),
+                ("history_date", models.DateTimeField(db_index=True)),
+                ("history_change_reason", models.CharField(max_length=100, null=True)),
+                (
+                    "history_type",
+                    models.CharField(
+                        choices=[("+", "Created"), ("~", "Changed"), ("-", "Deleted")],
+                        max_length=1,
+                    ),
+                ),
+                (
+                    "history_user",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "operador",
+                    models.ForeignKey(
+                        blank=True,
+                        db_constraint=False,
+                        null=True,
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'historical Diário de Serviço',
-                'verbose_name_plural': 'historical Diários de Serviço',
-                'ordering': ('-history_date', '-history_id'),
-                'get_latest_by': ('history_date', 'history_id'),
+                "verbose_name": "historical Diário de Serviço",
+                "verbose_name_plural": "historical Diários de Serviço",
+                "ordering": ("-history_date", "-history_id"),
+                "get_latest_by": ("history_date", "history_id"),
             },
             bases=(simple_history.models.HistoricalChanges, models.Model),
         ),

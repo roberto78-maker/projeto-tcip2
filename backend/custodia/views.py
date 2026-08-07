@@ -38,7 +38,14 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Apreensao, DiarioServico, Historico, LoteIncineracao, OficioPersonalizado, Policial
+from .models import (
+    Apreensao,
+    DiarioServico,
+    Historico,
+    LoteIncineracao,
+    OficioPersonalizado,
+    Policial,
+)
 from .serializers import (
     ApreensaoSerializer,
     DiarioServicoSerializer,
@@ -1696,14 +1703,16 @@ class DiarioServicoViewSet(viewsets.ModelViewSet):
             data_inicio = hoje_1830 - timedelta(hours=24)
             data_fim = hoje_0630
 
-        diario = DiarioServico.objects.filter(data_inicio=data_inicio, data_fim=data_fim).first()
+        diario = DiarioServico.objects.filter(
+            data_inicio=data_inicio, data_fim=data_fim
+        ).first()
 
         if not diario:
             diario = DiarioServico.objects.create(
                 data_inicio=data_inicio,
                 data_fim=data_fim,
                 operador=request.user,
-                alteracoes=""
+                alteracoes="",
             )
 
         serializer = self.get_serializer(diario)
@@ -1715,9 +1724,7 @@ class DiarioServicoViewSet(viewsets.ModelViewSet):
         if data_param:
             try:
                 data_pesquisa = datetime.strptime(data_param, "%Y-%m-%d").date()
-                queryset = queryset.filter(
-                    data_inicio__date=data_pesquisa
-                )
+                queryset = queryset.filter(data_inicio__date=data_pesquisa)
             except ValueError:
                 pass
         return queryset
