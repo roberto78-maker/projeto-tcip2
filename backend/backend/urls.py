@@ -10,6 +10,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from custodia.views import (
     ApreensaoViewSet,
     DashboardStatsView,
+    DiarioServicoViewSet,
     FixVarasParaJuizadosView,
     GerarTokenAssinaturaView,
     HealthCheckView,
@@ -22,7 +23,6 @@ from custodia.views import (
     RelatorioIncineracaoView,
     StatusAssinaturaView,
     UserProfileView,
-    DiarioServicoViewSet,
 )
 
 # 🔒 Swagger só disponível em ambiente de desenvolvimento (DEBUG=True)
