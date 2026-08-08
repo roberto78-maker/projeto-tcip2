@@ -506,8 +506,9 @@ export default function DiarioServicoView() {
                   accept="image/*,video/*,audio/*,application/pdf"
                 />
               </label>
-              <span style={{ fontSize: "11px", color: "#94a3b8" }}>
-                Formatos aceitos: PDF, Imagens (fotos), Áudios e Vídeos.
+              <span style={{ fontSize: "11px", color: "#64748b", lineHeight: "1.4" }}>
+                Formatos aceitos: PDF, Imagens, Áudios (máx. 10MB) e Vídeos (máx. 100MB). <br />
+                <span style={{ color: "#0284c7" }}>💡 Recomendação: Vídeos até 20MB para uploads e carregamentos mais rápidos.</span>
               </span>
             </div>
           </div>
