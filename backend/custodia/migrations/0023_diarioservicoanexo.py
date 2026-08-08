@@ -7,24 +7,39 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('custodia', '0022_diarioservico_historicaldiarioservico'),
+        ("custodia", "0022_diarioservico_historicaldiarioservico"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='DiarioServicoAnexo',
+            name="DiarioServicoAnexo",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('arquivo_url', models.URLField(max_length=500)),
-                ('nome_arquivo', models.CharField(max_length=255)),
-                ('tipo_arquivo', models.CharField(max_length=100)),
-                ('data_criacao', models.DateTimeField(auto_now_add=True)),
-                ('diario', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='anexos', to='custodia.diarioservico')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("arquivo_url", models.URLField(max_length=500)),
+                ("nome_arquivo", models.CharField(max_length=255)),
+                ("tipo_arquivo", models.CharField(max_length=100)),
+                ("data_criacao", models.DateTimeField(auto_now_add=True)),
+                (
+                    "diario",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="anexos",
+                        to="custodia.diarioservico",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Anexo de Diário',
-                'verbose_name_plural': 'Anexos de Diário',
-                'ordering': ['data_criacao'],
+                "verbose_name": "Anexo de Diário",
+                "verbose_name_plural": "Anexos de Diário",
+                "ordering": ["data_criacao"],
             },
         ),
     ]
