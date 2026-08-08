@@ -240,12 +240,16 @@ class DiarioServicoTest(TestCase):
         self.assertEqual(res_patch.status_code, 403)
 
         # Tentativa de exclusão deve ser negada
-        res_delete = self.client.delete(reverse("diarioservico-detail", args=[diario.id]))
+        res_delete = self.client.delete(
+            reverse("diarioservico-detail", args=[diario.id])
+        )
         self.assertEqual(res_delete.status_code, 403)
 
     def test_admin_pode_editar_diario_de_outro_operador(self):
         """Verifica que admin possui permissão de edição em qualquer diário"""
-        admin_user = User.objects.create_superuser(username="admin_teste", password="password")
+        admin_user = User.objects.create_superuser(
+            username="admin_teste", password="password"
+        )
         diario = DiarioServico.objects.create(
             data_inicio=timezone.now(),
             data_fim=timezone.now(),
