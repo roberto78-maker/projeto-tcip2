@@ -41,6 +41,7 @@ from rest_framework.views import APIView
 from .models import (
     Apreensao,
     DiarioServico,
+    DiarioServicoAnexo,
     Historico,
     LoteIncineracao,
     OficioPersonalizado,
@@ -49,6 +50,7 @@ from .models import (
 from .serializers import (
     ApreensaoSerializer,
     DiarioServicoSerializer,
+    DiarioServicoAnexoSerializer,
     LoteIncineracaoSerializer,
     OficioPersonalizadoSerializer,
     PolicialSerializer,
@@ -1728,3 +1730,45 @@ class DiarioServicoViewSet(viewsets.ModelViewSet):
             except ValueError:
                 pass
         return queryset
+
+    @action(detail=True, methods=["post"], url_path="upload-anexo")
+    def upload_anexo(self, request, pk=None):
+        diario = self.get_object()
+        arquivo = request.FILES.get("arquivo")
+        if not arquivo:
+            return Response(
+                {"error": "Nenhum arquivo enviado."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            public_id = f"diario_{diario.id}_{uuid_module.uuid4().hex}"
+            url_arquivo = upload_documento(
+                arquivo,
+                folder="diario_anexos",
+                public_id=public_id,
+                request=request,
+            )
+
+            anexo = DiarioServicoAnexo.objects.create(
+                diario=diario,
+                arquivo_url=url_arquivo,
+                nome_arquivo=arquivo.name,
+                tipo_arquivo=arquivo.content_type or "application/octet-stream",
+            )
+
+            serializer = DiarioServicoAnexoSerializer(anexo)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            logger.exception("Erro no upload de anexo de diário")
+            return Response(
+                {"error": f"Erro no upload: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+class DiarioServicoAnexoViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = DiarioServicoAnexo.objects.all()
+    serializer_class = DiarioServicoAnexoSerializer
+    http_method_names = ["delete"]

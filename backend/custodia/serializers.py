@@ -3,6 +3,7 @@ from rest_framework import serializers
 from .models import (
     Apreensao,
     DiarioServico,
+    DiarioServicoAnexo,
     Historico,
     LoteIncineracao,
     OficioPersonalizado,
@@ -74,8 +75,15 @@ class PolicialSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class DiarioServicoAnexoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DiarioServicoAnexo
+        fields = ["id", "arquivo_url", "nome_arquivo", "tipo_arquivo", "data_criacao"]
+
+
 class DiarioServicoSerializer(serializers.ModelSerializer):
     operador_nome = serializers.SerializerMethodField()
+    anexos = DiarioServicoAnexoSerializer(many=True, read_only=True)
 
     class Meta:
         model = DiarioServico
@@ -86,6 +94,7 @@ class DiarioServicoSerializer(serializers.ModelSerializer):
             "data_inicio",
             "data_fim",
             "alteracoes",
+            "anexos",
             "data_criacao",
             "data_atualizacao",
         ]

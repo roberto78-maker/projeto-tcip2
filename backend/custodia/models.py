@@ -196,3 +196,21 @@ class DiarioServico(models.Model):
 
     def __str__(self):
         return f"Diário {self.data_inicio.strftime('%d/%m/%Y %H:%M')} - {self.operador.username if self.operador else 'Sem operador'}"
+
+
+class DiarioServicoAnexo(models.Model):
+    class Meta:
+        verbose_name = "Anexo de Diário"
+        verbose_name_plural = "Anexos de Diário"
+        ordering = ["data_criacao"]
+
+    diario = models.ForeignKey(
+        DiarioServico, on_delete=models.CASCADE, related_name="anexos"
+    )
+    arquivo_url = models.URLField(max_length=500)
+    nome_arquivo = models.CharField(max_length=255)
+    tipo_arquivo = models.CharField(max_length=100)
+    data_criacao = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Anexo {self.id} — {self.nome_arquivo} (Diário {self.diario.id})"
