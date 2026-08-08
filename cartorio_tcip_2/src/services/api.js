@@ -518,3 +518,24 @@ export async function getDiariosPorData(dataStr) {
   const data = await parseResponseJson(res);
   return data.results || data;
 }
+
+export async function uploadAnexoDiario(diarioId, file) {
+  const formData = new FormData();
+  formData.append("arquivo", file);
+
+  const res = await fetch(`${BASE_URL}/api/diarios/${diarioId}/upload-anexo/`, {
+    method: "POST",
+    headers: getHeaders(true),
+    body: formData,
+  });
+  if (!res.ok) throw new Error("Erro ao fazer upload do anexo");
+  return await parseResponseJson(res);
+}
+
+export async function deleteAnexoDiario(anexoId) {
+  const res = await fetch(`${BASE_URL}/api/diarios-anexos/${anexoId}/`, {
+    method: "DELETE",
+    headers: getHeaders(),
+  });
+  if (!res.ok) throw new Error("Erro ao excluir anexo do diário");
+}
