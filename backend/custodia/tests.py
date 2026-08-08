@@ -6,7 +6,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from custodia.models import Apreensao, LoteIncineracao
+from custodia.models import Apreensao, DiarioServico, LoteIncineracao
 
 
 class LoteIncineracaoTest(TestCase):
