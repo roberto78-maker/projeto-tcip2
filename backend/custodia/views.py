@@ -49,8 +49,8 @@ from .models import (
 )
 from .serializers import (
     ApreensaoSerializer,
-    DiarioServicoSerializer,
     DiarioServicoAnexoSerializer,
+    DiarioServicoSerializer,
     LoteIncineracaoSerializer,
     OficioPersonalizadoSerializer,
     PolicialSerializer,
