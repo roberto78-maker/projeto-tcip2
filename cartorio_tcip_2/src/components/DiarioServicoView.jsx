@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { getDiarioAtual, salvarDiario, getDiariosPorData, getUserProfile } from "../services/api";
+import {
+  getDiarioAtual,
+  salvarDiario,
+  getDiariosPorData,
+  getUserProfile,
+  uploadAnexoDiario,
+  deleteAnexoDiario,
+} from "../services/api";
 import { getUsuario } from "../services/auth";
 import brasaoParana from "../assets/brasao_parana.png";
 import brasaoPM from "../assets/brasao.png";
@@ -18,6 +25,10 @@ export default function DiarioServicoView() {
   const [diariosConsultados, setDiariosConsultados] = useState([]);
   const [loadingConsulta, setLoadingConsulta] = useState(false);
   const [itemParaImprimir, setItemParaImprimir] = useState(null);
+
+  // Upload e Visualização de Anexos
+  const [uploading, setUploading] = useState(false);
+  const [expandedImage, setExpandedImage] = useState(null);
 
   // Carregar dados iniciais (diário atual e operador)
   useEffect(() => {
@@ -141,6 +152,44 @@ export default function DiarioServicoView() {
     setTimeout(() => {
       window.print();
     }, 200);
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !diario) return;
+
+    setUploading(true);
+    setErro(null);
+    try {
+      const newAnexo = await uploadAnexoDiario(diario.id, file);
+      setDiario((prev) => ({
+        ...prev,
+        anexos: [...(prev.anexos || []), newAnexo],
+      }));
+    } catch (err) {
+      console.error(err);
+      setErro(
+        "Erro ao enviar anexo de diário. Verifique o tamanho e o tipo do arquivo."
+      );
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleAnexoDelete = async (anexoId) => {
+    if (!window.confirm("Deseja realmente remover este anexo?")) return;
+    setErro(null);
+    try {
+      await deleteAnexoDiario(anexoId);
+      setDiario((prev) => ({
+        ...prev,
+        anexos: (prev.anexos || []).filter((a) => a.id !== anexoId),
+      }));
+    } catch (err) {
+      console.error(err);
+      setErro("Erro ao remover o anexo.");
+    }
   };
 
   if (loading) {
@@ -297,6 +346,172 @@ export default function DiarioServicoView() {
             />
           </div>
 
+          {/* Seção de Anexos da Jornada */}
+          <div style={{ marginTop: "25px", borderTop: "1px solid #cbd5e1", paddingTop: "20px" }}>
+            <h4 style={{ fontSize: "14px", fontWeight: "700", color: "#475569", marginBottom: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
+              <span>📎</span> ANEXOS DA JORNADA (Fotos, PDFs, Áudios ou Vídeos)
+            </h4>
+
+            {(!diario.anexos || diario.anexos.length === 0) ? (
+              <p style={{ fontSize: "13px", color: "#94a3b8", fontStyle: "italic", margin: "10px 0" }}>
+                Nenhum documento ou arquivo anexado a esta jornada.
+              </p>
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "15px", marginBottom: "20px" }}>
+                {diario.anexos.map((anexo) => {
+                  const isImage = anexo.tipo_arquivo.startsWith("image/");
+                  const isAudio = anexo.tipo_arquivo.startsWith("audio/");
+                  const isVideo = anexo.tipo_arquivo.startsWith("video/");
+                  const isPdf = anexo.tipo_arquivo === "application/pdf" || anexo.nome_arquivo.toLowerCase().endsWith(".pdf");
+
+                  return (
+                    <div
+                      key={anexo.id}
+                      style={{
+                        border: "1px solid #e2e8f0",
+                        borderRadius: "8px",
+                        padding: "10px",
+                        background: "#f8fafc",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "8px",
+                        position: "relative"
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          fontWeight: "700",
+                          color: "#334155",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          paddingRight: "25px"
+                        }}
+                        title={anexo.nome_arquivo}
+                      >
+                        {anexo.nome_arquivo}
+                      </div>
+
+                      <button
+                        onClick={() => handleAnexoDelete(anexo.id)}
+                        style={{
+                          position: "absolute",
+                          top: "8px",
+                          right: "8px",
+                          background: "transparent",
+                          border: "none",
+                          color: "#ef4444",
+                          cursor: "pointer",
+                          fontSize: "14px",
+                          padding: "2px"
+                        }}
+                        title="Excluir anexo"
+                      >
+                        🗑️
+                      </button>
+
+                      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "80px", background: "white", borderRadius: "6px", border: "1px solid #f1f5f9", padding: "6px", overflow: "hidden" }}>
+                        {isImage && (
+                          <img
+                            src={anexo.arquivo_url}
+                            alt={anexo.nome_arquivo}
+                            onClick={() => setExpandedImage(anexo.arquivo_url)}
+                            style={{ maxHeight: "120px", maxWidth: "100%", objectFit: "contain", cursor: "pointer", borderRadius: "4px", transition: "transform 0.2s" }}
+                            onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
+                            onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                          />
+                        )}
+
+                        {isAudio && (
+                          <audio
+                            src={anexo.arquivo_url}
+                            controls
+                            style={{ width: "100%", height: "32px" }}
+                          />
+                        )}
+
+                        {isVideo && (
+                          <video
+                            src={anexo.arquivo_url}
+                            controls
+                            style={{ maxHeight: "120px", maxWidth: "100%", borderRadius: "4px" }}
+                          />
+                        )}
+
+                        {isPdf && (
+                          <a
+                            href={anexo.arquivo_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px", textDecoration: "none", color: "#1e293b", fontWeight: "600", fontSize: "12px" }}
+                          >
+                            <span style={{ fontSize: "36px" }}>📄</span>
+                            Visualizar PDF
+                          </a>
+                        )}
+
+                        {!isImage && !isAudio && !isVideo && !isPdf && (
+                          <a
+                            href={anexo.arquivo_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px", textDecoration: "none", color: "#1e293b", fontWeight: "600", fontSize: "12px" }}
+                          >
+                            <span style={{ fontSize: "36px" }}>💾</span>
+                            Baixar Arquivo
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <label
+                style={{
+                  padding: "8px 16px",
+                  background: uploading ? "#cbd5e1" : "#475569",
+                  color: "white",
+                  borderRadius: "6px",
+                  fontSize: "13px",
+                  fontWeight: "700",
+                  cursor: uploading ? "not-allowed" : "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  transition: "background 0.2s"
+                }}
+                onMouseEnter={(e) => { if (!uploading) e.currentTarget.style.background = "#334155"; }}
+                onMouseLeave={(e) => { if (!uploading) e.currentTarget.style.background = "#475569"; }}
+              >
+                {uploading ? (
+                  <>
+                    <span className="spinner" style={{ width: "12px", height: "12px", borderWidth: "2px" }}></span>
+                    Enviando...
+                  </>
+                ) : (
+                  <>
+                    <span>📤</span>
+                    Selecionar e Anexar Arquivo
+                  </>
+                )}
+                <input
+                  type="file"
+                  onChange={handleFileUpload}
+                  disabled={uploading}
+                  style={{ display: "none" }}
+                  accept="image/*,video/*,audio/*,application/pdf"
+                />
+              </label>
+              <span style={{ fontSize: "11px", color: "#94a3b8" }}>
+                Formatos aceitos: PDF, Imagens (fotos), Áudios e Vídeos.
+              </span>
+            </div>
+          </div>
+
           <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "15px" }}>
             <button
               onClick={handleSalvarManual}
@@ -413,6 +628,33 @@ export default function DiarioServicoView() {
                     >
                       {item.alteracoes || "(Sem alterações registradas)"}
                     </div>
+                    {item.anexos && item.anexos.length > 0 && (
+                      <div style={{ marginTop: "10px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                        {item.anexos.map((anexo) => (
+                          <a
+                            key={anexo.id}
+                            href={anexo.arquivo_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              padding: "4px 8px",
+                              background: "#f1f5f9",
+                              border: "1px solid #cbd5e1",
+                              borderRadius: "4px",
+                              fontSize: "11px",
+                              fontWeight: "600",
+                              color: "#475569",
+                              textDecoration: "none",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "4px"
+                            }}
+                          >
+                            <span>📎</span> {anexo.nome_arquivo}
+                          </a>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <button
@@ -492,6 +734,18 @@ export default function DiarioServicoView() {
             )}
           </div>
 
+          {/* Anexos (Somente indicando a presença para registro físico) */}
+          {itemParaImprimir.anexos && itemParaImprimir.anexos.length > 0 && (
+            <div style={{ marginBottom: "40px", fontSize: "10pt", color: "#333", borderTop: "1px dashed #000", paddingTop: "10px", pageBreakInside: "avoid" }}>
+              <strong>DOCUMENTOS ANEXADOS DIGITALMENTE:</strong>
+              <ul style={{ margin: "5px 0 0 0", paddingLeft: "20px" }}>
+                {itemParaImprimir.anexos.map((anexo) => (
+                  <li key={anexo.id}>{anexo.nome_arquivo} ({anexo.tipo_arquivo})</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {/* Espaço para Assinaturas (Centralizado no final) */}
           <div style={{ display: "flex", justifyContent: "center", flexDirection: "column", alignItems: "center", pageBreakInside: "avoid" }}>
             <div style={{ borderTop: "1px solid #000000", width: "300px", textAlign: "center", paddingTop: "6px" }}>
@@ -499,6 +753,39 @@ export default function DiarioServicoView() {
               <div style={{ fontSize: "10pt", color: "#000", marginTop: "2px" }}>Operador do 1º Cartório - TCIP</div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Modal Lightbox de Zoom para Imagem */}
+      {expandedImage && (
+        <div
+          onClick={() => setExpandedImage(null)}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(15, 23, 42, 0.9)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+            padding: "20px",
+            cursor: "zoom-out"
+          }}
+        >
+          <img
+            src={expandedImage}
+            alt="Anexo ampliado"
+            style={{
+              maxHeight: "90vh",
+              maxWidth: "90vw",
+              objectFit: "contain",
+              borderRadius: "8px",
+              boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)"
+            }}
+          />
         </div>
       )}
     </div>
