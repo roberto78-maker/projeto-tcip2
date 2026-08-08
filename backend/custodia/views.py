@@ -1217,10 +1217,13 @@ class UserProfileView(APIView):
         full_name = user.get_full_name() or user.username
         return Response(
             {
+                "id": user.id,
                 "username": user.username,
                 "first_name": user.first_name,
                 "last_name": user.last_name,
                 "full_name": full_name,
+                "is_superuser": user.is_superuser,
+                "is_staff": user.is_staff,
             }
         )
 
@@ -1679,8 +1682,30 @@ class PolicialViewSet(viewsets.ModelViewSet):
     pagination_class = None
 
 
+class IsDiarioOwnerOrAdmin(permissions.BasePermission):
+    """
+    Permite leitura a qualquer usuário autenticado.
+    Operações de alteração (PUT, PATCH, DELETE) ou upload de anexo só são permitidas
+    se o diário pertencer ao próprio operador (request.user) ou se o usuário for admin.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        diario = obj if isinstance(obj, DiarioServico) else getattr(obj, "diario", None)
+
+        if request.user and (request.user.is_superuser or request.user.is_staff):
+            return True
+
+        if diario and diario.operador_id:
+            return diario.operador_id == request.user.id
+
+        return False
+
+
 class DiarioServicoViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsDiarioOwnerOrAdmin]
     queryset = DiarioServico.objects.all().order_by("-data_inicio")
     serializer_class = DiarioServicoSerializer
     pagination_class = None
@@ -1768,7 +1793,7 @@ class DiarioServicoViewSet(viewsets.ModelViewSet):
 
 
 class DiarioServicoAnexoViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsDiarioOwnerOrAdmin]
     queryset = DiarioServicoAnexo.objects.all()
     serializer_class = DiarioServicoAnexoSerializer
     http_method_names = ["delete"]

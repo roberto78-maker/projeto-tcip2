@@ -213,3 +213,52 @@ class DiarioServicoTest(TestCase):
         response2 = self.client.get(url)
         self.assertEqual(response2.status_code, 200)
         self.assertEqual(response.json()["id"], response2.json()["id"])
+
+    def test_outro_operador_nao_pode_editar_ou_excluir_diario(self):
+        """Verifica que outro operador não consegue alterar ou apagar o diário de colega"""
+        user2 = User.objects.create_user(username="operador_outro", password="password")
+        diario = DiarioServico.objects.create(
+            data_inicio=timezone.now(),
+            data_fim=timezone.now(),
+            operador=self.user,
+            alteracoes="Texto inicial do criador",
+        )
+
+        # Login como outro operador
+        self.client.force_login(user2)
+
+        # Leitura é permitida
+        res_get = self.client.get(reverse("diarioservico-detail", args=[diario.id]))
+        self.assertEqual(res_get.status_code, 200)
+
+        # Tentativa de edição deve ser negada
+        res_patch = self.client.patch(
+            reverse("diarioservico-detail", args=[diario.id]),
+            data={"alteracoes": "Tentativa de alteracao não autorizada"},
+            content_type="application/json",
+        )
+        self.assertEqual(res_patch.status_code, 403)
+
+        # Tentativa de exclusão deve ser negada
+        res_delete = self.client.delete(reverse("diarioservico-detail", args=[diario.id]))
+        self.assertEqual(res_delete.status_code, 403)
+
+    def test_admin_pode_editar_diario_de_outro_operador(self):
+        """Verifica que admin possui permissão de edição em qualquer diário"""
+        admin_user = User.objects.create_superuser(username="admin_teste", password="password")
+        diario = DiarioServico.objects.create(
+            data_inicio=timezone.now(),
+            data_fim=timezone.now(),
+            operador=self.user,
+            alteracoes="Texto do operador",
+        )
+
+        self.client.force_login(admin_user)
+        res_patch = self.client.patch(
+            reverse("diarioservico-detail", args=[diario.id]),
+            data={"alteracoes": "Correção realizada pelo Admin"},
+            content_type="application/json",
+        )
+        self.assertEqual(res_patch.status_code, 200)
+        diario.refresh_from_db()
+        self.assertEqual(diario.alteracoes, "Correção realizada pelo Admin")
