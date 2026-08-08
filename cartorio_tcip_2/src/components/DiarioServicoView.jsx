@@ -30,6 +30,18 @@ export default function DiarioServicoView() {
   const [uploading, setUploading] = useState(false);
   const [expandedImage, setExpandedImage] = useState(null);
 
+  // Usuário autenticado e Permissões
+  const [usuarioLogado, setUsuarioLogado] = useState(null);
+
+  const podeEditar = React.useMemo(() => {
+    if (!diario || !usuarioLogado) return true;
+    if (usuarioLogado.is_superuser || usuarioLogado.is_staff || usuarioLogado.role === "admin") {
+      return true;
+    }
+    if (!diario.operador) return true;
+    return diario.operador === usuarioLogado.id;
+  }, [diario, usuarioLogado]);
+
   // Carregar dados iniciais (diário atual e operador)
   useEffect(() => {
     async function initData() {
@@ -41,14 +53,16 @@ export default function DiarioServicoView() {
         setDiario(data);
         setAlteracoesText(data.alteracoes || "");
 
-        // Obter nome formatado do operador
+        // Obter nome formatado e dados do operador
         let nome = "";
         let patente = "";
         try {
           const perfil = await getUserProfile();
+          setUsuarioLogado(perfil);
           nome = perfil.full_name || perfil.username || "OPERADOR";
         } catch {
           const usuario = getUsuario();
+          setUsuarioLogado(usuario);
           nome = usuario?.username?.toUpperCase() || "OPERADOR";
         }
 
@@ -74,7 +88,7 @@ export default function DiarioServicoView() {
 
   // Autosave com debounce de 1.5s
   useEffect(() => {
-    if (!diario) return;
+    if (!diario || !podeEditar) return;
 
     // Se o texto é idêntico ao já salvo no estado local da API, ignora
     if (alteracoesText === diario.alteracoes) {
@@ -96,11 +110,11 @@ export default function DiarioServicoView() {
     }, 1500);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [alteracoesText]);
+  }, [alteracoesText, podeEditar]);
 
   // Função para salvar manualmente (backup)
   const handleSalvarManual = async () => {
-    if (!diario) return;
+    if (!diario || !podeEditar) return;
     setSavingStatus("salvando");
     try {
       const updated = await salvarDiario(diario.id, alteracoesText);
@@ -156,7 +170,7 @@ export default function DiarioServicoView() {
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
-    if (!file || !diario) return;
+    if (!file || !diario || !podeEditar) return;
 
     setUploading(true);
     setErro(null);
@@ -178,6 +192,10 @@ export default function DiarioServicoView() {
   };
 
   const handleAnexoDelete = async (anexoId) => {
+    if (!podeEditar) {
+      alert("Você não tem permissão para excluir anexos deste diário.");
+      return;
+    }
     if (!window.confirm("Deseja realmente remover este anexo?")) return;
     setErro(null);
     try {
@@ -269,6 +287,12 @@ export default function DiarioServicoView() {
           </div>
         )}
 
+        {!podeEditar && (
+          <div style={{ marginBottom: "15px", padding: "12px 15px", background: "#fef3c7", color: "#92400e", borderRadius: "6px", border: "1px solid #fcd34d", fontSize: "13px", fontWeight: "600", display: "flex", alignItems: "center", gap: "8px" }}>
+            <span>🔒 <strong>Modo Leitura:</strong> Este diário foi registrado pelo operador <strong>{diario?.operador_nome || "outro usuário"}</strong>. Você não pode alterar as informações nem remover anexos deste registro.</span>
+          </div>
+        )}
+
         <div className="card" style={{ position: "relative" }}>
           {/* Cabeçalho do Diário com Brasões Oficiais */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "2px solid #cbd5e1", paddingBottom: "15px", marginBottom: "20px" }}>
@@ -329,7 +353,12 @@ export default function DiarioServicoView() {
               id="alteracoes"
               value={alteracoesText}
               onChange={(e) => setAlteracoesText(e.target.value)}
-              placeholder="Descreva as alterações do serviço da jornada, imprevistos, substituições, ordens especiais, ou registre 'SEM ALTERAÇÕES' se a jornada transcorreu normalmente."
+              disabled={!podeEditar}
+              placeholder={
+                podeEditar
+                  ? "Descreva as alterações do serviço da jornada, imprevistos, substituições, ordens especiais, ou registre 'SEM ALTERAÇÕES' se a jornada transcorreu normalmente."
+                  : "Registro do serviço em modo somente leitura (pertence a outro operador)."
+              }
               rows="12"
               style={{
                 width: "100%",
@@ -339,9 +368,10 @@ export default function DiarioServicoView() {
                 fontSize: "14px",
                 lineHeight: "1.6",
                 color: "#1e293b",
-                background: "#ffffff",
+                background: podeEditar ? "#ffffff" : "#f8fafc",
                 resize: "vertical",
-                fontFamily: "inherit"
+                fontFamily: "inherit",
+                cursor: podeEditar ? "text" : "not-allowed"
               }}
             />
           </div>
@@ -393,23 +423,25 @@ export default function DiarioServicoView() {
                         {anexo.nome_arquivo}
                       </div>
 
-                      <button
-                        onClick={() => handleAnexoDelete(anexo.id)}
-                        style={{
-                          position: "absolute",
-                          top: "8px",
-                          right: "8px",
-                          background: "transparent",
-                          border: "none",
-                          color: "#ef4444",
-                          cursor: "pointer",
-                          fontSize: "14px",
-                          padding: "2px"
-                        }}
-                        title="Excluir anexo"
-                      >
-                        🗑️
-                      </button>
+                      {podeEditar && (
+                        <button
+                          onClick={() => handleAnexoDelete(anexo.id)}
+                          style={{
+                            position: "absolute",
+                            top: "8px",
+                            right: "8px",
+                            background: "transparent",
+                            border: "none",
+                            color: "#ef4444",
+                            cursor: "pointer",
+                            fontSize: "14px",
+                            padding: "2px"
+                          }}
+                          title="Excluir anexo"
+                        >
+                          🗑️
+                        </button>
+                      )}
 
                       <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "80px", background: "white", borderRadius: "6px", border: "1px solid #f1f5f9", padding: "6px", overflow: "hidden" }}>
                         {isImage && (
@@ -469,58 +501,62 @@ export default function DiarioServicoView() {
               </div>
             )}
 
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <label
-                style={{
-                  padding: "8px 16px",
-                  background: uploading ? "#cbd5e1" : "#475569",
-                  color: "white",
-                  borderRadius: "6px",
-                  fontSize: "13px",
-                  fontWeight: "700",
-                  cursor: uploading ? "not-allowed" : "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  transition: "background 0.2s"
-                }}
-                onMouseEnter={(e) => { if (!uploading) e.currentTarget.style.background = "#334155"; }}
-                onMouseLeave={(e) => { if (!uploading) e.currentTarget.style.background = "#475569"; }}
-              >
-                {uploading ? (
-                  <>
-                    <span className="spinner" style={{ width: "12px", height: "12px", borderWidth: "2px" }}></span>
-                    Enviando...
-                  </>
-                ) : (
-                  <>
-                    <span>📤</span>
-                    Selecionar e Anexar Arquivo
-                  </>
-                )}
-                <input
-                  type="file"
-                  onChange={handleFileUpload}
-                  disabled={uploading}
-                  style={{ display: "none" }}
-                  accept="image/*,video/*,audio/*,application/pdf"
-                />
-              </label>
-              <span style={{ fontSize: "11px", color: "#64748b", lineHeight: "1.4" }}>
-                Formatos aceitos: PDF, Imagens, Áudios (máx. 10MB) e Vídeos (máx. 100MB). <br />
-                <span style={{ color: "#0284c7" }}>💡 Recomendação: Vídeos até 20MB para uploads e carregamentos mais rápidos.</span>
-              </span>
-            </div>
+            {podeEditar && (
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <label
+                  style={{
+                    padding: "8px 16px",
+                    background: uploading ? "#cbd5e1" : "#475569",
+                    color: "white",
+                    borderRadius: "6px",
+                    fontSize: "13px",
+                    fontWeight: "700",
+                    cursor: uploading ? "not-allowed" : "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    transition: "background 0.2s"
+                  }}
+                  onMouseEnter={(e) => { if (!uploading) e.currentTarget.style.background = "#334155"; }}
+                  onMouseLeave={(e) => { if (!uploading) e.currentTarget.style.background = "#475569"; }}
+                >
+                  {uploading ? (
+                    <>
+                      <span className="spinner" style={{ width: "12px", height: "12px", borderWidth: "2px" }}></span>
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <span>📤</span>
+                      Selecionar e Anexar Arquivo
+                    </>
+                  )}
+                  <input
+                    type="file"
+                    onChange={handleFileUpload}
+                    disabled={uploading}
+                    style={{ display: "none" }}
+                    accept="image/*,video/*,audio/*,application/pdf"
+                  />
+                </label>
+                <span style={{ fontSize: "11px", color: "#64748b", lineHeight: "1.4" }}>
+                  Formatos aceitos: PDF, Imagens, Áudios (máx. 10MB) e Vídeos (máx. 100MB). <br />
+                  <span style={{ color: "#0284c7" }}>💡 Recomendação: Vídeos até 20MB para uploads e carregamentos mais rápidos.</span>
+                </span>
+              </div>
+            )}
           </div>
 
           <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "15px" }}>
-            <button
-              onClick={handleSalvarManual}
-              className="btn-blue"
-              style={{ padding: "10px 20px", display: "flex", alignItems: "center", gap: "6px", fontWeight: "600", cursor: "pointer" }}
-            >
-              💾 Salvar Registro
-            </button>
+            {podeEditar && (
+              <button
+                onClick={handleSalvarManual}
+                className="btn-blue"
+                style={{ padding: "10px 20px", display: "flex", alignItems: "center", gap: "6px", fontWeight: "600", cursor: "pointer" }}
+              >
+                💾 Salvar Registro
+              </button>
+            )}
             <button
               onClick={() => handleImprimir(diario)}
               className="btn-green"
