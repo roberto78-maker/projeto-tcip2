@@ -1687,10 +1687,14 @@ class IsDiarioOwnerOrAdmin(permissions.BasePermission):
     Permite leitura a qualquer usuário autenticado.
     Operações de alteração (PUT, PATCH, DELETE) ou upload de anexo só são permitidas
     se o diário pertencer ao próprio operador (request.user) ou se o usuário for admin.
+    As ações 'assumir' e 'liberar' podem ser executadas por qualquer usuário autenticado.
     """
 
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
+            return True
+
+        if getattr(view, "action", None) in ["assumir", "liberar"]:
             return True
 
         diario = obj if isinstance(obj, DiarioServico) else getattr(obj, "diario", None)
@@ -1738,10 +1742,26 @@ class DiarioServicoViewSet(viewsets.ModelViewSet):
             diario = DiarioServico.objects.create(
                 data_inicio=data_inicio,
                 data_fim=data_fim,
-                operador=request.user,
+                operador=None,
                 alteracoes="",
             )
 
+        serializer = self.get_serializer(diario)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post"], url_path="assumir")
+    def assumir(self, request, pk=None):
+        diario = self.get_object()
+        diario.operador = request.user
+        diario.save(update_fields=["operador", "data_atualizacao"])
+        serializer = self.get_serializer(diario)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post"], url_path="liberar")
+    def liberar(self, request, pk=None):
+        diario = self.get_object()
+        diario.operador = None
+        diario.save(update_fields=["operador", "data_atualizacao"])
         serializer = self.get_serializer(diario)
         return Response(serializer.data)
 

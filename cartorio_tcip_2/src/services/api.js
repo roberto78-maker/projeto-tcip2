@@ -510,6 +510,24 @@ export async function salvarDiario(id, alteracoes) {
   return await parseResponseJson(res);
 }
 
+export async function assumirDiario(id) {
+  const res = await fetch(`${BASE_URL}/api/diarios/${id}/assumir/`, {
+    method: "POST",
+    headers: getHeaders()
+  });
+  if (!res.ok) throw new Error("Erro ao assumir escala da jornada");
+  return await parseResponseJson(res);
+}
+
+export async function liberarDiario(id) {
+  const res = await fetch(`${BASE_URL}/api/diarios/${id}/liberar/`, {
+    method: "POST",
+    headers: getHeaders()
+  });
+  if (!res.ok) throw new Error("Erro ao liberar escala da jornada");
+  return await parseResponseJson(res);
+}
+
 export async function getDiariosPorData(dataStr) {
   const res = await fetch(`${BASE_URL}/api/diarios/?data=${dataStr}`, {
     headers: getHeaders()
