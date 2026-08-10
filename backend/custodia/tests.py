@@ -200,19 +200,42 @@ class DiarioServicoTest(TestCase):
         self.client.force_login(self.user)
 
     def test_atual_ou_criar_endpoint(self):
-        """Verify that accessing the endpoint returns or creates a DiarioServico for the current shift"""
+        """Verify that accessing the endpoint returns or creates a DiarioServico for the current shift with operador=None"""
         url = reverse("diarioservico-atual-ou-criar")
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertIn("id", response.json())
         self.assertIn("data_inicio", response.json())
         self.assertIn("data_fim", response.json())
-        self.assertEqual(response.json()["operador"], self.user.id)
+        self.assertIsNone(response.json()["operador"])
 
         # Second call should retrieve the same instance
         response2 = self.client.get(url)
         self.assertEqual(response2.status_code, 200)
         self.assertEqual(response.json()["id"], response2.json()["id"])
+
+    def test_assumir_e_liberar_escala(self):
+        """Verifica que o operador pode assumir e liberar a escala do diário de serviço"""
+        diario = DiarioServico.objects.create(
+            data_inicio=timezone.now(),
+            data_fim=timezone.now(),
+            operador=None,
+            alteracoes="Início da escala",
+        )
+
+        # Assumir a escala
+        res_assumir = self.client.post(
+            reverse("diarioservico-assumir", args=[diario.id])
+        )
+        self.assertEqual(res_assumir.status_code, 200)
+        self.assertEqual(res_assumir.json()["operador"], self.user.id)
+
+        # Liberar a escala
+        res_liberar = self.client.post(
+            reverse("diarioservico-liberar", args=[diario.id])
+        )
+        self.assertEqual(res_liberar.status_code, 200)
+        self.assertIsNone(res_liberar.json()["operador"])
 
     def test_outro_operador_nao_pode_editar_ou_excluir_diario(self):
         """Verifica que outro operador não consegue alterar ou apagar o diário de colega"""
