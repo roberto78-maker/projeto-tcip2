@@ -6,6 +6,8 @@ import {
   getUserProfile,
   uploadAnexoDiario,
   deleteAnexoDiario,
+  assumirDiario,
+  liberarDiario,
 } from "../services/api";
 import { getUsuario } from "../services/auth";
 import brasaoParana from "../assets/brasao_parana.png";
@@ -19,6 +21,10 @@ export default function DiarioServicoView() {
   const [operadorNome, setOperadorNome] = useState("");
   const [operadorPatente, setOperadorPatente] = useState("");
   const [erro, setErro] = useState(null);
+
+  // Confirmação de Escala
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmingAction, setConfirmingAction] = useState(false);
 
   // Consulta histórica
   const [dataConsulta, setDataConsulta] = useState("");
@@ -34,11 +40,11 @@ export default function DiarioServicoView() {
   const [usuarioLogado, setUsuarioLogado] = useState(null);
 
   const podeEditar = React.useMemo(() => {
-    if (!diario || !usuarioLogado) return true;
+    if (!diario || !usuarioLogado) return false;
     if (usuarioLogado.is_superuser || usuarioLogado.is_staff || usuarioLogado.role === "admin") {
       return true;
     }
-    if (!diario.operador) return true;
+    if (!diario.operador) return false;
     return diario.operador === usuarioLogado.id;
   }, [diario, usuarioLogado]);
 
@@ -53,17 +59,18 @@ export default function DiarioServicoView() {
         setDiario(data);
         setAlteracoesText(data.alteracoes || "");
 
-        // Obter nome formatado e dados do operador
+        // Obter nome formatado e dados do operador logado
+        let perfilUser = null;
         let nome = "";
         let patente = "";
         try {
-          const perfil = await getUserProfile();
-          setUsuarioLogado(perfil);
-          nome = perfil.full_name || perfil.username || "OPERADOR";
+          perfilUser = await getUserProfile();
+          setUsuarioLogado(perfilUser);
+          nome = perfilUser.full_name || perfilUser.username || "OPERADOR";
         } catch {
-          const usuario = getUsuario();
-          setUsuarioLogado(usuario);
-          nome = usuario?.username?.toUpperCase() || "OPERADOR";
+          perfilUser = getUsuario();
+          setUsuarioLogado(perfilUser);
+          nome = perfilUser?.username?.toUpperCase() || "OPERADOR";
         }
 
         const userLocal = getUsuario();
@@ -76,6 +83,11 @@ export default function DiarioServicoView() {
         }
         setOperadorNome(nome);
         setOperadorPatente(patente);
+
+        // Se o diário ainda não foi assumido pelo usuário atual, exibe modal de confirmação
+        if (data && data.operador !== perfilUser?.id) {
+          setShowConfirmModal(true);
+        }
       } catch (err) {
         console.error(err);
         setErro("Erro ao inicializar página de diário. Verifique sua conexão.");
@@ -85,6 +97,42 @@ export default function DiarioServicoView() {
     }
     initData();
   }, []);
+
+  const handleAssumirEscala = async () => {
+    if (!diario) return;
+    setConfirmingAction(true);
+    setErro(null);
+    try {
+      const updated = await assumirDiario(diario.id);
+      setDiario(updated);
+      setShowConfirmModal(false);
+    } catch (err) {
+      console.error(err);
+      setErro("Erro ao assumir escala da jornada.");
+    } finally {
+      setConfirmingAction(false);
+    }
+  };
+
+  const handleNaoAssumir = () => {
+    setShowConfirmModal(false);
+  };
+
+  const handleLiberarEscala = async () => {
+    if (!diario) return;
+    if (!window.confirm("Deseja realmente liberar a escala deste diário de serviço?")) return;
+    setConfirmingAction(true);
+    setErro(null);
+    try {
+      const updated = await liberarDiario(diario.id);
+      setDiario(updated);
+    } catch (err) {
+      console.error(err);
+      setErro("Erro ao liberar escala da jornada.");
+    } finally {
+      setConfirmingAction(false);
+    }
+  };
 
   // Autosave com debounce de 1.5s
   useEffect(() => {
@@ -287,9 +335,50 @@ export default function DiarioServicoView() {
           </div>
         )}
 
-        {!podeEditar && (
-          <div style={{ marginBottom: "15px", padding: "12px 15px", background: "#fef3c7", color: "#92400e", borderRadius: "6px", border: "1px solid #fcd34d", fontSize: "13px", fontWeight: "600", display: "flex", alignItems: "center", gap: "8px" }}>
-            <span>🔒 <strong>Modo Leitura:</strong> Este diário foi registrado pelo operador <strong>{diario?.operador_nome || "outro usuário"}</strong>. Você não pode alterar as informações nem remover anexos deste registro.</span>
+        {!diario?.operador ? (
+          <div style={{ marginBottom: "15px", padding: "14px 18px", background: "#eff6ff", color: "#1e40af", borderRadius: "8px", border: "1px solid #bfdbfe", fontSize: "14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+            <div>
+              <span>⚠️ <strong>Escala Não Assumida:</strong> Nenhum operador confirmou a escala desta jornada ainda. Se você está de serviço hoje, confirme abaixo.</span>
+            </div>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button
+                onClick={handleAssumirEscala}
+                disabled={confirmingAction}
+                style={{ padding: "8px 16px", background: "#2563eb", color: "white", border: "none", borderRadius: "6px", fontWeight: "700", fontSize: "13px", cursor: "pointer" }}
+              >
+                ✓ SIM, Assumir Escala
+              </button>
+              <button
+                onClick={handleNaoAssumir}
+                style={{ padding: "8px 12px", background: "#cbd5e1", color: "#334155", border: "none", borderRadius: "6px", fontWeight: "600", fontSize: "13px", cursor: "pointer" }}
+              >
+                ✖️ NÃO, Apenas Visualizar
+              </button>
+            </div>
+          </div>
+        ) : (diario.operador !== usuarioLogado?.id) ? (
+          <div style={{ marginBottom: "15px", padding: "14px 18px", background: "#fef3c7", color: "#92400e", borderRadius: "8px", border: "1px solid #fcd34d", fontSize: "13px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+            <div>
+              <span>🔒 <strong>Modo Leitura:</strong> Este diário foi registrado pelo operador <strong>{diario?.operador_nome || "outro usuário"}</strong>. Você não pode alterar as informações deste registro.</span>
+            </div>
+            <button
+              onClick={handleAssumirEscala}
+              disabled={confirmingAction}
+              style={{ padding: "8px 14px", background: "#d97706", color: "white", border: "none", borderRadius: "6px", fontWeight: "700", fontSize: "13px", cursor: "pointer" }}
+            >
+              🔄 Assumir Esta Escala
+            </button>
+          </div>
+        ) : (
+          <div style={{ marginBottom: "15px", padding: "10px 16px", background: "#f0fdf4", color: "#166534", borderRadius: "8px", border: "1px solid #bbf7d0", fontSize: "13px", fontWeight: "600", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span>✅ <strong>Você assumiu a escala desta jornada.</strong> Suas alterações serão salvas automaticamente.</span>
+            <button
+              onClick={handleLiberarEscala}
+              disabled={confirmingAction}
+              style={{ padding: "5px 10px", background: "#dc2626", color: "white", border: "none", borderRadius: "4px", fontWeight: "600", fontSize: "12px", cursor: "pointer" }}
+            >
+              🔓 Liberar Escala
+            </button>
           </div>
         )}
 
@@ -315,9 +404,9 @@ export default function DiarioServicoView() {
               </div>
             </div>
             <div style={{ textAlign: "right" }}>
-              <span style={{ fontSize: "12px", color: "#64748b", fontWeight: "600" }}>OPERADOR ATUAL</span>
+              <span style={{ fontSize: "12px", color: "#64748b", fontWeight: "600" }}>OPERADOR ATUAL DA ESCALA</span>
               <div style={{ fontSize: "14px", fontWeight: "700", color: "#1e293b", marginTop: "4px" }}>
-                👮 {operadorPatente} {operadorNome}
+                👮 {diario?.operador ? (diario.operador === usuarioLogado?.id ? `${operadorPatente} ${operadorNome}` : diario.operador_nome) : "Nenhum (Pendente Confirmação)"}
               </div>
             </div>
           </div>
