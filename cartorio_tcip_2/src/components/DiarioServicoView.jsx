@@ -25,6 +25,7 @@ export default function DiarioServicoView() {
   // Confirmação de Escala
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmingAction, setConfirmingAction] = useState(false);
+  const [recusou, setRecusou] = useState(false);
 
   // Consulta histórica
   const [dataConsulta, setDataConsulta] = useState("");
@@ -84,9 +85,18 @@ export default function DiarioServicoView() {
         setOperadorNome(nome);
         setOperadorPatente(patente);
 
-        // Se o diário ainda não foi assumido pelo usuário atual, exibe modal de confirmação
-        if (data && data.operador !== perfilUser?.id) {
+        // Verificar se este operador já recusou a escala desta jornada
+        const keyRecusa = data && perfilUser ? `recusou_diario_${data.id}_user_${perfilUser.id}` : null;
+        const jaRecusou = keyRecusa ? localStorage.getItem(keyRecusa) === "true" : false;
+        setRecusou(jaRecusou);
+
+        // O modal de confirmação só deve abrir se:
+        // 1. Ninguém assumiu o diário ainda (operador é null)
+        // 2. O operador atual ainda NÃO recusou esta jornada
+        if (data && !data.operador && perfilUser && !jaRecusou) {
           setShowConfirmModal(true);
+        } else {
+          setShowConfirmModal(false);
         }
       } catch (err) {
         console.error(err);
@@ -108,30 +118,19 @@ export default function DiarioServicoView() {
       setShowConfirmModal(false);
     } catch (err) {
       console.error(err);
-      setErro("Erro ao assumir escala da jornada.");
+      setErro(err?.message || "Erro ao assumir escala da jornada.");
     } finally {
       setConfirmingAction(false);
     }
   };
 
   const handleNaoAssumir = () => {
-    setShowConfirmModal(false);
-  };
-
-  const handleLiberarEscala = async () => {
-    if (!diario) return;
-    if (!window.confirm("Deseja realmente liberar a escala deste diário de serviço?")) return;
-    setConfirmingAction(true);
-    setErro(null);
-    try {
-      const updated = await liberarDiario(diario.id);
-      setDiario(updated);
-    } catch (err) {
-      console.error(err);
-      setErro("Erro ao liberar escala da jornada.");
-    } finally {
-      setConfirmingAction(false);
+    if (diario && usuarioLogado) {
+      const keyRecusa = `recusou_diario_${diario.id}_user_${usuarioLogado.id}`;
+      localStorage.setItem(keyRecusa, "true");
     }
+    setRecusou(true);
+    setShowConfirmModal(false);
   };
 
   // Autosave com debounce de 1.5s
@@ -336,49 +335,39 @@ export default function DiarioServicoView() {
         )}
 
         {!diario?.operador ? (
-          <div style={{ marginBottom: "15px", padding: "14px 18px", background: "#eff6ff", color: "#1e40af", borderRadius: "8px", border: "1px solid #bfdbfe", fontSize: "14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
-            <div>
-              <span>⚠️ <strong>Escala Não Assumida:</strong> Nenhum operador confirmou a escala desta jornada ainda. Se você está de serviço hoje, confirme abaixo.</span>
+          recusou ? (
+            <div style={{ marginBottom: "15px", padding: "14px 18px", background: "#f8fafc", color: "#475569", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "13px", display: "flex", alignItems: "center", gap: "8px" }}>
+              <span>🔒 <strong>Modo Leitura:</strong> Você confirmou que não está de serviço nesta jornada. Aguardando a assunção pelo operador escalado.</span>
             </div>
-            <div style={{ display: "flex", gap: "8px" }}>
-              <button
-                onClick={handleAssumirEscala}
-                disabled={confirmingAction}
-                style={{ padding: "8px 16px", background: "#2563eb", color: "white", border: "none", borderRadius: "6px", fontWeight: "700", fontSize: "13px", cursor: "pointer" }}
-              >
-                ✓ SIM, Assumir Escala
-              </button>
-              <button
-                onClick={handleNaoAssumir}
-                style={{ padding: "8px 12px", background: "#cbd5e1", color: "#334155", border: "none", borderRadius: "6px", fontWeight: "600", fontSize: "13px", cursor: "pointer" }}
-              >
-                ✖️ NÃO, Apenas Visualizar
-              </button>
+          ) : (
+            <div style={{ marginBottom: "15px", padding: "14px 18px", background: "#eff6ff", color: "#1e40af", borderRadius: "8px", border: "1px solid #bfdbfe", fontSize: "14px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+              <div>
+                <span>⚠️ <strong>Escala Não Assumida:</strong> Nenhum operador confirmou a escala desta jornada ainda. Se você está de serviço hoje, confirme abaixo.</span>
+              </div>
+              <div style={{ display: "flex", gap: "8px" }}>
+                <button
+                  onClick={handleAssumirEscala}
+                  disabled={confirmingAction}
+                  style={{ padding: "8px 16px", background: "#2563eb", color: "white", border: "none", borderRadius: "6px", fontWeight: "700", fontSize: "13px", cursor: "pointer" }}
+                >
+                  ✓ SIM, Assumir Escala
+                </button>
+                <button
+                  onClick={handleNaoAssumir}
+                  style={{ padding: "8px 12px", background: "#cbd5e1", color: "#334155", border: "none", borderRadius: "6px", fontWeight: "600", fontSize: "13px", cursor: "pointer" }}
+                >
+                  ✖️ NÃO, Apenas Visualizar
+                </button>
+              </div>
             </div>
-          </div>
+          )
         ) : (diario.operador !== usuarioLogado?.id) ? (
-          <div style={{ marginBottom: "15px", padding: "14px 18px", background: "#fef3c7", color: "#92400e", borderRadius: "8px", border: "1px solid #fcd34d", fontSize: "13px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
-            <div>
-              <span>🔒 <strong>Modo Leitura:</strong> Este diário foi registrado pelo operador <strong>{diario?.operador_nome || "outro usuário"}</strong>. Você não pode alterar as informações deste registro.</span>
-            </div>
-            <button
-              onClick={handleAssumirEscala}
-              disabled={confirmingAction}
-              style={{ padding: "8px 14px", background: "#d97706", color: "white", border: "none", borderRadius: "6px", fontWeight: "700", fontSize: "13px", cursor: "pointer" }}
-            >
-              🔄 Assumir Esta Escala
-            </button>
+          <div style={{ marginBottom: "15px", padding: "14px 18px", background: "#fef3c7", color: "#92400e", borderRadius: "8px", border: "1px solid #fcd34d", fontSize: "13px" }}>
+            <span>🔒 <strong>Modo Leitura:</strong> Este diário foi assumido pelo operador <strong>{diario?.operador_nome || "outro usuário"}</strong>. Você não pode alterar as informações deste registro.</span>
           </div>
         ) : (
-          <div style={{ marginBottom: "15px", padding: "10px 16px", background: "#f0fdf4", color: "#166534", borderRadius: "8px", border: "1px solid #bbf7d0", fontSize: "13px", fontWeight: "600", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ marginBottom: "15px", padding: "12px 16px", background: "#f0fdf4", color: "#166534", borderRadius: "8px", border: "1px solid #bbf7d0", fontSize: "13px", fontWeight: "600" }}>
             <span>✅ <strong>Você assumiu a escala desta jornada.</strong> Suas alterações serão salvas automaticamente.</span>
-            <button
-              onClick={handleLiberarEscala}
-              disabled={confirmingAction}
-              style={{ padding: "5px 10px", background: "#dc2626", color: "white", border: "none", borderRadius: "4px", fontWeight: "600", fontSize: "12px", cursor: "pointer" }}
-            >
-              🔓 Liberar Escala
-            </button>
           </div>
         )}
 
