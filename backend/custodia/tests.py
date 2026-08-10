@@ -288,4 +288,4 @@ class DiarioServicoTest(TestCase):
         )
         self.assertEqual(res_patch.status_code, 200)
         diario.refresh_from_db()
-        self.assertEqual(diario.alteracoes, "Correção realizada pelo Admin")
+        self.assertEqual(diario.alteracoes, "CORREÇÃO REALIZADA PELO ADMIN")
