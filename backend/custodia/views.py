@@ -1752,6 +1752,14 @@ class DiarioServicoViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"], url_path="assumir")
     def assumir(self, request, pk=None):
         diario = self.get_object()
+        if diario.operador_id and diario.operador_id != request.user.id:
+            if not (request.user.is_superuser or request.user.is_staff):
+                return Response(
+                    {
+                        "error": "A escala desta jornada já foi assumida por outro operador e não pode ser alterada até o término da jornada."
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
         diario.operador = request.user
         diario.save(update_fields=["operador", "data_atualizacao"])
         serializer = self.get_serializer(diario)
