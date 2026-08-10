@@ -58,7 +58,7 @@ export default function DiarioServicoView() {
         // Obter diário atual
         const data = await getDiarioAtual();
         setDiario(data);
-        setAlteracoesText(data.alteracoes || "");
+        setAlteracoesText((data.alteracoes || "").toUpperCase());
 
         // Obter nome formatado e dados do operador logado
         let perfilUser = null;
@@ -430,7 +430,7 @@ export default function DiarioServicoView() {
             <textarea
               id="alteracoes"
               value={alteracoesText}
-              onChange={(e) => setAlteracoesText(e.target.value)}
+              onChange={(e) => setAlteracoesText(e.target.value.toUpperCase())}
               disabled={!podeEditar}
               placeholder={
                 podeEditar
@@ -449,7 +449,8 @@ export default function DiarioServicoView() {
                 background: podeEditar ? "#ffffff" : "#f8fafc",
                 resize: "vertical",
                 fontFamily: "inherit",
-                cursor: podeEditar ? "text" : "not-allowed"
+                cursor: podeEditar ? "text" : "not-allowed",
+                textTransform: "uppercase"
               }}
             />
           </div>
@@ -741,7 +742,7 @@ export default function DiarioServicoView() {
                         overflowY: "auto"
                       }}
                     >
-                      {item.alteracoes || "(Sem alterações registradas)"}
+                      {item.alteracoes?.toUpperCase() || "(SEM ALTERAÇÕES REGISTRADAS)"}
                     </div>
                     {item.anexos && item.anexos.length > 0 && (
                       <div style={{ marginTop: "10px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
@@ -834,7 +835,7 @@ export default function DiarioServicoView() {
           {/* Alterações / Ocorrências (Justificado e com recuo de parágrafo de 2.5cm) */}
           <div style={{ fontSize: "12pt", fontFamily: "Arial", lineHeight: "1.8", textAlign: "justify", color: "#000", minHeight: "350px", marginBottom: "60px" }}>
             {itemParaImprimir.alteracoes ? (
-              itemParaImprimir.alteracoes.split("\n").map((paragraph, index) => {
+              itemParaImprimir.alteracoes.toUpperCase().split("\n").map((paragraph, index) => {
                 if (!paragraph.trim()) return null;
                 return (
                   <p key={index} style={{ textIndent: "2.5cm", margin: "0 0 15px 0" }}>
