@@ -197,6 +197,11 @@ class DiarioServico(models.Model):
     def __str__(self):
         return f"Diário {self.data_inicio.strftime('%d/%m/%Y %H:%M')} - {self.operador.username if self.operador else 'Sem operador'}"
 
+    def save(self, *args, **kwargs):
+        if self.alteracoes:
+            self.alteracoes = self.alteracoes.upper()
+        super().save(*args, **kwargs)
+
 
 class DiarioServicoAnexo(models.Model):
     class Meta:
