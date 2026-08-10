@@ -914,6 +914,110 @@ export default function DiarioServicoView() {
           />
         </div>
       )}
+
+      {/* Modal de Confirmação de Escala de Serviço */}
+      {showConfirmModal && diario && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(15, 23, 42, 0.65)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+            padding: "20px"
+          }}
+        >
+          <div
+            style={{
+              background: "#ffffff",
+              borderRadius: "12px",
+              maxWidth: "500px",
+              width: "100%",
+              boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+              padding: "24px",
+              border: "1px solid #e2e8f0"
+            }}
+          >
+            <div style={{ textAlign: "center", marginBottom: "16px" }}>
+              <span style={{ fontSize: "40px" }}>👮‍♂️</span>
+              <h3 style={{ margin: "10px 0 6px 0", fontSize: "20px", fontWeight: "700", color: "#1e293b" }}>
+                Confirmação de Escala de Serviço
+              </h3>
+              <p style={{ margin: 0, fontSize: "14px", color: "#64748b" }}>
+                Jornada: {formatarDataHora(diario.data_inicio)} às {formatarDataHora(diario.data_fim)}
+              </p>
+            </div>
+
+            <div style={{ background: "#f8fafc", padding: "14px", borderRadius: "8px", border: "1px solid #e2e8f0", marginBottom: "20px", fontSize: "14px", color: "#334155", lineHeight: "1.5" }}>
+              <p style={{ margin: "0 0 8px 0", fontWeight: "600" }}>
+                Você é o operador que está cumprindo a escala desta jornada de trabalho?
+              </p>
+              <ul style={{ margin: 0, paddingLeft: "20px", fontSize: "13px", color: "#475569" }}>
+                <li><strong>SIM:</strong> Você assumirá o Diário de Serviço e poderá registrar as ocorrências e anexos da sua escala.</li>
+                <li><strong>NÃO:</strong> Você visualizará o registro em modo somente leitura sem assumir a escala do colega.</li>
+              </ul>
+            </div>
+
+            {diario.operador && diario.operador !== usuarioLogado?.id && (
+              <div style={{ marginBottom: "16px", padding: "10px 12px", background: "#fef3c7", color: "#92400e", borderRadius: "6px", fontSize: "12px", border: "1px solid #fcd34d" }}>
+                ⚠️ Atualmente este diário consta como assumido por: <strong>{diario.operador_nome}</strong>. Se você é o operador escalado hoje, confirme em "SIM" para assumir a escala.
+              </div>
+            )}
+
+            <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+              <button
+                onClick={handleNaoAssumir}
+                disabled={confirmingAction}
+                style={{
+                  padding: "10px 18px",
+                  borderRadius: "6px",
+                  border: "1px solid #cbd5e1",
+                  background: "#ffffff",
+                  color: "#475569",
+                  fontWeight: "600",
+                  fontSize: "14px",
+                  cursor: "pointer"
+                }}
+              >
+                ✖️ NÃO (Apenas Visualizar)
+              </button>
+              <button
+                onClick={handleAssumirEscala}
+                disabled={confirmingAction}
+                style={{
+                  padding: "10px 20px",
+                  borderRadius: "6px",
+                  border: "none",
+                  background: "#16a34a",
+                  color: "#ffffff",
+                  fontWeight: "700",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  boxShadow: "0 2px 4px rgba(22, 163, 74, 0.3)"
+                }}
+              >
+                {confirmingAction ? (
+                  <>
+                    <span className="spinner" style={{ width: "14px", height: "14px", borderWidth: "2px", borderColor: "#ffffff transparent" }}></span>
+                    Confirmando...
+                  </>
+                ) : (
+                  <>✓ SIM (Assumir Escala)</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
