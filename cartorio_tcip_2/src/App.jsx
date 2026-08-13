@@ -10,6 +10,7 @@ import OficiosView from "./components/OficiosView";
 import LoginView from "./components/LoginView";
 import AssinaturaView from "./components/AssinaturaView";
 import DiarioServicoView from "./components/DiarioServicoView";
+import ConfirmacaoEscalaModal from "./components/ConfirmacaoEscalaModal";
 
 import brasao from "./assets/brasao.png";
 
@@ -117,10 +118,14 @@ export default function App() {
     return viewsValidas.includes(hash) ? hash : "dashboard";
   });
   const [logado, setLogado] = useState(isAutenticado());
+  const [escalaChecada, setEscalaChecada] = useState(false);
   const [usuario, setUsuario] = useState(() => (logado ? getUsuario() : null));
 
   useEffect(() => {
     setUsuario(logado ? getUsuario() : null);
+    if (!logado) {
+      setEscalaChecada(false);
+    }
   }, [logado]);
 
   // 💓 HEARTBEAT: Mantém o Render acordado a cada 10 minutos (previne suspensão do plano Free)
@@ -170,12 +175,26 @@ export default function App() {
 
   // 🔐 LOGIN
   if (!logado) {
-    return <LoginView onLogin={() => setLogado(true)} />;
+    return <LoginView onLogin={() => {
+      setLogado(true);
+      setEscalaChecada(false);
+    }} />;
+  }
+
+  // 👮‍♂️ CONFIRMAÇÃO OBRIGATÓRIA DE ESCALA DE SERVIÇO PÓS-LOGIN
+  if (!escalaChecada) {
+    return (
+      <ConfirmacaoEscalaModal
+        usuarioLogado={usuario}
+        onConcluido={() => setEscalaChecada(true)}
+      />
+    );
   }
 
   // 🔓 LOGOUT
   function handleLogout() {
     logout();
+    setEscalaChecada(false);
     setLogado(false);
   }
 
