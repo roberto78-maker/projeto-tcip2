@@ -16,6 +16,7 @@ export const CRIMES_GERAIS = [
   "Direção Perigosa de Veículo: Artigo 34 da LCP",
   "Drogas para Consumo Pessoal: Artigo 28 da Lei 11.343/06",
   "Exercício Arbitrário das Próprias Razões: Artigo 345",
+  "Falsa Identidade: Artigo 307 do CP",
   "Injúria: Artigo 140 do CP",
   "Jogos de Azar: Artigo 50 da LCP",
   "Lesão Corporal Leve: Artigo 129 do CP",
