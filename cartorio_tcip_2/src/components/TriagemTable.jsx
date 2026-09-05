@@ -120,26 +120,6 @@ export function TriagemTable({
     }
   };
 
-  const handleArquivarComOficio = async (item) => {
-    if (!item.numero_oficio && !item.arquivo_pdf_url) {
-      alert("É necessário gerar o ofício de justificativa ou anexar o documento PDF primeiro.");
-      return;
-    }
-    const justificativa = item.numero_oficio
-      ? `Ofício nº ${item.numero_oficio}/${item.ano_oficio}`
-      : "documento anexado";
-    const confirmado = window.confirm(
-      `Deseja realmente arquivar este registro com a justificativa (${justificativa})?`
-    );
-    if (!confirmado) return;
-
-    try {
-      await confirmarArquivamento(item.id, item);
-      alert("Registro arquivado com sucesso!");
-    } catch (err) {
-      console.error("Erro ao arquivar:", err);
-    }
-  };
 
   return (
     <div className="table-container">
@@ -268,28 +248,32 @@ export function TriagemTable({
                     >
                       {gerandoRecibo === item.id ? "..." : "RECIBO"}
                     </button>
-                    {item.processo === "(ERRO - DATA DE AUDIENCIA)" || item.vara === "OUTROS JUIZADOS - ERRO MATERIAL" ? (
-                      <button
-                        className="btn-green"
-                        onClick={() => handleArquivarComOficio(item)}
-                        disabled={!item.numero_oficio && !item.arquivo_pdf_url}
-                        style={{
-                          background: (item.numero_oficio || item.arquivo_pdf_url) ? "#10b981" : "#cbd5e1",
-                          cursor: (item.numero_oficio || item.arquivo_pdf_url) ? "pointer" : "not-allowed",
-                        }}
-                        title={
-                          (item.numero_oficio || item.arquivo_pdf_url)
-                            ? "Arquivar este processo com a justificativa do ofício"
-                            : "Necessário gerar o ofício de justificativa ou anexar o documento primeiro"
-                        }
-                      >
-                        ARQUIVAR
-                      </button>
-                    ) : (
-                      <button className="btn-green" onClick={() => abrirModalDespacho(item)}>
-                        TRIAR
-                      </button>
-                    )}
+                    {(() => {
+                      const isPendencia =
+                        item.processo === "(ERRO - DATA DE AUDIENCIA)" ||
+                        item.vara === "OUTROS JUIZADOS - ERRO MATERIAL";
+                      const temDocJustificativa = !!item.numero_oficio || !!item.arquivo_pdf_url;
+                      const bloqueado = isPendencia && !temDocJustificativa;
+
+                      return (
+                        <button
+                          className="btn-green"
+                          onClick={() => abrirModalDespacho(item)}
+                          disabled={bloqueado}
+                          style={{
+                            background: bloqueado ? "#cbd5e1" : "#10b981",
+                            cursor: bloqueado ? "not-allowed" : "pointer",
+                          }}
+                          title={
+                            bloqueado
+                              ? "Necessário gerar o ofício de justificativa ou anexar o documento primeiro"
+                              : "Triar este registro"
+                          }
+                        >
+                          TRIAR
+                        </button>
+                      );
+                    })()}
                     <button
                       className="btn-outline-red"
                       onClick={() => abrirModalExclusao(item)}
