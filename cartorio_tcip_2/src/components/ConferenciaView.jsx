@@ -51,7 +51,7 @@ export default function ConferenciaView() {
             <p style={{ margin: "5px 0 0 0", color: "#64748b", fontSize: "14px" }}>
               {abaAtiva === "CORRETOS"
                 ? "Materiais aguardando triagem oficial e armazenamento físico."
-                : "Pendências de erro de data aguardando ofício de justificativa para arquivamento."
+                : "Pendências aguardando ofício de justificativa para prosseguimento da triagem."
               }
               {totalCount !== null && !loading && (
                 <span style={{ marginLeft: "12px", fontWeight: "600", color: corAba }}>
