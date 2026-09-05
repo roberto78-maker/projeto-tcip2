@@ -22,11 +22,12 @@ function ModalDespacho({ item, onConfirm, onClose }) {
     >
       <div
         style={{
-          background: "white",
+          background: "#dbe4ee",
+          border: "1px solid #94a3b8",
           padding: "30px",
           borderRadius: "12px",
           width: "480px",
-          boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)",
+          boxShadow: "0 20px 25px -5px rgba(0,0,0,0.2)",
         }}
       >
         <h3 style={{ marginBottom: "15px", color: temApreensao ? "#1e3a8a" : "#0f766e" }}>
@@ -120,11 +121,12 @@ function ModalExclusao({ item, onConfirm, onClose }) {
     >
       <div
         style={{
-          background: "white",
+          background: "#dbe4ee",
+          border: "1px solid #94a3b8",
           padding: "30px",
           borderRadius: "16px",
           width: "450px",
-          boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)",
+          boxShadow: "0 25px 50px -12px rgba(0,0,0,0.3)",
         }}
       >
         <h3
