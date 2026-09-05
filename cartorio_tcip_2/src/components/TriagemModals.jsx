@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { verificarPossuiApreensao } from "../hooks/useTriagem.js";
 
 function ModalDespacho({ item, onConfirm, onClose }) {
   const [obs, setObs] = useState("");
+  const temApreensao = verificarPossuiApreensao(item);
 
   return (
     <div
@@ -23,16 +25,27 @@ function ModalDespacho({ item, onConfirm, onClose }) {
           background: "white",
           padding: "30px",
           borderRadius: "12px",
-          width: "450px",
+          width: "480px",
           boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)",
         }}
       >
-        <h3 style={{ marginBottom: "15px", color: "#1e3a8a" }}>
-          Confirmar Entrada no Deposito
+        <h3 style={{ marginBottom: "15px", color: temApreensao ? "#1e3a8a" : "#0f766e" }}>
+          {temApreensao ? "📦 Confirmar Entrada no Depósito" : "📁 Confirmar Triagem e Arquivamento"}
         </h3>
-        <p style={{ fontSize: "14px", color: "#64748b", marginBottom: "20px" }}>
-          Voce esta confirmando a entrada do material do <strong>BOU {item.bou}</strong> no
-          deposito de custodia.
+        <p style={{ fontSize: "14px", color: "#64748b", marginBottom: "20px", lineHeight: "1.5" }}>
+          {temApreensao ? (
+            <>
+              Você está confirmando a entrada do material do <strong>BOU {item.bou}</strong> (
+              <strong style={{ color: "#0284c7" }}>
+                {item.substancia ? item.substancia.toUpperCase() : "MATERIAL APREENDIDO"}
+              </strong>
+              ) no depósito de custódia.
+            </>
+          ) : (
+            <>
+              O procedimento do <strong>BOU {item.bou}</strong> não possui materiais apreendidos. A triagem realizará o <strong>arquivamento definitivo</strong> do registro.
+            </>
+          )}
         </p>
 
         <div style={{ marginBottom: "20px" }}>
@@ -45,25 +58,37 @@ function ModalDespacho({ item, onConfirm, onClose }) {
               color: "#475569",
             }}
           >
-            OBSERVACOES DE ENTRADA (OPCIONAL)
+            {temApreensao ? "OBSERVAÇÕES DE ENTRADA (OPCIONAL)" : "OBSERVAÇÕES DE ARQUIVAMENTO (OPCIONAL)"}
           </label>
           <textarea
             style={{
               width: "100%",
-              height: "100px",
+              height: "90px",
               padding: "10px",
               borderRadius: "6px",
               border: "1px solid #cbd5e1",
+              fontSize: "13px",
             }}
-            placeholder="Algum detalhe sobre o lacre ou peso real..."
+            placeholder={
+              temApreensao
+                ? "Algum detalhe sobre o lacre, peso real ou acondicionamento..."
+                : "Observação opcional sobre o arquivamento do termo..."
+            }
             value={obs}
             onChange={(event) => setObs(event.target.value)}
           />
         </div>
 
         <div style={{ display: "flex", gap: "12px" }}>
-          <button className="btn-green" style={{ flex: 1 }} onClick={() => onConfirm(obs)}>
-            CONFIRMAR DESPACHO PARA O DEPOSITO
+          <button
+            className="btn-green"
+            style={{
+              flex: 1,
+              background: temApreensao ? "#10b981" : "#0d9488",
+            }}
+            onClick={() => onConfirm(obs)}
+          >
+            {temApreensao ? "CONFIRMAR DESPACHO PARA O DEPÓSITO" : "CONFIRMAR ARQUIVAMENTO"}
           </button>
           <button className="btn-blue" style={{ background: "#94a3b8" }} onClick={onClose}>
             CANCELAR
