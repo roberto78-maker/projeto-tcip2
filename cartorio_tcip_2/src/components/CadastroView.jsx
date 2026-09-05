@@ -29,12 +29,12 @@ const FormGroup = ({ label, id, children, required, rightElement }) => (
 
 const inputStyle = {
   padding: "10px",
-  border: "1px solid #cbd5e1",
+  border: "1px solid #94a3b8",
   borderRadius: "6px",
   width: "100%",
   boxSizing: "border-box",
-  background: "white",
-  color: "#1e293b",
+  background: "#f1f5f9",
+  color: "#0f172a",
 };
 
 export default function CadastroView() {
@@ -116,7 +116,7 @@ export default function CadastroView() {
         </h1>
       </div>
 
-      <div className="card" style={{ border: "2px solid #3b82f6", background: "#f8fafc", padding: "20px" }}>
+      <div className="card" style={{ border: "2px solid #2563eb", background: "var(--card-bg, #dbe4ee)", padding: "20px" }}>
         <h3 style={{ margin: "0 0 15px 0", color: "#1e3a8a", fontSize: "16px", display: "flex", alignItems: "center", gap: "10px" }}>
           SELECIONE A(S) NATUREZA(S) DO PROCEDIMENTO <span style={{ color: "#ef4444", fontSize: "12px" }}>(OBRIGATÓRIO *)</span>
         </h3>
@@ -128,7 +128,10 @@ export default function CadastroView() {
             gap: "8px",
             maxHeight: "250px",
             overflowY: "auto",
-            paddingRight: "10px",
+            padding: "12px",
+            background: "#cad7e6",
+            borderRadius: "8px",
+            border: "1px solid #94a3b8",
           }}
         >
           {CRIMES_GERAIS.map((crime) => {
@@ -141,12 +144,12 @@ export default function CadastroView() {
                 alignItems: "center",
                 gap: "10px",
                 fontSize: "12px",
-                color: isDestaque ? "#1e293b" : "#475569",
+                color: isDestaque ? "#0f172a" : "#334155",
                 fontWeight: isDestaque ? "bold" : "normal",
                 cursor: "pointer",
-                padding: "6px",
+                padding: "6px 8px",
                 borderRadius: "6px",
-                background: crimesSelecionados.includes(crime) ? "#eff6ff" : "transparent",
+                background: crimesSelecionados.includes(crime) ? "#93c5fd" : "transparent",
               }}
             >
               <input
@@ -165,10 +168,10 @@ export default function CadastroView() {
               display: "flex",
               alignItems: "center",
               gap: "10px",
-              background: fielDepositario ? "#fef2f2" : "#f8fafc",
+              background: fielDepositario ? "#fecaca" : "#cad7e6",
               padding: "12px 25px",
               borderRadius: "12px",
-              border: fielDepositario ? "1px solid #fecaca" : "1px solid #e2e8f0",
+              border: fielDepositario ? "1px solid #ef4444" : "1px solid #94a3b8",
               cursor: "pointer",
             }}
           >
@@ -178,7 +181,7 @@ export default function CadastroView() {
               onChange={(e) => handleFielDepositarioChange(e.target.checked)}
               style={{ width: "18px", height: "18px" }}
             />
-            <span style={{ fontSize: "13px", fontWeight: "700", color: fielDepositario ? "#dc2626" : "#475569" }}>
+            <span style={{ fontSize: "13px", fontWeight: "700", color: fielDepositario ? "#dc2626" : "#1e293b" }}>
               ENTREGAR COMO FIEL DEPOSITÁRIO (Objeto fica com o proprietário)
             </span>
           </label>
@@ -186,7 +189,7 @@ export default function CadastroView() {
       </div>
 
       <div className="card" style={{ padding: "25px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px", borderBottom: "1px solid #e2e8f0", paddingBottom: "15px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px", borderBottom: "1px solid #94a3b8", paddingBottom: "15px" }}>
           <h2 style={{ fontSize: "16px", color: "#1e3a8a", margin: 0 }}>
             1. DADOS DA OCORRÊNCIA ({crimesSelecionados.length > 0 ? crimesSelecionados.join(", ") : "GERAL"})
           </h2>
@@ -334,7 +337,7 @@ export default function CadastroView() {
       </div>
 
       <div className="card" style={{ padding: "25px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px", borderBottom: "1px solid #e2e8f0", paddingBottom: "15px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px", borderBottom: "1px solid #94a3b8", paddingBottom: "15px" }}>
           <h2 style={{ fontSize: "16px", color: "#1e3a8a", margin: 0 }}>2. NOTICIADOS E APREENSÕES</h2>
           <button className="btn-blue" onClick={adicionarMaterial} style={{ fontSize: "12px" }}>
             + Adicionar Pessoa
@@ -342,12 +345,12 @@ export default function CadastroView() {
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1.5fr 100px 100px 120px 40px", gap: "12px", marginBottom: "10px", padding: "0 10px" }}>
-          <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>NOTICIADO / AUTOR</label>
-          <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>TIPO</label>
-          <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>APREENSÕES</label>
-          <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>QUANT. / PESO</label>
-          <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>UNID.</label>
-          <label style={{ fontSize: "11px", fontWeight: "700", color: "#64748b" }}>No LACRE</label>
+          <label style={{ fontSize: "11px", fontWeight: "700", color: "#334155" }}>NOTICIADO / AUTOR</label>
+          <label style={{ fontSize: "11px", fontWeight: "700", color: "#334155" }}>TIPO</label>
+          <label style={{ fontSize: "11px", fontWeight: "700", color: "#334155" }}>APREENSÕES</label>
+          <label style={{ fontSize: "11px", fontWeight: "700", color: "#334155" }}>QUANT. / PESO</label>
+          <label style={{ fontSize: "11px", fontWeight: "700", color: "#334155" }}>UNID.</label>
+          <label style={{ fontSize: "11px", fontWeight: "700", color: "#334155" }}>No LACRE</label>
           <div></div>
         </div>
 
@@ -360,9 +363,10 @@ export default function CadastroView() {
                 gridTemplateColumns: "1.5fr 1fr 1.5fr 100px 100px 120px 40px",
                 gap: "12px",
                 alignItems: "center",
-                background: "#f8fafc",
+                background: "#cad7e6",
                 padding: "8px 10px",
                 borderRadius: "8px",
+                border: "1px solid #94a3b8",
                 borderLeft:
                   material.tipo === "DROGA"
                     ? "4px solid #10b981"
