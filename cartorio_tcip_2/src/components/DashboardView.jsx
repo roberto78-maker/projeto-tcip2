@@ -47,7 +47,7 @@ const TopCard = ({ title, value, subtitle, bg, icon, onClick }) => (
 );
 
 const BorderCard = ({ title, value, subtitle, color }) => (
-  <div style={{ background: "white", padding: "20px", borderRadius: "6px", flex: 1, borderLeft: `5px solid ${color}`, boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+  <div style={{ background: "#cad7e6", border: "1px solid #94a3b8", padding: "20px", borderRadius: "8px", flex: 1, borderLeft: `5px solid ${color}`, boxShadow: "0 2px 4px rgba(0,0,0,0.08)" }}>
     <div style={{ fontSize: "12px", fontWeight: "700", color: "#475569", marginBottom: "8px" }}>{title}</div>
     <div style={{ fontSize: "22px", fontWeight: "700", color: "#0f172a" }}>
       {value} <span style={{ fontSize: "14px", fontWeight: "500", color: "#64748b" }}>{subtitle}</span>
