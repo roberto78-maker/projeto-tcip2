@@ -165,7 +165,7 @@ export default function CofreView() {
       )}
 
       {/* Header */}
-      <div style={{ padding: "25px", background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
+      <div style={{ padding: "25px", background: "#cad7e6", borderBottom: "1px solid #94a3b8" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
           <div>
             <h2 style={{ margin: 0, color: "#1e293b", fontSize: "20px" }}>📦 DEPÓSITO</h2>
