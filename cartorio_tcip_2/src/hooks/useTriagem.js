@@ -14,6 +14,15 @@ function buildFilters(abaAtiva, busca) {
   return filters;
 }
 
+export function verificarPossuiApreensao(item) {
+  if (!item) return false;
+  if (item.tem_apreensao === false) return false;
+  const sub = String(item.substancia || "").toUpperCase().trim();
+  if (sub === "NAO HA APREENSAO" || sub === "NÃO HÁ APREENSÃO") return false;
+  if (item.natureza === "AMEACA" && !sub && (!item.peso || item.peso === 0)) return false;
+  return true;
+}
+
 export function useTriagem() {
   const [abaAtiva, setAbaAtiva] = useState("CORRETOS");
   const [valorBusca, setValorBusca] = useState("");
@@ -85,11 +94,14 @@ export function useTriagem() {
   const confirmarDespacho = async (observacao) => {
     if (!itemSelecionado) return;
 
+    const temApreensao = verificarPossuiApreensao(itemSelecionado);
+    const novoStatus = temApreensao ? "cofre" : "arquivado";
+
     try {
       await updateApreensao(itemSelecionado.id, {
         ...itemSelecionado,
-        status: "cofre",
-        observacao_cofre: observacao,
+        status: novoStatus,
+        observacao_cofre: observacao || "",
       });
       fecharModalDespacho();
       recarregar();
