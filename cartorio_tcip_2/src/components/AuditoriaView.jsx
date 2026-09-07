@@ -10,6 +10,7 @@ export default function AuditoriaView() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [obsVisivel, setObsVisivel] = useState(null);
   const itemsPerPage = 10;
   const [filtros, setFiltros] = useState({
     data_inicio: "",
@@ -452,6 +453,20 @@ export default function AuditoriaView() {
           <div style={{ padding: "30px", textAlign: "center", color: "#64748b" }}>Utilize os filtros acima para iniciar a busca.</div>
         ) : (
           <div className="tcip-table-container">
+
+            {/* Modal de Observação */}
+            {obsVisivel && (
+              <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 2000, backdropFilter: "blur(4px)" }}>
+                <div style={{ background: "white", padding: "30px", borderRadius: "16px", width: "500px", maxWidth: "90vw" }}>
+                  <h3 style={{ marginBottom: "15px" }}>📌 Observação de Entrada</h3>
+                  <div style={{ background: "#f8fafc", padding: "15px", borderRadius: "8px", marginBottom: "20px", whiteSpace: "pre-wrap", fontSize: "14px", color: "#334155" }}>
+                    {obsVisivel.observacao_cofre || "Nenhuma observação."}
+                  </div>
+                  <button className="btn-blue" style={{ width: "100%" }} onClick={() => setObsVisivel(null)}>FECHAR</button>
+                </div>
+              </div>
+            )}
+
             <table className="tcip-table">
               <thead>
                 <tr>
@@ -461,6 +476,7 @@ export default function AuditoriaView() {
                   <th>Substância / Objeto</th>
                   <th>Localização (Status)</th>
                   <th>Anexo</th>
+                  <th style={{ textAlign: "center" }}>OBS.</th>
                   <th>Juizado</th>
                   <th>Data do Fato</th>
                 </tr>
@@ -468,7 +484,7 @@ export default function AuditoriaView() {
               <tbody>
                 {currentItems.length === 0 ? (
                   <tr>
-                    <td colSpan="8" style={{ textAlign: "center", padding: "40px", color: "#94a3b8" }}>
+                    <td colSpan="9" style={{ textAlign: "center", padding: "40px", color: "#94a3b8" }}>
                       Ops, nenhum processo encontrado com as exatas informações pesquisadas acima.
                     </td>
                   </tr>
@@ -543,6 +559,11 @@ export default function AuditoriaView() {
                               Nenhum
                             </span>
                           )}
+                        </td>
+                        <td style={{ textAlign: "center" }}>
+                          {item.observacao_cofre
+                            ? <button onClick={() => setObsVisivel(item)} style={{ background: "#f1f5f9", border: "1px solid #cbd5e1", borderRadius: "15px", cursor: "pointer", fontSize: "10px", padding: "4px 10px", fontWeight: "600", color: "#475569" }}>VER</button>
+                            : <span style={{ color: "#cbd5e1" }}>—</span>}
                         </td>
                         <td style={{ fontSize: "13px", color: "#475569" }}>{item.vara || "-"}</td>
                         <td style={{ fontSize: "13px", color: "#475569" }}>{item.data ? item.data.split("-").reverse().join("/") : "-"}</td>
