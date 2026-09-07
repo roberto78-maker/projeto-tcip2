@@ -35,6 +35,7 @@ export function TriagemTable({
   carregarMais,
   abrirModalDespacho,
   abrirModalExclusao,
+  abrirModalObservacao,
   confirmarArquivamento,
   handleFileUpload,
   handleRemoverPdf,
@@ -274,6 +275,24 @@ export function TriagemTable({
                         </button>
                       );
                     })()}
+                    <button
+                      className="btn-outline-obs"
+                      onClick={() => abrirModalObservacao(item)}
+                      style={{
+                        padding: "8px 12px",
+                        border: item.observacao_cofre ? "1px solid #bbf7d0" : "1px solid #cbd5e1",
+                        color: item.observacao_cofre ? "#166534" : "#64748b",
+                        background: item.observacao_cofre ? "#f0fdf4" : "#f8fafc",
+                        borderRadius: "6px",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                        fontSize: "12px",
+                        transition: "all 0.2s",
+                      }}
+                      title={item.observacao_cofre ? "Editar observação existente" : "Adicionar observação de acompanhamento"}
+                    >
+                      {item.observacao_cofre ? "📝 OBS ✓" : "📝 OBS"}
+                    </button>
                     <button
                       className="btn-outline-red"
                       onClick={() => abrirModalExclusao(item)}
