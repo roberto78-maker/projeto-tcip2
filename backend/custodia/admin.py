@@ -18,6 +18,7 @@ class ApreensaoAdmin(admin.ModelAdmin):
         "bou",
         "processo",
         "reu",
+        "natureza_badge",
         "substancia",
         "peso_formatado",
         "status_badge",
@@ -25,7 +26,13 @@ class ApreensaoAdmin(admin.ModelAdmin):
         "data_fato",
         "data_criacao",
     )
-    list_filter = ("status", "substancia", "vara", "data_criacao")
+    list_filter = ("natureza", "status", "substancia", "vara", "data_criacao")
+    actions = [
+        "trocar_para_drogas",
+        "trocar_para_som",
+        "trocar_para_ameaca",
+        "trocar_para_outros",
+    ]
     search_fields = ("bou", "processo", "reu", "substancia", "vara", "policial")
     readonly_fields = ("data_criacao", "arquivo_pdf_url", "arquivo_pdf")
     list_per_page = 30
@@ -35,7 +42,13 @@ class ApreensaoAdmin(admin.ModelAdmin):
     fieldsets = (
         (
             "Identificação",
-            {"fields": ("processo", "bou", "reu", "vara", "policial", "lacre")},
+            {
+                "fields": ("processo", "bou", "reu", "vara", "policial", "lacre", "natureza"),
+                "description": (
+                    "<strong style='color:#b91c1c'>⚠️ O campo NATUREZA define o tipo do registro "
+                    "(DROGAS, SOM, AMEAÇA, OUTROS). Altere aqui caso tenha sido cadastrado incorretamente.</strong>"
+                ),
+            },
         ),
         (
             "Material",
@@ -80,6 +93,60 @@ class ApreensaoAdmin(admin.ModelAdmin):
         return f"{obj.peso} {obj.unidade}"
 
     peso_formatado.short_description = "Peso"
+
+    def natureza_badge(self, obj):
+        cores = {
+            "DROGAS": "#10b981",
+            "SOM": "#f59e0b",
+            "AMEACA": "#3b82f6",
+            "OUTROS": "#6b7280",
+        }
+        labels = {
+            "DROGAS": "🌿 DROGAS",
+            "SOM": "🔊 SOM",
+            "AMEACA": "⚡ AMEAÇA",
+            "OUTROS": "📦 OUTROS",
+        }
+        cor = cores.get(obj.natureza, "#6b7280")
+        label = labels.get(obj.natureza, obj.natureza)
+        return format_html(
+            '<span style="background:{};color:#fff;padding:3px 8px;'
+            'border-radius:4px;font-size:11px;font-weight:bold;">{}"</span>',
+            cor,
+            label,
+        )
+
+    natureza_badge.short_description = "Natureza / Tipo"
+    natureza_badge.admin_order_field = "natureza"
+
+    # ── Actions para trocar natureza em lote ─────────────────────────────────
+    def _trocar_natureza(self, request, queryset, natureza, label):
+        total = queryset.update(natureza=natureza)
+        self.message_user(
+            request,
+            f"{total} registro(s) alterado(s) para {label}.",
+        )
+
+    def trocar_para_drogas(self, request, queryset):
+        self._trocar_natureza(request, queryset, "DROGAS", "DROGAS")
+
+    trocar_para_drogas.short_description = "🌿 Alterar tipo → DROGAS"
+
+    def trocar_para_som(self, request, queryset):
+        self._trocar_natureza(request, queryset, "SOM", "SOM")
+
+    trocar_para_som.short_description = "🔊 Alterar tipo → SOM"
+
+    def trocar_para_ameaca(self, request, queryset):
+        self._trocar_natureza(request, queryset, "AMEACA", "AMEAÇA")
+
+    trocar_para_ameaca.short_description = "⚡ Alterar tipo → AMEAÇA"
+
+    def trocar_para_outros(self, request, queryset):
+        self._trocar_natureza(request, queryset, "OUTROS", "OUTROS")
+
+    trocar_para_outros.short_description = "📦 Alterar tipo → OUTROS"
+    # ─────────────────────────────────────────────────────────────────────────
 
     def status_badge(self, obj):
         cores = {
