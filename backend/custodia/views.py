@@ -821,6 +821,7 @@ class RelatorioIncineracaoView(APIView):
                     "lote_incineracao__numero",
                     "lote_incineracao__data_criacao",
                     "arquivo_pdf_url",
+                    "observacao_cofre",
                 ).order_by("-data_fato", "-data_criacao")[:500]
             )
         except Exception as e:
@@ -870,6 +871,7 @@ class RelatorioIncineracaoView(APIView):
                     "status_label": status_desc,
                     "motivo_exclusao": item["motivo_exclusao"],
                     "arquivo_pdf_url": item["arquivo_pdf_url"],
+                    "observacao_cofre": item.get("observacao_cofre") or "",
                     "data": (
                         timezone.localtime(data_exibicao).strftime("%Y-%m-%d")
                         if data_exibicao
