@@ -30,6 +30,9 @@ class ApreensaoAdmin(admin.ModelAdmin):
     actions = [
         "trocar_para_drogas",
         "trocar_para_som",
+        "trocar_para_arma_branca",
+        "trocar_para_nenhum",
+        "trocar_para_objeto",
         "trocar_para_ameaca",
         "trocar_para_outros",
     ]
@@ -96,22 +99,28 @@ class ApreensaoAdmin(admin.ModelAdmin):
 
     def natureza_badge(self, obj):
         cores = {
-            "DROGAS": "#10b981",
-            "SOM": "#f59e0b",
-            "AMEACA": "#3b82f6",
-            "OUTROS": "#6b7280",
+            "DROGAS":      "#10b981",
+            "SOM":         "#f59e0b",
+            "ARMA_BRANCA": "#64748b",
+            "NENHUM":      "#94a3b8",
+            "OBJETO":      "#3b82f6",
+            "AMEACA":      "#8b5cf6",
+            "OUTROS":      "#6b7280",
         }
         labels = {
-            "DROGAS": "🌿 DROGAS",
-            "SOM": "🔊 SOM",
-            "AMEACA": "⚡ AMEAÇA",
-            "OUTROS": "📦 OUTROS",
+            "DROGAS":      "🌿 DROGA",
+            "SOM":         "🔊 APARELHO DE SOM",
+            "ARMA_BRANCA": "🔪 ARMA BRANCA",
+            "NENHUM":      "🚧 NENHUM",
+            "OBJETO":      "📦 OBJETO",
+            "AMEACA":      "⚡ AMEAÇA",
+            "OUTROS":      "📋 OUTROS",
         }
         cor = cores.get(obj.natureza, "#6b7280")
         label = labels.get(obj.natureza, obj.natureza)
         return format_html(
             '<span style="background:{};color:#fff;padding:3px 8px;'
-            'border-radius:4px;font-size:11px;font-weight:bold;">{}"</span>',
+            'border-radius:4px;font-size:11px;font-weight:bold;">{}</span>',
             cor,
             label,
         )
@@ -128,24 +137,32 @@ class ApreensaoAdmin(admin.ModelAdmin):
         )
 
     def trocar_para_drogas(self, request, queryset):
-        self._trocar_natureza(request, queryset, "DROGAS", "DROGAS")
-
-    trocar_para_drogas.short_description = "🌿 Alterar tipo → DROGAS"
+        self._trocar_natureza(request, queryset, "DROGAS", "DROGA")
+    trocar_para_drogas.short_description = "🌿 Alterar tipo → DROGA"
 
     def trocar_para_som(self, request, queryset):
-        self._trocar_natureza(request, queryset, "SOM", "SOM")
+        self._trocar_natureza(request, queryset, "SOM", "APARELHO DE SOM")
+    trocar_para_som.short_description = "🔊 Alterar tipo → APARELHO DE SOM"
 
-    trocar_para_som.short_description = "🔊 Alterar tipo → SOM"
+    def trocar_para_arma_branca(self, request, queryset):
+        self._trocar_natureza(request, queryset, "ARMA_BRANCA", "ARMA BRANCA")
+    trocar_para_arma_branca.short_description = "🔪 Alterar tipo → ARMA BRANCA"
+
+    def trocar_para_nenhum(self, request, queryset):
+        self._trocar_natureza(request, queryset, "NENHUM", "NENHUM (Sem Apreenssão)")
+    trocar_para_nenhum.short_description = "🚧 Alterar tipo → NENHUM (Sem Apreenssão)"
+
+    def trocar_para_objeto(self, request, queryset):
+        self._trocar_natureza(request, queryset, "OBJETO", "OBJETO")
+    trocar_para_objeto.short_description = "📦 Alterar tipo → OBJETO"
 
     def trocar_para_ameaca(self, request, queryset):
         self._trocar_natureza(request, queryset, "AMEACA", "AMEAÇA")
-
     trocar_para_ameaca.short_description = "⚡ Alterar tipo → AMEAÇA"
 
     def trocar_para_outros(self, request, queryset):
         self._trocar_natureza(request, queryset, "OUTROS", "OUTROS")
-
-    trocar_para_outros.short_description = "📦 Alterar tipo → OUTROS"
+    trocar_para_outros.short_description = "📋 Alterar tipo → OUTROS"
     # ─────────────────────────────────────────────────────────────────────────
 
     def status_badge(self, obj):
