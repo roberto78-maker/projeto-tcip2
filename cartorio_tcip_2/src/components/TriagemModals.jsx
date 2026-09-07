@@ -209,10 +209,13 @@ function ModalExclusao({ item, onConfirm, onClose }) {
 export function TriagemModals({
   itemSelecionado,
   itemParaExcluir,
+  itemObservacao,
   fecharModalDespacho,
   fecharModalExclusao,
+  fecharModalObservacao,
   confirmarDespacho,
   confirmarExclusao,
+  salvarObservacao,
 }) {
   return (
     <>
@@ -231,6 +234,131 @@ export function TriagemModals({
           onConfirm={confirmarExclusao}
         />
       )}
+
+      {itemObservacao && (
+        <ModalObservacao
+          item={itemObservacao}
+          onClose={fecharModalObservacao}
+          onSave={salvarObservacao}
+        />
+      )}
     </>
   );
 }
+
+function ModalObservacao({ item, onSave, onClose }) {
+  const [texto, setTexto] = useState(item.observacao_cofre || "");
+  const [salvando, setSalvando] = useState(false);
+
+  const handleSalvar = async () => {
+    setSalvando(true);
+    try {
+      await onSave(texto);
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        background: "rgba(0,0,0,0.6)",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 2000,
+        backdropFilter: "blur(4px)",
+      }}
+    >
+      <div
+        style={{
+          background: "#dbe4ee",
+          border: "1px solid #94a3b8",
+          padding: "30px",
+          borderRadius: "16px",
+          width: "520px",
+          maxWidth: "90vw",
+          boxShadow: "0 25px 50px -12px rgba(0,0,0,0.3)",
+        }}
+      >
+        <h3 style={{ marginBottom: "5px", color: "#1e3a8a", display: "flex", alignItems: "center", gap: "10px" }}>
+          📝 Observação de Acompanhamento
+        </h3>
+        <p style={{ fontSize: "13px", color: "#64748b", marginBottom: "20px" }}>
+          <strong>BOU {item.bou}</strong> — {item.reu || "Noticiado não informado"}
+        </p>
+
+        <div style={{ marginBottom: "8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <label
+            style={{
+              fontSize: "12px",
+              fontWeight: "700",
+              color: "#475569",
+            }}
+          >
+            REGISTRO DE PROVIDÊNCIAS / AUDITORIA
+          </label>
+          {item.observacao_cofre && (
+            <span style={{ fontSize: "10px", color: "#10b981", fontWeight: "600" }}>
+              ✓ Observação existente
+            </span>
+          )}
+        </div>
+        <textarea
+          style={{
+            width: "100%",
+            height: "130px",
+            padding: "12px",
+            borderRadius: "8px",
+            border: "1px solid #cbd5e1",
+            fontSize: "13px",
+            resize: "vertical",
+            fontFamily: "inherit",
+          }}
+          placeholder="Descreva o que foi tratado, as providências tomadas e o andamento do processo para fins de auditoria..."
+          value={texto}
+          onChange={(e) => setTexto(e.target.value)}
+        />
+        <p style={{ fontSize: "11px", color: "#94a3b8", marginTop: "6px", marginBottom: "20px" }}>
+          Esta observação ficará visível na Busca Processual (Radar) para consulta de auditoria.
+        </p>
+
+        <div style={{ display: "flex", gap: "12px" }}>
+          <button
+            className="btn-blue"
+            style={{
+              flex: 1,
+              padding: "12px",
+              fontWeight: "700",
+              borderRadius: "8px",
+              opacity: salvando ? 0.6 : 1,
+            }}
+            onClick={handleSalvar}
+            disabled={salvando}
+          >
+            {salvando ? "SALVANDO..." : "💾 SALVAR OBSERVAÇÃO"}
+          </button>
+          <button
+            className="btn-outline-gray"
+            style={{
+              padding: "12px 20px",
+              borderRadius: "8px",
+              border: "1px solid #cbd5e1",
+              color: "#64748b",
+              fontWeight: "600",
+            }}
+            onClick={onClose}
+          >
+            CANCELAR
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+

@@ -29,6 +29,7 @@ export function useTriagem() {
   const [busca, setBusca] = useState("");
   const [itemSelecionado, setItemSelecionado] = useState(null);
   const [itemParaExcluir, setItemParaExcluir] = useState(null);
+  const [itemObservacao, setItemObservacao] = useState(null);
   const [totalPendencias, setTotalPendencias] = useState(0);
   const debounceRef = useRef(null);
 
@@ -90,6 +91,8 @@ export function useTriagem() {
   const fecharModalDespacho = () => setItemSelecionado(null);
   const abrirModalExclusao = (item) => setItemParaExcluir(item);
   const fecharModalExclusao = () => setItemParaExcluir(null);
+  const abrirModalObservacao = (item) => setItemObservacao(item);
+  const fecharModalObservacao = () => setItemObservacao(null);
 
   const confirmarDespacho = async (observacao) => {
     if (!itemSelecionado) return;
@@ -140,6 +143,21 @@ export function useTriagem() {
     }
   };
 
+  const salvarObservacao = async (texto) => {
+    if (!itemObservacao) return;
+    try {
+      await updateApreensao(itemObservacao.id, {
+        ...itemObservacao,
+        observacao_cofre: texto,
+      });
+      fecharModalObservacao();
+      recarregar();
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao salvar observação.");
+    }
+  };
+
   const handleFileUpload = async (id, file) => {
     if (!file) return;
     try {
@@ -184,6 +202,7 @@ export function useTriagem() {
     busca: valorBusca,
     itemSelecionado,
     itemParaExcluir,
+    itemObservacao,
     itens,
     loading,
     loadingMore,
@@ -197,6 +216,9 @@ export function useTriagem() {
     fecharModalDespacho,
     abrirModalExclusao,
     fecharModalExclusao,
+    abrirModalObservacao,
+    fecharModalObservacao,
+    salvarObservacao,
     confirmarDespacho,
     confirmarExclusao,
     confirmarArquivamento,

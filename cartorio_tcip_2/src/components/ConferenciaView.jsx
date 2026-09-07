@@ -10,6 +10,7 @@ export default function ConferenciaView() {
     busca,
     itemSelecionado,
     itemParaExcluir,
+    itemObservacao,
     itens,
     loading,
     loadingMore,
@@ -23,6 +24,9 @@ export default function ConferenciaView() {
     fecharModalDespacho,
     abrirModalExclusao,
     fecharModalExclusao,
+    abrirModalObservacao,
+    fecharModalObservacao,
+    salvarObservacao,
     confirmarDespacho,
     confirmarExclusao,
     confirmarArquivamento,
@@ -37,10 +41,13 @@ export default function ConferenciaView() {
       <TriagemModals
         itemSelecionado={itemSelecionado}
         itemParaExcluir={itemParaExcluir}
+        itemObservacao={itemObservacao}
         fecharModalDespacho={fecharModalDespacho}
         fecharModalExclusao={fecharModalExclusao}
+        fecharModalObservacao={fecharModalObservacao}
         confirmarDespacho={confirmarDespacho}
         confirmarExclusao={confirmarExclusao}
+        salvarObservacao={salvarObservacao}
       />
 
       {/* Header */}
@@ -172,6 +179,7 @@ export default function ConferenciaView() {
           carregarMais={carregarMais}
           abrirModalDespacho={abrirModalDespacho}
           abrirModalExclusao={abrirModalExclusao}
+          abrirModalObservacao={abrirModalObservacao}
           confirmarArquivamento={confirmarArquivamento}
           handleFileUpload={handleFileUpload}
           handleRemoverPdf={handleRemoverPdf}
