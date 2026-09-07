@@ -575,7 +575,7 @@ export default function AuditoriaView() {
               {data && data.detalhado.length > 0 && (
                 <tfoot style={{ background: "#f1f5f9", fontWeight: "bold" }}>
                   <tr>
-                    <td colSpan="2" style={{ padding: "15px", textAlign: "left", fontSize: "14px", color: "#1e293b" }}>
+                    <td colSpan="3" style={{ padding: "15px", textAlign: "left", fontSize: "14px", color: "#1e293b" }}>
                       TOTAL DE PROCESSOS: {String(data.detalhado.length).padStart(2, '0')}
                     </td>
                     <td colSpan="6" style={{ padding: "15px", textAlign: "left", fontSize: "12px", color: "#64748b" }}>
