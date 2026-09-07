@@ -46,7 +46,15 @@ class ApreensaoAdmin(admin.ModelAdmin):
         (
             "Identificação",
             {
-                "fields": ("processo", "bou", "reu", "vara", "policial", "lacre", "natureza"),
+                "fields": (
+                    "processo",
+                    "bou",
+                    "reu",
+                    "vara",
+                    "policial",
+                    "lacre",
+                    "natureza",
+                ),
                 "description": (
                     "<strong style='color:#b91c1c'>⚠️ O campo NATUREZA define o tipo do registro "
                     "(DROGAS, SOM, AMEAÇA, OUTROS). Altere aqui caso tenha sido cadastrado incorretamente.</strong>"
@@ -99,22 +107,22 @@ class ApreensaoAdmin(admin.ModelAdmin):
 
     def natureza_badge(self, obj):
         cores = {
-            "DROGAS":      "#10b981",
-            "SOM":         "#f59e0b",
+            "DROGAS": "#10b981",
+            "SOM": "#f59e0b",
             "ARMA_BRANCA": "#64748b",
-            "NENHUM":      "#94a3b8",
-            "OBJETO":      "#3b82f6",
-            "AMEACA":      "#8b5cf6",
-            "OUTROS":      "#6b7280",
+            "NENHUM": "#94a3b8",
+            "OBJETO": "#3b82f6",
+            "AMEACA": "#8b5cf6",
+            "OUTROS": "#6b7280",
         }
         labels = {
-            "DROGAS":      "🌿 DROGA",
-            "SOM":         "🔊 APARELHO DE SOM",
+            "DROGAS": "🌿 DROGA",
+            "SOM": "🔊 APARELHO DE SOM",
             "ARMA_BRANCA": "🔪 ARMA BRANCA",
-            "NENHUM":      "🚧 NENHUM",
-            "OBJETO":      "📦 OBJETO",
-            "AMEACA":      "⚡ AMEAÇA",
-            "OUTROS":      "📋 OUTROS",
+            "NENHUM": "🚧 NENHUM",
+            "OBJETO": "📦 OBJETO",
+            "AMEACA": "⚡ AMEAÇA",
+            "OUTROS": "📋 OUTROS",
         }
         cor = cores.get(obj.natureza, "#6b7280")
         label = labels.get(obj.natureza, obj.natureza)
@@ -138,30 +146,37 @@ class ApreensaoAdmin(admin.ModelAdmin):
 
     def trocar_para_drogas(self, request, queryset):
         self._trocar_natureza(request, queryset, "DROGAS", "DROGA")
+
     trocar_para_drogas.short_description = "🌿 Alterar tipo → DROGA"
 
     def trocar_para_som(self, request, queryset):
         self._trocar_natureza(request, queryset, "SOM", "APARELHO DE SOM")
+
     trocar_para_som.short_description = "🔊 Alterar tipo → APARELHO DE SOM"
 
     def trocar_para_arma_branca(self, request, queryset):
         self._trocar_natureza(request, queryset, "ARMA_BRANCA", "ARMA BRANCA")
+
     trocar_para_arma_branca.short_description = "🔪 Alterar tipo → ARMA BRANCA"
 
     def trocar_para_nenhum(self, request, queryset):
         self._trocar_natureza(request, queryset, "NENHUM", "NENHUM (Sem Apreenssão)")
+
     trocar_para_nenhum.short_description = "🚧 Alterar tipo → NENHUM (Sem Apreenssão)"
 
     def trocar_para_objeto(self, request, queryset):
         self._trocar_natureza(request, queryset, "OBJETO", "OBJETO")
+
     trocar_para_objeto.short_description = "📦 Alterar tipo → OBJETO"
 
     def trocar_para_ameaca(self, request, queryset):
         self._trocar_natureza(request, queryset, "AMEACA", "AMEAÇA")
+
     trocar_para_ameaca.short_description = "⚡ Alterar tipo → AMEAÇA"
 
     def trocar_para_outros(self, request, queryset):
         self._trocar_natureza(request, queryset, "OUTROS", "OUTROS")
+
     trocar_para_outros.short_description = "📋 Alterar tipo → OUTROS"
     # ─────────────────────────────────────────────────────────────────────────
 

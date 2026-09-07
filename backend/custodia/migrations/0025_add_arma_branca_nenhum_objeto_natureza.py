@@ -6,18 +6,44 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('custodia', '0024_uppercase_existing_diarios'),
+        ("custodia", "0024_uppercase_existing_diarios"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='apreensao',
-            name='natureza',
-            field=models.CharField(choices=[('DROGAS', '🌿 Droga (Tráfico / Posse)'), ('SOM', '🔊 Aparelho de Som (Perturbação do Sossego)'), ('ARMA_BRANCA', '🔪 Arma Branca'), ('NENHUM', '🚫 Nenhum (Sem Apreensão Física)'), ('OBJETO', '📦 Objeto (Outros Itens Apreendidos)'), ('AMEACA', '⚡ Ameaça / Desobediência / Injúria'), ('OUTROS', '📋 Outros Tipos de Termos')], db_index=True, default='DROGAS', max_length=50),
+            model_name="apreensao",
+            name="natureza",
+            field=models.CharField(
+                choices=[
+                    ("DROGAS", "🌿 Droga (Tráfico / Posse)"),
+                    ("SOM", "🔊 Aparelho de Som (Perturbação do Sossego)"),
+                    ("ARMA_BRANCA", "🔪 Arma Branca"),
+                    ("NENHUM", "🚫 Nenhum (Sem Apreensão Física)"),
+                    ("OBJETO", "📦 Objeto (Outros Itens Apreendidos)"),
+                    ("AMEACA", "⚡ Ameaça / Desobediência / Injúria"),
+                    ("OUTROS", "📋 Outros Tipos de Termos"),
+                ],
+                db_index=True,
+                default="DROGAS",
+                max_length=50,
+            ),
         ),
         migrations.AlterField(
-            model_name='historicalapreensao',
-            name='natureza',
-            field=models.CharField(choices=[('DROGAS', '🌿 Droga (Tráfico / Posse)'), ('SOM', '🔊 Aparelho de Som (Perturbação do Sossego)'), ('ARMA_BRANCA', '🔪 Arma Branca'), ('NENHUM', '🚫 Nenhum (Sem Apreensão Física)'), ('OBJETO', '📦 Objeto (Outros Itens Apreendidos)'), ('AMEACA', '⚡ Ameaça / Desobediência / Injúria'), ('OUTROS', '📋 Outros Tipos de Termos')], db_index=True, default='DROGAS', max_length=50),
+            model_name="historicalapreensao",
+            name="natureza",
+            field=models.CharField(
+                choices=[
+                    ("DROGAS", "🌿 Droga (Tráfico / Posse)"),
+                    ("SOM", "🔊 Aparelho de Som (Perturbação do Sossego)"),
+                    ("ARMA_BRANCA", "🔪 Arma Branca"),
+                    ("NENHUM", "🚫 Nenhum (Sem Apreensão Física)"),
+                    ("OBJETO", "📦 Objeto (Outros Itens Apreendidos)"),
+                    ("AMEACA", "⚡ Ameaça / Desobediência / Injúria"),
+                    ("OUTROS", "📋 Outros Tipos de Termos"),
+                ],
+                db_index=True,
+                default="DROGAS",
+                max_length=50,
+            ),
         ),
     ]
