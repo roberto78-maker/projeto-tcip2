@@ -33,11 +33,15 @@ class Apreensao(models.Model):
         verbose_name_plural = "Apreensões"
 
     # Tipos de Natureza (Define o Fluxo)
+    # Espelha exatamente o dropdown TIPO do formulário de cadastro frontend
     NATUREZA_CHOICES = [
-        ("DROGAS", "Tráfico / Posse de Drogas"),
-        ("AMEACA", "Ameaça / Desobediência / Injúria"),
-        ("SOM", "Perturbação do Sossego (Som)"),
-        ("OUTROS", "Outros Tipos de Termos"),
+        ("DROGAS", "🌿 Droga (Tráfico / Posse)"),
+        ("SOM", "🔊 Aparelho de Som (Perturbação do Sossego)"),
+        ("ARMA_BRANCA", "🔪 Arma Branca"),
+        ("NENHUM", "🚫 Nenhum (Sem Apreensão Física)"),
+        ("OBJETO", "📦 Objeto (Outros Itens Apreendidos)"),
+        ("AMEACA", "⚡ Ameaça / Desobediência / Injúria"),
+        ("OUTROS", "📋 Outros Tipos de Termos"),
     ]
 
     processo = models.CharField(max_length=100)
