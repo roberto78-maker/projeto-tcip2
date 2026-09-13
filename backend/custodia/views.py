@@ -251,11 +251,13 @@ class ApreensaoFilter(django_filters.FilterSet):
             return queryset.filter(
                 Q(processo__icontains="(ERRO - DATA DE AUDIENCIA)")
                 | Q(vara__icontains="OUTROS JUIZADOS - ERRO MATERIAL")
+                | Q(is_pendencia=True)
             )
         elif value == "CORRETOS":
             return queryset.exclude(
                 Q(processo__icontains="(ERRO - DATA DE AUDIENCIA)")
                 | Q(vara__icontains="OUTROS JUIZADOS - ERRO MATERIAL")
+                | Q(is_pendencia=True)
             )
         return queryset
 
@@ -272,6 +274,7 @@ class ApreensaoFilter(django_filters.FilterSet):
             "natureza",
             "excluir_natureza",
             "tem_apreensao",
+            "is_pendencia",
         ]
 
 
