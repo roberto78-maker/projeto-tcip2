@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { verificarPossuiApreensao } from "../hooks/useTriagem.js";
 
-function ModalDespacho({ item, onConfirm, onClose }) {
+function ModalDespacho({ item, onConfirm, onMoverPendencia, onClose }) {
   const [obs, setObs] = useState("");
   const temApreensao = verificarPossuiApreensao(item);
 
@@ -25,16 +25,17 @@ function ModalDespacho({ item, onConfirm, onClose }) {
         style={{
           background: "#dbe4ee",
           border: "1px solid #94a3b8",
-          padding: "30px",
-          borderRadius: "12px",
-          width: "480px",
+          padding: "25px",
+          borderRadius: "14px",
+          width: "500px",
+          maxWidth: "92vw",
           boxShadow: "0 20px 25px -5px rgba(0,0,0,0.2)",
         }}
       >
-        <h3 style={{ marginBottom: "15px", color: temApreensao ? "#1e3a8a" : "#0f766e" }}>
-          {temApreensao ? "📦 Confirmar Entrada no Depósito" : "📁 Confirmar Triagem e Arquivamento"}
+        <h3 style={{ marginBottom: "12px", color: temApreensao ? "#1e3a8a" : "#0f766e", fontSize: "17px" }}>
+          {temApreensao ? "📦 Confirmar Entrada no Depósito / Triagem" : "📁 Confirmar Triagem e Arquivamento"}
         </h3>
-        <p style={{ fontSize: "14px", color: "#64748b", marginBottom: "20px", lineHeight: "1.5" }}>
+        <p style={{ fontSize: "13px", color: "#64748b", marginBottom: "16px", lineHeight: "1.4" }}>
           {temApreensao ? (
             <>
               Você está confirmando a entrada do material do <strong>BOU {item.bou}</strong> (
@@ -50,49 +51,80 @@ function ModalDespacho({ item, onConfirm, onClose }) {
           )}
         </p>
 
-        <div style={{ marginBottom: "20px" }}>
+        <div style={{ marginBottom: "16px" }}>
           <label
             style={{
               display: "block",
-              fontSize: "12px",
+              fontSize: "11px",
               fontWeight: "700",
-              marginBottom: "8px",
+              marginBottom: "6px",
               color: "#475569",
             }}
           >
-            {temApreensao ? "OBSERVAÇÕES DE ENTRADA (OPCIONAL)" : "OBSERVAÇÕES DE ARQUIVAMENTO (OPCIONAL)"}
+            OBSERVAÇÕES DA TRIAGEM OU MOTIVO DO ERRO (SE PENDÊNCIA)
           </label>
           <textarea
             style={{
               width: "100%",
-              height: "90px",
+              height: "80px",
               padding: "10px",
               borderRadius: "6px",
               border: "1px solid #cbd5e1",
               fontSize: "13px",
+              fontFamily: "inherit",
             }}
-            placeholder={
-              temApreensao
-                ? "Algum detalhe sobre o lacre, peso real ou acondicionamento..."
-                : "Observação opcional sobre o arquivamento do termo..."
-            }
+            placeholder="Detalhes de entrada ou descreva o erro constatado se for mover para a aba Pendências..."
             value={obs}
             onChange={(event) => setObs(event.target.value)}
           />
         </div>
 
-        <div style={{ display: "flex", gap: "12px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           <button
             className="btn-green"
             style={{
-              flex: 1,
+              width: "100%",
+              padding: "12px",
+              fontSize: "13px",
+              fontWeight: "700",
               background: temApreensao ? "#10b981" : "#0d9488",
+              borderRadius: "8px",
             }}
             onClick={() => onConfirm(obs)}
           >
-            {temApreensao ? "CONFIRMAR DESPACHO PARA O DEPÓSITO" : "CONFIRMAR ARQUIVAMENTO"}
+            {temApreensao ? "📦 CONFIRMAR DESPACHO PARA O DEPÓSITO" : "📁 CONFIRMAR ARQUIVAMENTO"}
           </button>
-          <button className="btn-blue" style={{ background: "#94a3b8" }} onClick={onClose}>
+
+          <button
+            className="btn-warning"
+            style={{
+              width: "100%",
+              padding: "11px",
+              fontSize: "12px",
+              fontWeight: "700",
+              background: "#d97706",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+            }}
+            onClick={() => onMoverPendencia(obs)}
+            title="Mover registro para a aba Pendências para averiguação do erro"
+          >
+            ⚠️ CONSTATADO ERRO - MOVER PARA PENDÊNCIAS
+          </button>
+
+          <button
+            className="btn-blue"
+            style={{
+              width: "100%",
+              padding: "10px",
+              fontSize: "12px",
+              background: "#94a3b8",
+              borderRadius: "8px",
+            }}
+            onClick={onClose}
+          >
             CANCELAR
           </button>
         </div>
@@ -215,6 +247,7 @@ export function TriagemModals({
   fecharModalExclusao,
   fecharModalObservacao,
   confirmarDespacho,
+  marcarComoPendente,
   confirmarExclusao,
   salvarObservacao,
 }) {
@@ -229,6 +262,7 @@ export function TriagemModals({
           item={itemSelecionado}
           onClose={fecharModalDespacho}
           onConfirm={confirmarDespacho}
+          onMoverPendencia={marcarComoPendente}
         />
       )}
 
