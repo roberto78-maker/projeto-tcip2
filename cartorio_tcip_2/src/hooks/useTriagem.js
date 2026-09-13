@@ -251,6 +251,7 @@ export function useTriagem() {
     fecharModalObservacao,
     salvarObservacao,
     confirmarDespacho,
+    marcarComoPendente,
     confirmarExclusao,
     confirmarArquivamento,
     handleFileUpload,
