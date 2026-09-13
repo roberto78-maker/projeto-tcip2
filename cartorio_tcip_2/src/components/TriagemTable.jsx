@@ -337,8 +337,9 @@ export function TriagemTable({
                     </button>
                   </div>
                 </td>
-              </tr>
-            ))}
+                </tr>
+              );
+            })}
         </tbody>
       </table>
 
