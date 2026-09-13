@@ -28,6 +28,7 @@ export default function ConferenciaView() {
     fecharModalObservacao,
     salvarObservacao,
     confirmarDespacho,
+    marcarComoPendente,
     confirmarExclusao,
     confirmarArquivamento,
     handleFileUpload,
@@ -46,6 +47,7 @@ export default function ConferenciaView() {
         fecharModalExclusao={fecharModalExclusao}
         fecharModalObservacao={fecharModalObservacao}
         confirmarDespacho={confirmarDespacho}
+        marcarComoPendente={marcarComoPendente}
         confirmarExclusao={confirmarExclusao}
         salvarObservacao={salvarObservacao}
       />

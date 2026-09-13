@@ -161,7 +161,16 @@ export function TriagemTable({
                   <td style={{ color: "#64748b" }}>
                     {item.dataFato || new Date(item.data_criacao).toLocaleDateString()}
                   </td>
-                  <td style={{ fontWeight: "600", color: "#0f172a" }}>{item.bou}</td>
+                  <td style={{ fontWeight: "600", color: "#0f172a" }}>
+                    {item.bou}
+                    {item.is_pendencia && (
+                      <div style={{ marginTop: "4px" }}>
+                        <span className="badge amber" style={{ fontSize: "10px", padding: "2px 6px" }}>
+                          ⚠️ ERRO APONTADO NA TRIAGEM
+                        </span>
+                      </div>
+                    )}
+                  </td>
                   <td style={{ textTransform: "uppercase" }}>{item.reu || "NAO INFORMADO"}</td>
                   <td>
                     <span
@@ -279,7 +288,8 @@ export function TriagemTable({
                     {(() => {
                       const isPendencia =
                         item.processo === "(ERRO - DATA DE AUDIENCIA)" ||
-                        item.vara === "OUTROS JUIZADOS - ERRO MATERIAL";
+                        item.vara === "OUTROS JUIZADOS - ERRO MATERIAL" ||
+                        !!item.is_pendencia;
                       const temDocJustificativa = !!item.numero_oficio || !!item.arquivo_pdf_url;
                       const bloqueado = isPendencia && !temDocJustificativa;
 
