@@ -83,6 +83,7 @@ class DiarioServicoAnexoSerializer(serializers.ModelSerializer):
 
 class DiarioServicoSerializer(serializers.ModelSerializer):
     operador_nome = serializers.SerializerMethodField()
+    operador_username = serializers.SerializerMethodField()
     anexos = DiarioServicoAnexoSerializer(many=True, read_only=True)
 
     class Meta:
@@ -91,6 +92,7 @@ class DiarioServicoSerializer(serializers.ModelSerializer):
             "id",
             "operador",
             "operador_nome",
+            "operador_username",
             "data_inicio",
             "data_fim",
             "alteracoes",
@@ -110,3 +112,7 @@ class DiarioServicoSerializer(serializers.ModelSerializer):
         except Exception:
             pass
         return obj.operador.username.upper()
+
+    def get_operador_username(self, obj):
+        return obj.operador.username if obj.operador else None
+

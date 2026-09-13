@@ -20,17 +20,35 @@ export default function ConfirmacaoEscalaModal({ usuarioLogado, onConcluido }) {
         const data = await getDiarioAtual();
         setDiario(data);
 
-        // Se o usuário logado já for o operador registrado neste diário, conclui direto
         const user = usuarioLogado || getUsuario();
-        if (data && user && data.operador === user.id) {
-          onConcluido({ assumiu: true, diario: data });
+        const username = user?.username;
+        const userId = user?.id;
+
+        // 1. Verificar se já assumiu no backend ou se já checou este diário no localStorage
+        const isOperadorAtual = data && username && (
+          (data.operador_username && data.operador_username.toLowerCase() === username.toLowerCase()) ||
+          (userId && data.operador === userId)
+        );
+
+        const keyEscalaDiario = data && (username || userId) ? `escala_checada_diario_${data.id}_user_${username || userId}` : null;
+        const jaChecouDiario = keyEscalaDiario ? localStorage.getItem(keyEscalaDiario) === "true" : false;
+
+        if (data && (isOperadorAtual || jaChecouDiario)) {
+          if (username || userId) {
+            localStorage.setItem(`escala_checada_user_${username || userId}`, "true");
+            if (keyEscalaDiario) localStorage.setItem(keyEscalaDiario, "true");
+          }
+          onConcluido({ assumiu: isOperadorAtual || jaChecouDiario, diario: data });
           return;
         }
 
-        // Verificar se este operador já recusou a escala desta jornada nesta sessão/navegador
-        const keyRecusa = data && user ? `recusou_diario_${data.id}_user_${user.id}` : null;
+        // 2. Verificar se este operador já recusou a escala desta jornada nesta sessão/navegador
+        const keyRecusa = data && (username || userId) ? `recusou_diario_${data.id}_user_${username || userId}` : null;
         const jaRecusou = keyRecusa ? localStorage.getItem(keyRecusa) === "true" : false;
         if (jaRecusou) {
+          if (username || userId) {
+            localStorage.setItem(`escala_checada_user_${username || userId}`, "true");
+          }
           onConcluido({ assumiu: false, diario: data });
           return;
         }
@@ -71,6 +89,14 @@ export default function ConfirmacaoEscalaModal({ usuarioLogado, onConcluido }) {
     try {
       const updated = await assumirDiario(diario.id);
       setDiario(updated);
+
+      const user = usuarioLogado || getUsuario();
+      const userKey = user?.username || user?.id;
+      if (userKey) {
+        localStorage.setItem(`escala_checada_user_${userKey}`, "true");
+        localStorage.setItem(`escala_checada_diario_${diario.id}_user_${userKey}`, "true");
+      }
+
       onConcluido({ assumiu: true, diario: updated });
     } catch (err) {
       console.error(err);
@@ -83,9 +109,12 @@ export default function ConfirmacaoEscalaModal({ usuarioLogado, onConcluido }) {
 
   const handleNaoAssumir = () => {
     const user = usuarioLogado || getUsuario();
-    if (diario && user) {
-      const keyRecusa = `recusou_diario_${diario.id}_user_${user.id}`;
+    const userKey = user?.username || user?.id;
+    if (diario && userKey) {
+      const keyRecusa = `recusou_diario_${diario.id}_user_${userKey}`;
       localStorage.setItem(keyRecusa, "true");
+      localStorage.setItem(`escala_checada_user_${userKey}`, "true");
+      localStorage.setItem(`escala_checada_diario_${diario.id}_user_${userKey}`, "true");
     }
     onConcluido({ assumiu: false, diario });
   };
