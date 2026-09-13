@@ -99,12 +99,19 @@ export function useTriagem() {
 
     const temApreensao = verificarPossuiApreensao(itemSelecionado);
     const novoStatus = temApreensao ? "cofre" : "arquivado";
+    const obsAnterior = itemSelecionado.observacao_cofre || "";
+    const obsFinal = observacao
+      ? obsAnterior
+        ? `${obsAnterior}\n\n[DESPACHO TRIAGEM]: ${observacao}`
+        : observacao
+      : obsAnterior;
 
     try {
       await updateApreensao(itemSelecionado.id, {
         ...itemSelecionado,
         status: novoStatus,
-        observacao_cofre: observacao || "",
+        is_pendencia: false,
+        observacao_cofre: obsFinal,
       });
       fecharModalDespacho();
       recarregar();
@@ -112,6 +119,30 @@ export function useTriagem() {
     } catch (error) {
       console.error(error);
       alert("Erro ao despachar item.");
+    }
+  };
+
+  const marcarComoPendente = async (motivoErro) => {
+    if (!itemSelecionado) return;
+
+    const dt = new Date().toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+    const obsAnterior = itemSelecionado.observacao_cofre ? itemSelecionado.observacao_cofre.trim() + "\n\n" : "";
+    const detalheMotivo = motivoErro && motivoErro.trim() ? motivoErro.trim() : "Constatado erro na triagem para averiguação.";
+    const novaObs = `${obsAnterior}[⚠️ PENDÊNCIA REGISTRADA NA TRIAGEM - ${dt}]\nMotivo: ${detalheMotivo}`;
+
+    try {
+      await updateApreensao(itemSelecionado.id, {
+        ...itemSelecionado,
+        is_pendencia: true,
+        observacao_cofre: novaObs,
+      });
+      fecharModalDespacho();
+      recarregar();
+      carregarTotalPendencias();
+      alert("Registro movido para a aba PENDÊNCIAS com sucesso!");
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao mover registro para pendências.");
     }
   };
 
