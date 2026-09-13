@@ -3,6 +3,7 @@ import { gerarOficioEncaminhamentoPdf } from "../services/oficioPdf.js";
 import { gerarNumeroOficio, invalidateApreensaoCache, getApreensoesPorBou } from "../services/api.js";
 import { gerarReciboCadastroPdf } from "../services/cadastroReciboPdf.js";
 import { PATENTES } from "../constants/options.js";
+import { verificarPossuiApreensao } from "../hooks/useTriagem.js";
 
 const formatarPesoDisplay = (valor, unidade) => {
   const num = parseFloat(String(valor).replace(",", ".")) || 0;
@@ -152,21 +153,47 @@ export function TriagemTable({
             </tr>
           )}
           {!loading &&
-            itens.map((item) => (
-              <tr key={item.id}>
-                <td style={{ color: "#64748b" }}>
-                  {item.dataFato || new Date(item.data_criacao).toLocaleDateString()}
-                </td>
-                <td style={{ fontWeight: "600", color: "#0f172a" }}>{item.bou}</td>
-                <td style={{ textTransform: "uppercase" }}>{item.reu || "NAO INFORMADO"}</td>
-                <td>
-                  <span className="badge" style={{ background: "#0ea5e9", color: "white" }}>
-                    {item.substancia ? item.substancia.toUpperCase() : "DESCONHECIDA"}
-                  </span>
-                </td>
-                <td style={{ color: "#dc2626", fontWeight: "600" }}>
-                  {formatarPesoDisplay(item.peso, item.unidade)}
-                </td>
+            itens.map((item) => {
+              const temApreensao = verificarPossuiApreensao(item);
+
+              return (
+                <tr key={item.id}>
+                  <td style={{ color: "#64748b" }}>
+                    {item.dataFato || new Date(item.data_criacao).toLocaleDateString()}
+                  </td>
+                  <td style={{ fontWeight: "600", color: "#0f172a" }}>{item.bou}</td>
+                  <td style={{ textTransform: "uppercase" }}>{item.reu || "NAO INFORMADO"}</td>
+                  <td>
+                    <span
+                      className="badge"
+                      style={{
+                        background: temApreensao ? "#0ea5e9" : "#64748b",
+                        color: "white",
+                      }}
+                    >
+                      {temApreensao
+                        ? item.substancia
+                          ? item.substancia.toUpperCase()
+                          : "DESCONHECIDA"
+                        : "SEM APREENSÃO"}
+                    </span>
+                    {item.descricao && item.descricao !== "TERMO GERAL" && (
+                      <div
+                        style={{
+                          fontSize: "11px",
+                          color: "#475569",
+                          fontWeight: "600",
+                          marginTop: "4px",
+                          lineHeight: "1.2",
+                        }}
+                      >
+                        ⚖️ {item.descricao}
+                      </div>
+                    )}
+                  </td>
+                  <td style={{ color: temApreensao ? "#dc2626" : "#64748b", fontWeight: "600" }}>
+                    {temApreensao ? formatarPesoDisplay(item.peso, item.unidade) : "—"}
+                  </td>
                 <td>
                   {item.arquivo_pdf_url ? (
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
