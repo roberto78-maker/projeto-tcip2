@@ -826,6 +826,7 @@ class RelatorioIncineracaoView(APIView):
                     "arquivo_pdf_url",
                     "observacao_cofre",
                     "descricao",
+                    "is_pendencia",
                 ).order_by("-data_fato", "-data_criacao")[:500]
             )
         except Exception as e:
@@ -873,6 +874,7 @@ class RelatorioIncineracaoView(APIView):
                     "unidade": item["unidade"],
                     "natureza": item["natureza"],
                     "vara": item["vara"],
+                    "is_pendencia": item.get("is_pendencia") or False,
                     "status_label": status_desc,
                     "motivo_exclusao": item["motivo_exclusao"],
                     "arquivo_pdf_url": item["arquivo_pdf_url"],
