@@ -218,7 +218,11 @@ export function TriagemModals({
   confirmarExclusao,
   salvarObservacao,
 }) {
-  return (
+  if (!itemSelecionado && !itemParaExcluir && !itemObservacao) {
+    return null;
+  }
+
+  const content = (
     <>
       {itemSelecionado && (
         <ModalDespacho
@@ -245,6 +249,12 @@ export function TriagemModals({
       )}
     </>
   );
+
+  if (typeof document !== "undefined") {
+    return createPortal(content, document.body);
+  }
+
+  return content;
 }
 
 function ModalObservacao({ item, onSave, onClose }) {
