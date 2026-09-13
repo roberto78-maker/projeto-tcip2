@@ -37,7 +37,7 @@ export default function ConferenciaView() {
   const corAba = abaAtiva === "CORRETOS" ? "#3b82f6" : "#ef4444";
 
   return (
-    <div className="card" style={{ padding: "0", overflow: "hidden" }}>
+    <>
       <TriagemModals
         itemSelecionado={itemSelecionado}
         itemParaExcluir={itemParaExcluir}
@@ -49,6 +49,8 @@ export default function ConferenciaView() {
         confirmarExclusao={confirmarExclusao}
         salvarObservacao={salvarObservacao}
       />
+
+      <div className="card" style={{ padding: "0", overflow: "hidden" }}>
 
       {/* Header */}
       <div style={{ padding: "25px", background: "#cad7e6", borderBottom: "1px solid #94a3b8" }}>
@@ -185,6 +187,6 @@ export default function ConferenciaView() {
           handleRemoverPdf={handleRemoverPdf}
         />
       </div>
-    </div>
+    </>
   );
 }
