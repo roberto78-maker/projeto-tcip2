@@ -1129,14 +1129,21 @@ class RelatorioIncineracaoPDFView(APIView):
                     # Prioriza data_fato para a coluna Data do PDF
                     dt_exibicao = item.data_fato or item.data_criacao
                     texto_substancia = item.substancia or ""
-                    if not texto_substancia or texto_substancia.upper() in ["NAO HA APREENSAO", "NÃO HÁ APREENSÃO"]:
+                    if not texto_substancia or texto_substancia.upper() in [
+                        "NAO HA APREENSAO",
+                        "NÃO HÁ APREENSÃO",
+                    ]:
                         texto_substancia = item.descricao or "Sem Apreensão"
 
                     data.append(
                         [
                             linha1,
                             texto_substancia,
-                            f"{item.peso} {item.unidade}" if item.tem_apreensao and item.peso else "—",
+                            (
+                                f"{item.peso} {item.unidade}"
+                                if item.tem_apreensao and item.peso
+                                else "—"
+                            ),
                             status_desc,
                             (
                                 timezone.localtime(dt_exibicao).strftime("%d/%m/%Y")
