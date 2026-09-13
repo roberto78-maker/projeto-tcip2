@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { verificarPossuiApreensao } from "../hooks/useTriagem.js";
+import { JUIZADOS } from "../constants/options.js";
 
 function ModalDespacho({ item, onConfirm, onMoverPendencia, onClose }) {
   const [obs, setObs] = useState("");
