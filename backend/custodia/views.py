@@ -822,6 +822,7 @@ class RelatorioIncineracaoView(APIView):
                     "lote_incineracao__data_criacao",
                     "arquivo_pdf_url",
                     "observacao_cofre",
+                    "descricao",
                 ).order_by("-data_fato", "-data_criacao")[:500]
             )
         except Exception as e:
@@ -864,6 +865,7 @@ class RelatorioIncineracaoView(APIView):
                     "processo": item["processo"],
                     "reu": item["reu"],
                     "substancia": item["substancia"],
+                    "descricao": item.get("descricao") or "",
                     "peso": item["peso"],
                     "unidade": item["unidade"],
                     "natureza": item["natureza"],
