@@ -94,25 +94,37 @@ export function useTriagem() {
   const abrirModalObservacao = (item) => setItemObservacao(item);
   const fecharModalObservacao = () => setItemObservacao(null);
 
-  const confirmarDespacho = async (observacao) => {
+  const confirmarDespacho = async (observacao, dadosCorrecao = {}) => {
     if (!itemSelecionado) return;
 
     const temApreensao = verificarPossuiApreensao(itemSelecionado);
     const novoStatus = temApreensao ? "cofre" : "arquivado";
     const obsAnterior = itemSelecionado.observacao_cofre || "";
-    const obsFinal = observacao
-      ? obsAnterior
-        ? `${obsAnterior}\n\n[DESPACHO TRIAGEM]: ${observacao}`
-        : observacao
-      : obsAnterior;
+    const dt = new Date().toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+
+    let obsFinal = obsAnterior;
+    if (observacao && observacao.trim()) {
+      obsFinal = obsAnterior
+        ? `${obsAnterior}\n\n[RESOLUÇÃO / OBS TRIAGEM - ${dt}]: ${observacao.trim()}`
+        : `[RESOLUÇÃO / OBS TRIAGEM - ${dt}]: ${observacao.trim()}`;
+    }
+
+    const payload = {
+      ...itemSelecionado,
+      status: novoStatus,
+      is_pendencia: false,
+      observacao_cofre: obsFinal,
+    };
+
+    if (dadosCorrecao.processo) {
+      payload.processo = dadosCorrecao.processo;
+    }
+    if (dadosCorrecao.vara) {
+      payload.vara = dadosCorrecao.vara;
+    }
 
     try {
-      await updateApreensao(itemSelecionado.id, {
-        ...itemSelecionado,
-        status: novoStatus,
-        is_pendencia: false,
-        observacao_cofre: obsFinal,
-      });
+      await updateApreensao(itemSelecionado.id, payload);
       fecharModalDespacho();
       recarregar();
       carregarTotalPendencias();
