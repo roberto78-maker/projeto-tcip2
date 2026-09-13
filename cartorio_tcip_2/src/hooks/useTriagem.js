@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { excluirApreensao, updateApreensao, removerPdf, invalidateApreensaoCache, getApreensoesPaginado } from "../services/api.js";
+import { getUsuario } from "../services/auth.js";
 import { usePagedList } from "./usePagedList.js";
 
 function buildFilters(abaAtiva, busca) {
@@ -21,6 +22,39 @@ export function verificarPossuiApreensao(item) {
   if (sub === "NAO HA APREENSAO" || sub === "NÃO HÁ APREENSÃO") return false;
   if (item.natureza === "AMEACA" && !sub && (!item.peso || item.peso === 0)) return false;
   return true;
+}
+
+export function obterLocalProcesso(item) {
+  if (!item) return "CARTÓRIO TCIP";
+  if (item.status === "conferencia") {
+    const isPendencia =
+      item.is_pendencia ||
+      item.processo === "(ERRO - DATA DE AUDIENCIA)" ||
+      (item.processo && item.processo.includes("ERRO")) ||
+      (item.vara && item.vara.includes("ERRO"));
+    return isPendencia ? "TRIAGEM (PENDÊNCIAS)" : "TRIAGEM (CONFERÊNCIA)";
+  }
+  if (item.status === "cofre") {
+    return item.natureza === "DROGAS" ? "DEPÓSITO (ENTORPECENTES)" : "DEPÓSITO (OBJETOS DIVERSOS)";
+  }
+  if (item.status === "incineracao") {
+    return "PRONTO PARA INCINERAÇÃO";
+  }
+  if (item.status === "arquivado") {
+    return "ARQUIVAMENTO DEFINITIVO";
+  }
+  return item.status ? String(item.status).toUpperCase() : "CARTÓRIO TCIP";
+}
+
+export function obterNomeOperadorLogado() {
+  const user = getUsuario();
+  if (!user?.username) return "OPERADOR";
+  const raw = user.username.toUpperCase();
+  const parts = raw.split("_");
+  if (parts.length >= 2) {
+    return `${parts[0]}. ${parts.slice(1).join(" ")}`;
+  }
+  return raw;
 }
 
 export function useTriagem() {
@@ -99,14 +133,17 @@ export function useTriagem() {
 
     const temApreensao = verificarPossuiApreensao(itemSelecionado);
     const novoStatus = temApreensao ? "cofre" : "arquivado";
-    const obsAnterior = itemSelecionado.observacao_cofre || "";
+    const obsAnterior = itemSelecionado.observacao_cofre ? itemSelecionado.observacao_cofre.trim() : "";
     const dt = new Date().toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+    const localDestino = temApreensao ? "DEPÓSITO" : "ARQUIVAMENTO";
+    const operador = obterNomeOperadorLogado();
 
     let obsFinal = obsAnterior;
     if (observacao && observacao.trim()) {
+      const stamp = `[RESOLUÇÃO / OBS TRIAGEM - ${dt} | LOCAL: ${localDestino} | OPERADOR: ${operador}]:\n${observacao.trim()}`;
       obsFinal = obsAnterior
-        ? `${obsAnterior}\n\n[RESOLUÇÃO / OBS TRIAGEM - ${dt}]: ${observacao.trim()}`
-        : `[RESOLUÇÃO / OBS TRIAGEM - ${dt}]: ${observacao.trim()}`;
+        ? `${obsAnterior}\n\n${stamp}`
+        : stamp;
     }
 
     const payload = {
@@ -138,9 +175,10 @@ export function useTriagem() {
     if (!itemSelecionado) return;
 
     const dt = new Date().toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+    const operador = obterNomeOperadorLogado();
     const obsAnterior = itemSelecionado.observacao_cofre ? itemSelecionado.observacao_cofre.trim() + "\n\n" : "";
     const detalheMotivo = motivoErro && motivoErro.trim() ? motivoErro.trim() : "Constatado erro na triagem para averiguação.";
-    const novaObs = `${obsAnterior}[⚠️ PENDÊNCIA REGISTRADA NA TRIAGEM - ${dt}]\nMotivo: ${detalheMotivo}`;
+    const novaObs = `${obsAnterior}[ ⚠️ PENDÊNCIA REGISTRADA NA TRIAGEM - ${dt} | LOCAL: TRIAGEM (PENDÊNCIAS) | OPERADOR: ${operador} ]\nMotivo: ${detalheMotivo}`;
 
     try {
       await updateApreensao(itemSelecionado.id, {
@@ -186,15 +224,27 @@ export function useTriagem() {
     }
   };
 
-  const salvarObservacao = async (texto) => {
+  const salvarObservacao = async (texto, modoEdicaoCompleta = false) => {
     if (!itemObservacao) return;
+
+    let textoFinal = texto;
+    if (!modoEdicaoCompleta && texto && texto.trim()) {
+      const dt = new Date().toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+      const operador = obterNomeOperadorLogado();
+      const local = obterLocalProcesso(itemObservacao);
+      const obsAnterior = itemObservacao.observacao_cofre ? itemObservacao.observacao_cofre.trim() : "";
+      const carimbo = `[ 📝 OBSERVAÇÃO - ${dt} | LOCAL: ${local} | OPERADOR: ${operador} ]\n${texto.trim()}`;
+      textoFinal = obsAnterior ? `${obsAnterior}\n\n${carimbo}` : carimbo;
+    }
+
     try {
       await updateApreensao(itemObservacao.id, {
         ...itemObservacao,
-        observacao_cofre: texto,
+        observacao_cofre: textoFinal,
       });
       fecharModalObservacao();
       recarregar();
+      carregarTotalPendencias();
     } catch (error) {
       console.error(error);
       alert("Erro ao salvar observação.");
