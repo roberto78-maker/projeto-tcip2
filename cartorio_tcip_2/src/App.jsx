@@ -118,13 +118,23 @@ export default function App() {
     return viewsValidas.includes(hash) ? hash : "dashboard";
   });
   const [logado, setLogado] = useState(isAutenticado());
-  const [escalaChecada, setEscalaChecada] = useState(false);
+  const [escalaChecada, setEscalaChecada] = useState(() => {
+    const user = getUsuario();
+    const key = user?.username || user?.id;
+    return key ? localStorage.getItem(`escala_checada_user_${key}`) === "true" : false;
+  });
   const [usuario, setUsuario] = useState(() => (logado ? getUsuario() : null));
 
   useEffect(() => {
-    setUsuario(logado ? getUsuario() : null);
+    const user = logado ? getUsuario() : null;
+    setUsuario(user);
     if (!logado) {
       setEscalaChecada(false);
+    } else {
+      const key = user?.username || user?.id;
+      if (key && localStorage.getItem(`escala_checada_user_${key}`) === "true") {
+        setEscalaChecada(true);
+      }
     }
   }, [logado]);
 
@@ -177,7 +187,10 @@ export default function App() {
   if (!logado) {
     return <LoginView onLogin={() => {
       setLogado(true);
-      setEscalaChecada(false);
+      const user = getUsuario();
+      const key = user?.username || user?.id;
+      const jaChecado = key ? localStorage.getItem(`escala_checada_user_${key}`) === "true" : false;
+      setEscalaChecada(jaChecado);
     }} />;
   }
 
@@ -186,7 +199,12 @@ export default function App() {
     return (
       <ConfirmacaoEscalaModal
         usuarioLogado={usuario}
-        onConcluido={() => setEscalaChecada(true)}
+        onConcluido={() => {
+          const user = usuario || getUsuario();
+          const key = user?.username || user?.id;
+          if (key) localStorage.setItem(`escala_checada_user_${key}`, "true");
+          setEscalaChecada(true);
+        }}
       />
     );
   }
