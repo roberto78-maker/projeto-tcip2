@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('custodia', '0025_add_arma_branca_nenhum_objeto_natureza'),
+        ("custodia", "0025_add_arma_branca_nenhum_objeto_natureza"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='apreensao',
-            name='is_pendencia',
+            model_name="apreensao",
+            name="is_pendencia",
             field=models.BooleanField(db_index=True, default=False),
         ),
         migrations.AddField(
-            model_name='historicalapreensao',
-            name='is_pendencia',
+            model_name="historicalapreensao",
+            name="is_pendencia",
             field=models.BooleanField(db_index=True, default=False),
         ),
     ]
