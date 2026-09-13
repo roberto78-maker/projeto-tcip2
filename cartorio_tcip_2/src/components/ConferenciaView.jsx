@@ -187,6 +187,7 @@ export default function ConferenciaView() {
           handleRemoverPdf={handleRemoverPdf}
         />
       </div>
+    </div>
     </>
   );
 }
