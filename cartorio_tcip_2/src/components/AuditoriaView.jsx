@@ -97,24 +97,28 @@ export default function AuditoriaView() {
     let tableHead, tableBody;
 
     if (isDrogas) {
-      tableHead = [["BOU", "PROCESSO", "RÉU / AUTOR", "SUBSTÂNCIA", "PESO / VOLUME", "STATUS"]];
+      tableHead = [["BOU", "PROCESSO", "RÉU / AUTOR", "CRIME / SUBSTÂNCIA", "PESO / VOLUME", "STATUS"]];
       tableBody = data.detalhado.map(item => [
         item.bou || "S/N",
         item.processo || "S/N",
         (item.reu || "-").toUpperCase(),
-        (item.substancia || "-").toUpperCase(),
+        item.descricao && item.descricao !== "TERMO GERAL"
+          ? `${(item.substancia || "-").toUpperCase()}\n(${item.descricao})`
+          : (item.substancia || "-").toUpperCase(),
         formatarPesoDisplay(item.peso, item.unidade),
         item.status_label || item.status
       ]);
     } else {
       // Objetos: sem coluna de peso
-      tableHead = [["BOU", "PROCESSO", "RÉU / AUTOR", "OBJETO / ITEM", "QUANTIDADE", "STATUS"]];
+      tableHead = [["BOU", "PROCESSO", "RÉU / AUTOR", "CRIME / OBJETO", "QUANTIDADE", "STATUS"]];
       tableBody = data.detalhado.map(item => [
         item.bou || "S/N",
         item.processo || "S/N",
         (item.reu || "-").toUpperCase(),
-        (item.substancia || item.natureza || "-").toUpperCase(),
-        `${item.peso ? item.peso : "01"} ${item.unidade || "Unid"}.`,
+        item.descricao && item.descricao !== "TERMO GERAL"
+          ? `${item.descricao}${item.substancia && !["NAO HA APREENSAO", "NÃO HÁ APREENSÃO"].includes(item.substancia.toUpperCase()) ? `\nItem: ${item.substancia}` : ""}`
+          : (item.substancia || item.natureza || "Sem Apreensão").toUpperCase(),
+        item.natureza === "AMEACA" || !item.peso ? "—" : `${item.peso} ${item.unidade || "Unid"}.`,
         item.status_label || item.status
       ]);
     }
@@ -470,7 +474,7 @@ export default function AuditoriaView() {
             <table className="tcip-table">
               <thead>
                 <tr>
-                  <th>Natureza</th>
+                  <th>Natureza / Crime</th>
                   <th>Nº Processo | BOU</th>
                   <th>Autor / Réu</th>
                   <th>Substância / Objeto</th>
@@ -500,9 +504,27 @@ export default function AuditoriaView() {
                     return (
                       <tr key={item.id}>
                         <td>
-                           <span className="badge" style={{ background: natInfo.color, color: "white", fontSize: "10px" }}>
-                             {natInfo.label}
-                           </span>
+                          <span className="badge" style={{ background: natInfo.color, color: "white", fontSize: "10px" }}>
+                            {natInfo.label}
+                          </span>
+                          {item.descricao && item.descricao !== "TERMO GERAL" ? (
+                            <div
+                              style={{
+                                fontSize: "11px",
+                                color: "#1e293b",
+                                fontWeight: "600",
+                                marginTop: "4px",
+                                lineHeight: "1.2",
+                                maxWidth: "240px",
+                              }}
+                            >
+                              ⚖️ {item.descricao}
+                            </div>
+                          ) : (
+                            <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "3px" }}>
+                              Termo Geral
+                            </div>
+                          )}
                         </td>
                         <td>
                           <div style={{ fontWeight: "700", color: "#0f172a", fontSize: "14px" }}>Pr: {item.processo || "S/N"}</div>
