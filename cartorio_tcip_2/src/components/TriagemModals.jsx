@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { verificarPossuiApreensao } from "../hooks/useTriagem.js";
 import { JUIZADOS } from "../constants/options.js";
+import { formatarProcesso } from "../services/cadastroWorkflow.js";
 
 function ModalDespacho({ item, onConfirm, onMoverPendencia, onClose }) {
   const [obs, setObs] = useState("");
@@ -129,9 +130,10 @@ function ModalDespacho({ item, onConfirm, onMoverPendencia, onClose }) {
                   background: "white",
                   fontWeight: "600",
                 }}
-                placeholder="Informe o nº real do PROJUDI (ex: 0012345-67.2026.8.16.0021)"
+                placeholder="0000000-00.0000"
+                maxLength={17}
                 value={processo}
-                onChange={(e) => setProcesso(e.target.value)}
+                onChange={(e) => setProcesso(formatarProcesso(e.target.value))}
               />
             </div>
 
