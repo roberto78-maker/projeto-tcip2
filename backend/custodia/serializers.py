@@ -115,4 +115,3 @@ class DiarioServicoSerializer(serializers.ModelSerializer):
 
     def get_operador_username(self, obj):
         return obj.operador.username if obj.operador else None
-
