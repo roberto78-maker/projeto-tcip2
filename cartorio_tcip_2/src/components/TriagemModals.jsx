@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import { verificarPossuiApreensao } from "../hooks/useTriagem.js";
 
 function ModalDespacho({ item, onConfirm, onClose }) {
