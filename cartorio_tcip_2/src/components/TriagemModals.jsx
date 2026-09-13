@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
-import { verificarPossuiApreensao } from "../hooks/useTriagem.js";
+import { verificarPossuiApreensao, obterLocalProcesso, obterNomeOperadorLogado } from "../hooks/useTriagem.js";
 import { JUIZADOS } from "../constants/options.js";
 import { formatarProcesso } from "../services/cadastroWorkflow.js";
 
@@ -417,13 +417,27 @@ export function TriagemModals({
 }
 
 function ModalObservacao({ item, onSave, onClose }) {
-  const [texto, setTexto] = useState(item.observacao_cofre || "");
+  const [novaObs, setNovaObs] = useState("");
+  const [textoCompleto, setTextoCompleto] = useState(item.observacao_cofre || "");
+  const [modoEdicaoCompleta, setModoEdicaoCompleta] = useState(false);
   const [salvando, setSalvando] = useState(false);
 
+  const localProcesso = obterLocalProcesso(item);
+  const operadorNome = obterNomeOperadorLogado();
+  const dtAtual = new Date().toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+
   const handleSalvar = async () => {
+    if (!modoEdicaoCompleta && (!novaObs || !novaObs.trim())) {
+      alert("⚠️ Por favor, digite o texto da nova observação antes de salvar.");
+      return;
+    }
     setSalvando(true);
     try {
-      await onSave(texto);
+      if (modoEdicaoCompleta) {
+        await onSave(textoCompleto, true);
+      } else {
+        await onSave(novaObs.trim(), false);
+      }
     } finally {
       setSalvando(false);
     }
@@ -449,56 +463,167 @@ function ModalObservacao({ item, onSave, onClose }) {
         style={{
           background: "#dbe4ee",
           border: "1px solid #94a3b8",
-          padding: "30px",
+          padding: "24px",
           borderRadius: "16px",
-          width: "520px",
-          maxWidth: "90vw",
+          width: "550px",
+          maxWidth: "92vw",
           boxShadow: "0 25px 50px -12px rgba(0,0,0,0.3)",
         }}
       >
-        <h3 style={{ marginBottom: "5px", color: "#1e3a8a", display: "flex", alignItems: "center", gap: "10px" }}>
+        <h3 style={{ margin: "0 0 4px 0", color: "#1e3a8a", display: "flex", alignItems: "center", gap: "8px", fontSize: "17px" }}>
           📝 Observação de Acompanhamento
         </h3>
-        <p style={{ fontSize: "13px", color: "#64748b", marginBottom: "20px" }}>
+        <p style={{ fontSize: "12px", color: "#64748b", margin: "0 0 14px 0" }}>
           <strong>BOU {item.bou}</strong> — {item.reu || "Noticiado não informado"}
         </p>
 
-        <div style={{ marginBottom: "8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <label
-            style={{
-              fontSize: "12px",
-              fontWeight: "700",
-              color: "#475569",
-            }}
-          >
-            REGISTRO DE PROVIDÊNCIAS / AUDITORIA
-          </label>
-          {item.observacao_cofre && (
-            <span style={{ fontSize: "10px", color: "#10b981", fontWeight: "600" }}>
-              ✓ Observação existente
-            </span>
-          )}
-        </div>
-        <textarea
-          style={{
-            width: "100%",
-            height: "130px",
-            padding: "12px",
-            borderRadius: "8px",
-            border: "1px solid #cbd5e1",
-            fontSize: "13px",
-            resize: "vertical",
-            fontFamily: "inherit",
-          }}
-          placeholder="Descreva o que foi tratado, as providências tomadas e o andamento do processo para fins de auditoria..."
-          value={texto}
-          onChange={(e) => setTexto(e.target.value)}
-        />
-        <p style={{ fontSize: "11px", color: "#94a3b8", marginTop: "6px", marginBottom: "20px" }}>
-          Esta observação ficará visível na Busca Processual (Radar) para consulta de auditoria.
-        </p>
+        {/* HISTÓRICO EXISTENTE */}
+        {item.observacao_cofre && !modoEdicaoCompleta && (
+          <div style={{ marginBottom: "14px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+              <label style={{ fontSize: "11px", fontWeight: "700", color: "#475569" }}>
+                📋 HISTÓRICO REGISTRADO:
+              </label>
+              <button
+                type="button"
+                onClick={() => {
+                  setTextoCompleto(item.observacao_cofre || "");
+                  setModoEdicaoCompleta(true);
+                }}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "#2563eb",
+                  fontSize: "11px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                  padding: 0,
+                }}
+              >
+                ✏️ Editar histórico completo
+              </button>
+            </div>
+            <div
+              style={{
+                background: "#ffffff",
+                border: "1px solid #cbd5e1",
+                borderRadius: "8px",
+                padding: "10px 12px",
+                maxHeight: "140px",
+                overflowY: "auto",
+                fontSize: "12px",
+                color: "#334155",
+                whiteSpace: "pre-wrap",
+                lineHeight: "1.5",
+              }}
+            >
+              {item.observacao_cofre}
+            </div>
+          </div>
+        )}
 
-        <div style={{ display: "flex", gap: "12px" }}>
+        {/* MODO ADIÇÃO DE NOVA OBSERVAÇÃO */}
+        {!modoEdicaoCompleta ? (
+          <div style={{ marginBottom: "14px" }}>
+            <label
+              style={{
+                display: "block",
+                fontSize: "11px",
+                fontWeight: "700",
+                color: "#1e3a8a",
+                marginBottom: "6px",
+              }}
+            >
+              ➕ NOVA OBSERVAÇÃO / ANDAMENTO:
+            </label>
+            <textarea
+              style={{
+                width: "100%",
+                height: "85px",
+                padding: "10px",
+                borderRadius: "8px",
+                border: "1px solid #cbd5e1",
+                fontSize: "13px",
+                fontFamily: "inherit",
+              }}
+              placeholder="Descreva o que foi tratado, providências tomadas ou andamento do processo..."
+              value={novaObs}
+              onChange={(e) => setNovaObs(e.target.value)}
+              autoFocus
+            />
+            {/* CARIMBO PREVIEW */}
+            <div
+              style={{
+                marginTop: "6px",
+                padding: "8px 10px",
+                background: "#e0f2fe",
+                borderRadius: "6px",
+                border: "1px solid #bae6fd",
+                fontSize: "11px",
+                color: "#0369a1",
+                fontWeight: "600",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+            >
+              <span>🏷️</span>
+              <span>
+                Carimbo automático ao salvar: <strong>[ {dtAtual} | LOCAL: {localProcesso} | OPERADOR: {operadorNome} ]</strong>
+              </span>
+            </div>
+          </div>
+        ) : (
+          /* MODO EDIÇÃO COMPLETA MANUAL */
+          <div style={{ marginBottom: "14px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+              <label
+                style={{
+                  fontSize: "11px",
+                  fontWeight: "700",
+                  color: "#d97706",
+                }}
+              >
+                ✏️ EDIÇÃO DIRETA DO HISTÓRICO COMPLETO:
+              </label>
+              <button
+                type="button"
+                onClick={() => setModoEdicaoCompleta(false)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "#2563eb",
+                  fontSize: "11px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                  padding: 0,
+                }}
+              >
+                ⬅️ Voltar para inserção rápida
+              </button>
+            </div>
+            <textarea
+              style={{
+                width: "100%",
+                height: "160px",
+                padding: "10px",
+                borderRadius: "8px",
+                border: "1px solid #f59e0b",
+                fontSize: "12px",
+                fontFamily: "inherit",
+              }}
+              value={textoCompleto}
+              onChange={(e) => setTextoCompleto(e.target.value)}
+            />
+            <p style={{ fontSize: "11px", color: "#b45309", margin: "4px 0 0 0" }}>
+              ⚠️ Neste modo, as alterações substituirão todo o texto do histórico diretamente.
+            </p>
+          </div>
+        )}
+
+        <div style={{ display: "flex", gap: "10px" }}>
           <button
             className="btn-blue"
             style={{
@@ -511,12 +636,12 @@ function ModalObservacao({ item, onSave, onClose }) {
             onClick={handleSalvar}
             disabled={salvando}
           >
-            {salvando ? "SALVANDO..." : "💾 SALVAR OBSERVAÇÃO"}
+            {salvando ? "SALVANDO..." : "💾 SALVAR OBSERVAÇÃO COM CARIMBO"}
           </button>
           <button
             className="btn-outline-gray"
             style={{
-              padding: "12px 20px",
+              padding: "12px 18px",
               borderRadius: "8px",
               border: "1px solid #cbd5e1",
               color: "#64748b",
