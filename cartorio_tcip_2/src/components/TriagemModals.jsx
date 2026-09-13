@@ -5,10 +5,18 @@ import { JUIZADOS } from "../constants/options.js";
 
 function ModalDespacho({ item, onConfirm, onMoverPendencia, onClose }) {
   const [obs, setObs] = useState("");
+  const isProcessoErro = item.processo === "(ERRO - DATA DE AUDIENCIA)" || (item.processo && item.processo.includes("ERRO"));
+  const isVaraErro = item.vara === "OUTROS JUIZADOS - ERRO MATERIAL" || (item.vara && item.vara.includes("ERRO MATERIAL"));
+  
+  const [processo, setProcesso] = useState(isProcessoErro ? "" : item.processo || "");
+  const [vara, setVara] = useState(
+    isVaraErro || !item.vara ? "1º JUIZADO ESPECIAL CRIMINAL" : item.vara
+  );
+
   const temApreensao = verificarPossuiApreensao(item);
   const isPendencia =
-    item.processo === "(ERRO - DATA DE AUDIENCIA)" ||
-    item.vara === "OUTROS JUIZADOS - ERRO MATERIAL" ||
+    isProcessoErro ||
+    isVaraErro ||
     !!item.is_pendencia;
   const temDoc = !!item.numero_oficio || !!item.arquivo_pdf_url;
 
@@ -19,7 +27,19 @@ function ModalDespacho({ item, onConfirm, onMoverPendencia, onClose }) {
       );
       return;
     }
-    onConfirm(obs);
+
+    if (isPendencia || isProcessoErro || isVaraErro) {
+      if (!processo || !processo.trim() || processo.includes("ERRO")) {
+        alert("⚠️ Por favor, informe o número do Processo real (PROJUDI) para sanar a pendência.");
+        return;
+      }
+      if (!vara || !vara.trim() || vara.includes("ERRO MATERIAL")) {
+        alert("⚠️ Por favor, selecione o Juizado de destino correto (1º, 2º ou 3º) para sanar a pendência.");
+        return;
+      }
+    }
+
+    onConfirm(obs, { processo: processo.trim(), vara });
   };
 
   return (
@@ -43,7 +63,7 @@ function ModalDespacho({ item, onConfirm, onMoverPendencia, onClose }) {
           border: "1px solid #94a3b8",
           padding: "25px",
           borderRadius: "14px",
-          width: "500px",
+          width: "520px",
           maxWidth: "92vw",
           boxShadow: "0 20px 25px -5px rgba(0,0,0,0.2)",
         }}
@@ -61,7 +81,7 @@ function ModalDespacho({ item, onConfirm, onMoverPendencia, onClose }) {
               Você está resolvendo a pendência do <strong>BOU {item.bou}</strong>.
               {!temDoc && (
                 <span style={{ display: "block", color: "#b45309", marginTop: "4px", fontWeight: "600" }}>
-                  Caso este caso não dependa de ofício, descreva o motivo/solução no campo de observação abaixo.
+                  Caso este caso não dependa de ofício, descreva a solução e complete o Processo/Juizado abaixo.
                 </span>
               )}
             </>
@@ -80,6 +100,68 @@ function ModalDespacho({ item, onConfirm, onMoverPendencia, onClose }) {
           )}
         </p>
 
+        {(isPendencia || isProcessoErro || isVaraErro) && (
+          <div
+            style={{
+              background: "#fffbeb",
+              border: "1px solid #fde68a",
+              padding: "14px",
+              borderRadius: "8px",
+              marginBottom: "16px",
+            }}
+          >
+            <div style={{ fontWeight: "700", fontSize: "12px", color: "#b45309", marginBottom: "10px" }}>
+              ✏️ RETIFICAÇÃO DOS DADOS DO PROCESSO E JUIZADO
+            </div>
+
+            <div style={{ marginBottom: "10px" }}>
+              <label style={{ display: "block", fontSize: "11px", fontWeight: "700", color: "#78350f", marginBottom: "4px" }}>
+                NÚMERO DO PROCESSO REAL (PROJUDI):
+              </label>
+              <input
+                type="text"
+                style={{
+                  width: "100%",
+                  padding: "8px 10px",
+                  borderRadius: "6px",
+                  border: "1px solid #cbd5e1",
+                  fontSize: "13px",
+                  background: "white",
+                  fontWeight: "600",
+                }}
+                placeholder="Informe o nº real do PROJUDI (ex: 0012345-67.2026.8.16.0021)"
+                value={processo}
+                onChange={(e) => setProcesso(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: "block", fontSize: "11px", fontWeight: "700", color: "#78350f", marginBottom: "4px" }}>
+                JUIZADO DE DESTINO (VARA):
+              </label>
+              <select
+                style={{
+                  width: "100%",
+                  padding: "8px 10px",
+                  borderRadius: "6px",
+                  border: "1px solid #cbd5e1",
+                  fontSize: "13px",
+                  background: "white",
+                  fontWeight: "600",
+                }}
+                value={vara}
+                onChange={(e) => setVara(e.target.value)}
+              >
+                {JUIZADOS.filter((j) => !j.includes("ERRO MATERIAL")).map((j) => (
+                  <option key={j} value={j}>
+                    {j}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
+
         <div style={{ marginBottom: "16px" }}>
           <label
             style={{
@@ -97,7 +179,7 @@ function ModalDespacho({ item, onConfirm, onMoverPendencia, onClose }) {
           <textarea
             style={{
               width: "100%",
-              height: "85px",
+              height: "75px",
               padding: "10px",
               borderRadius: "6px",
               border: isPendencia && !temDoc ? "1px solid #f59e0b" : "1px solid #cbd5e1",
@@ -106,7 +188,7 @@ function ModalDespacho({ item, onConfirm, onMoverPendencia, onClose }) {
             }}
             placeholder={
               isPendencia && !temDoc
-                ? "Descreva como a pendência foi averiguidade e resolvida para liberar o despacho..."
+                ? "Descreva como a pendência foi averiguada e resolvida para liberar o despacho..."
                 : "Detalhes de entrada ou descreva o erro constatado se for mover para a aba Pendências..."
             }
             value={obs}
