@@ -290,21 +290,18 @@ export function TriagemTable({
                         item.processo === "(ERRO - DATA DE AUDIENCIA)" ||
                         item.vara === "OUTROS JUIZADOS - ERRO MATERIAL" ||
                         !!item.is_pendencia;
-                      const temDocJustificativa = !!item.numero_oficio || !!item.arquivo_pdf_url;
-                      const bloqueado = isPendencia && !temDocJustificativa;
 
                       return (
                         <button
                           className="btn-green"
                           onClick={() => abrirModalDespacho(item)}
-                          disabled={bloqueado}
                           style={{
-                            background: bloqueado ? "#cbd5e1" : "#10b981",
-                            cursor: bloqueado ? "not-allowed" : "pointer",
+                            background: isPendencia ? "#d97706" : "#10b981",
+                            cursor: "pointer",
                           }}
                           title={
-                            bloqueado
-                              ? "Necessário gerar o ofício de justificativa ou anexar o documento primeiro"
+                            isPendencia
+                              ? "Resolver pendência e triar este registro"
                               : "Triar este registro"
                           }
                         >

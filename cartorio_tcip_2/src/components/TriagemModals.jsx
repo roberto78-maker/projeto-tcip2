@@ -5,6 +5,21 @@ import { verificarPossuiApreensao } from "../hooks/useTriagem.js";
 function ModalDespacho({ item, onConfirm, onMoverPendencia, onClose }) {
   const [obs, setObs] = useState("");
   const temApreensao = verificarPossuiApreensao(item);
+  const isPendencia =
+    item.processo === "(ERRO - DATA DE AUDIENCIA)" ||
+    item.vara === "OUTROS JUIZADOS - ERRO MATERIAL" ||
+    !!item.is_pendencia;
+  const temDoc = !!item.numero_oficio || !!item.arquivo_pdf_url;
+
+  const handleConfirmar = () => {
+    if (isPendencia && !temDoc && (!obs || !obs.trim())) {
+      alert(
+        "⚠️ Como este registro possui uma pendência e não tem ofício/PDF anexado, é OBRIGATÓRIO informar uma observação explicando como o problema foi resolvido antes de confirmar."
+      );
+      return;
+    }
+    onConfirm(obs);
+  };
 
   return (
     <div
@@ -32,11 +47,24 @@ function ModalDespacho({ item, onConfirm, onMoverPendencia, onClose }) {
           boxShadow: "0 20px 25px -5px rgba(0,0,0,0.2)",
         }}
       >
-        <h3 style={{ marginBottom: "12px", color: temApreensao ? "#1e3a8a" : "#0f766e", fontSize: "17px" }}>
-          {temApreensao ? "📦 Confirmar Entrada no Depósito / Triagem" : "📁 Confirmar Triagem e Arquivamento"}
+        <h3 style={{ marginBottom: "12px", color: isPendencia ? "#d97706" : temApreensao ? "#1e3a8a" : "#0f766e", fontSize: "17px" }}>
+          {isPendencia
+            ? "⚠️ Resolver Pendência e Confirmar Triagem"
+            : temApreensao
+            ? "📦 Confirmar Entrada no Depósito / Triagem"
+            : "📁 Confirmar Triagem e Arquivamento"}
         </h3>
         <p style={{ fontSize: "13px", color: "#64748b", marginBottom: "16px", lineHeight: "1.4" }}>
-          {temApreensao ? (
+          {isPendencia ? (
+            <>
+              Você está resolvendo a pendência do <strong>BOU {item.bou}</strong>.
+              {!temDoc && (
+                <span style={{ display: "block", color: "#b45309", marginTop: "4px", fontWeight: "600" }}>
+                  Caso este caso não dependa de ofício, descreva o motivo/solução no campo de observação abaixo.
+                </span>
+              )}
+            </>
+          ) : temApreensao ? (
             <>
               Você está confirmando a entrada do material do <strong>BOU {item.bou}</strong> (
               <strong style={{ color: "#0284c7" }}>
@@ -58,22 +86,28 @@ function ModalDespacho({ item, onConfirm, onMoverPendencia, onClose }) {
               fontSize: "11px",
               fontWeight: "700",
               marginBottom: "6px",
-              color: "#475569",
+              color: isPendencia && !temDoc ? "#b45309" : "#475569",
             }}
           >
-            OBSERVAÇÕES DA TRIAGEM OU MOTIVO DO ERRO (SE PENDÊNCIA)
+            {isPendencia && !temDoc
+              ? "OBSERVAÇÃO DA RESOLUÇÃO DA PENDÊNCIA (OBRIGATÓRIO)"
+              : "OBSERVAÇÕES DA TRIAGEM OU MOTIVO DO ERRO (SE PENDÊNCIA)"}
           </label>
           <textarea
             style={{
               width: "100%",
-              height: "80px",
+              height: "85px",
               padding: "10px",
               borderRadius: "6px",
-              border: "1px solid #cbd5e1",
+              border: isPendencia && !temDoc ? "1px solid #f59e0b" : "1px solid #cbd5e1",
               fontSize: "13px",
               fontFamily: "inherit",
             }}
-            placeholder="Detalhes de entrada ou descreva o erro constatado se for mover para a aba Pendências..."
+            placeholder={
+              isPendencia && !temDoc
+                ? "Descreva como a pendência foi averiguidade e resolvida para liberar o despacho..."
+                : "Detalhes de entrada ou descreva o erro constatado se for mover para a aba Pendências..."
+            }
             value={obs}
             onChange={(event) => setObs(event.target.value)}
           />
@@ -87,32 +121,38 @@ function ModalDespacho({ item, onConfirm, onMoverPendencia, onClose }) {
               padding: "12px",
               fontSize: "13px",
               fontWeight: "700",
-              background: temApreensao ? "#10b981" : "#0d9488",
+              background: isPendencia ? "#d97706" : temApreensao ? "#10b981" : "#0d9488",
               borderRadius: "8px",
             }}
-            onClick={() => onConfirm(obs)}
+            onClick={handleConfirmar}
           >
-            {temApreensao ? "📦 CONFIRMAR DESPACHO PARA O DEPÓSITO" : "📁 CONFIRMAR ARQUIVAMENTO"}
+            {isPendencia
+              ? "✅ RESOLVER PENDÊNCIA E CONFIRMAR DESPACHO"
+              : temApreensao
+              ? "📦 CONFIRMAR DESPACHO PARA O DEPÓSITO"
+              : "📁 CONFIRMAR ARQUIVAMENTO"}
           </button>
 
-          <button
-            className="btn-warning"
-            style={{
-              width: "100%",
-              padding: "11px",
-              fontSize: "12px",
-              fontWeight: "700",
-              background: "#d97706",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-            }}
-            onClick={() => onMoverPendencia(obs)}
-            title="Mover registro para a aba Pendências para averiguação do erro"
-          >
-            ⚠️ CONSTATADO ERRO - MOVER PARA PENDÊNCIAS
-          </button>
+          {!isPendencia && (
+            <button
+              className="btn-warning"
+              style={{
+                width: "100%",
+                padding: "11px",
+                fontSize: "12px",
+                fontWeight: "700",
+                background: "#d97706",
+                color: "white",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+              }}
+              onClick={() => onMoverPendencia(obs)}
+              title="Mover registro para a aba Pendências para averiguação do erro"
+            >
+              ⚠️ CONSTATADO ERRO - MOVER PARA PENDÊNCIAS
+            </button>
+          )}
 
           <button
             className="btn-blue"
