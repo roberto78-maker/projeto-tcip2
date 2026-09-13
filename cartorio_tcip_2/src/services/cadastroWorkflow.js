@@ -129,7 +129,6 @@ export function validarCadastro(form) {
 
 export function montarPayloadApreensao(form, material) {
   const peso = parseFloat(String(material.peso).replace(",", "."));
-  const isAutoArquivavel = material.tipo === "NENHUM" || (material.tipo !== "DROGA" && (!material.substancia || form.fielDepositario));
 
   return {
     processo: form.processo,
@@ -149,12 +148,7 @@ export function montarPayloadApreensao(form, material) {
     unidade: material.unidadePeso,
     data_fato: form.dataFato || null,
     tem_apreensao: material.tipo !== "NENHUM",
-    status:
-      isAutoArquivavel
-        ? "arquivado"
-        : (form.processo === "(ERRO - DATA DE AUDIENCIA)" || form.vara === "OUTROS JUIZADOS - ERRO MATERIAL")
-          ? "conferencia"
-          : "conferencia",
+    status: "conferencia",
     lacre: material.lacre || "",
     vara: form.vara || "",
     policial: `${form.patente} ${form.policial}`,
