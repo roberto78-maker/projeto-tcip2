@@ -70,6 +70,9 @@ class Apreensao(models.Model):
     # Identificação se houve ou não apreensão física
     tem_apreensao = models.BooleanField(default=True)
 
+    # Identificação se o registro foi marcado como pendência na triagem ou cadastro
+    is_pendencia = models.BooleanField(default=False, db_index=True)
+
     # Novos campos para o fluxo de incineração
     observacao_cofre = models.TextField(blank=True, null=True)
     # ─── PDF Storage ─────────────────────────────────────────────────────────
