@@ -288,7 +288,9 @@ export function buildRelatorioParams(filtros = {}) {
     "bou",
     "processo",
     "reu",
-    "crime"
+    "crime",
+    "lote_inicio",
+    "lote_fim"
   ];
   for (const key of keys) {
     if (filtros[key]) {
