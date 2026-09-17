@@ -22,7 +22,9 @@ export default function AuditoriaView() {
     bou: "",
     processo: "",
     reu: "",
-    crime: ""
+    crime: "",
+    lote_inicio: "",
+    lote_fim: ""
   });
 
   const buscarRelatorio = async () => {
@@ -83,11 +85,28 @@ export default function AuditoriaView() {
     // Período e filtros usados
     const dtInicio = filtros.data_inicio ? filtros.data_inicio.split("-").reverse().join("/") : "Início";
     const dtFim = filtros.data_fim ? filtros.data_fim.split("-").reverse().join("/") : new Date().toLocaleDateString("pt-BR");
-    doc.setFontSize(11); doc.setFont("helvetica", "bold");
+    doc.setFontSize(10); doc.setFont("helvetica", "bold");
     doc.text("PERÍODO: ", marginX, currY);
     doc.setFont("helvetica", "normal");
-    doc.text(`${dtInicio} à ${dtFim}`, marginX + 22, currY);
-    currY += 10;
+    doc.text(`${dtInicio} à ${dtFim}`, marginX + 20, currY);
+
+    if (filtros.lote_inicio || filtros.lote_fim) {
+      const loteTxt = filtros.lote_inicio && filtros.lote_fim
+        ? `Lote ${String(filtros.lote_inicio).padStart(2, "0")} à Lote ${String(filtros.lote_fim).padStart(2, "0")}`
+        : filtros.lote_inicio ? `A partir do Lote ${String(filtros.lote_inicio).padStart(2, "0")}` : `Até o Lote ${String(filtros.lote_fim).padStart(2, "0")}`;
+      doc.setFont("helvetica", "bold");
+      doc.text("LOTES: ", marginX + 85, currY);
+      doc.setFont("helvetica", "normal");
+      doc.text(loteTxt, marginX + 102, currY);
+    }
+    if (filtros.vara) {
+      currY += 5;
+      doc.setFont("helvetica", "bold");
+      doc.text("JUIZADO: ", marginX, currY);
+      doc.setFont("helvetica", "normal");
+      doc.text(filtros.vara, marginX + 20, currY);
+    }
+    currY += 8;
 
     // ---- Detecta o modo do relatório ----
     const temDrogas = data.detalhado.some(i => i.natureza === "DROGAS");
@@ -263,7 +282,7 @@ export default function AuditoriaView() {
   const handleLimparFiltros = () => {
     setFiltros({
       data_inicio: "", data_fim: "", vara: "", substancia: "", natureza: "",
-      status: "", bou: "", processo: "", reu: "", crime: ""
+      status: "", bou: "", processo: "", reu: "", crime: "", lote_inicio: "", lote_fim: ""
     });
   };
 
@@ -406,6 +425,16 @@ export default function AuditoriaView() {
           <div className="auditoria-filtro-coluna">
             <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>E (Data Fim):</label>
             <input type="date" name="data_fim" value={filtros.data_fim} onChange={handleFiltroChange} className="input-tcip" />
+          </div>
+
+          <div className="auditoria-filtro-coluna">
+            <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>🔥 Do Lote:</label>
+            <input type="number" name="lote_inicio" placeholder="Ex: 9" min="1" value={filtros.lote_inicio} onChange={handleFiltroChange} className="input-tcip" />
+          </div>
+
+          <div className="auditoria-filtro-coluna">
+            <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>🔥 Ao Lote:</label>
+            <input type="number" name="lote_fim" placeholder="Ex: 15" min="1" value={filtros.lote_fim} onChange={handleFiltroChange} className="input-tcip" />
           </div>
 
         </div>
