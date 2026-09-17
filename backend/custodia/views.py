@@ -762,6 +762,8 @@ def _aplicar_filtros_relatorio(qs, params):
     processo = params.get("processo")
     reu = params.get("reu")
     crime = params.get("crime")
+    lote_inicio = params.get("lote_inicio")
+    lote_fim = params.get("lote_fim")
 
     if data_inicio:
         qs = qs.filter(data_fato__date__gte=data_inicio)
@@ -796,6 +798,16 @@ def _aplicar_filtros_relatorio(qs, params):
         qs = qs.filter(reu__icontains=reu)
     if crime:
         qs = qs.filter(descricao__icontains=crime)
+    if lote_inicio:
+        try:
+            qs = qs.filter(lote_incineracao__numero__gte=int(lote_inicio))
+        except (ValueError, TypeError):
+            pass
+    if lote_fim:
+        try:
+            qs = qs.filter(lote_incineracao__numero__lte=int(lote_fim))
+        except (ValueError, TypeError):
+            pass
     return qs
 
 
