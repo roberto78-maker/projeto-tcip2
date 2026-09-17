@@ -90,24 +90,31 @@ export default function AuditoriaView() {
     currY += 10;
 
     // ---- Detecta o modo do relatório ----
-    const isDrogas = filtros.natureza === "DROGAS" || (!filtros.natureza && filtros.substancia && filtros.substancia !== "__NENHUMA__");
+    const temDrogas = data.detalhado.some(i => i.natureza === "DROGAS");
+    const isDrogas = filtros.natureza === "DROGAS" || (!filtros.natureza && filtros.substancia && filtros.substancia !== "__NENHUMA__") || (!filtros.natureza && temDrogas && !data.detalhado.some(i => ["SOM", "OUTROS", "AMEACA"].includes(i.natureza)));
     const isObjetos = ["SOM", "OUTROS", "AMEACA"].includes(filtros.natureza) || filtros.substancia === "__NENHUMA__";
 
     // ---- Coluna do PDF muda por tipo ----
-    let tableHead, tableBody;
+    let tableHead, tableBody, tableColStyles;
 
     if (isDrogas) {
-      tableHead = [["BOU", "PROCESSO", "RÉU / AUTOR", "CRIME / SUBSTÂNCIA", "PESO / VOLUME", "STATUS"]];
+      tableHead = [["BOU", "PROCESSO", "RÉU / AUTOR", "SUBSTÂNCIA", "PESO / VOLUME", "STATUS"]];
       tableBody = data.detalhado.map(item => [
         item.bou || "S/N",
         item.processo || "S/N",
         (item.reu || "-").toUpperCase(),
-        item.descricao && item.descricao !== "TERMO GERAL"
-          ? `${(item.substancia || "-").toUpperCase()}\n(${item.descricao})`
-          : (item.substancia || "-").toUpperCase(),
+        (item.substancia || "-").toUpperCase(),
         formatarPesoDisplay(item.peso, item.unidade),
         item.status_label || item.status
       ]);
+      tableColStyles = {
+        0: { cellWidth: 26, halign: "center" },
+        1: { cellWidth: 32, halign: "center" },
+        2: { cellWidth: 52, halign: "left" },
+        3: { cellWidth: 24, halign: "center" },
+        4: { cellWidth: 22, halign: "center" },
+        5: { cellWidth: 24, halign: "center" }
+      };
     } else {
       // Objetos: sem coluna de peso
       tableHead = [["BOU", "PROCESSO", "RÉU / AUTOR", "CRIME / OBJETO", "QUANTIDADE", "STATUS"]];
@@ -121,6 +128,14 @@ export default function AuditoriaView() {
         item.natureza === "AMEACA" || !item.peso ? "—" : `${item.peso} ${item.unidade || "Unid"}.`,
         item.status_label || item.status
       ]);
+      tableColStyles = {
+        0: { cellWidth: 25, halign: "center" },
+        1: { cellWidth: 31, halign: "center" },
+        2: { cellWidth: 48, halign: "left" },
+        3: { cellWidth: 34, halign: "center" },
+        4: { cellWidth: 20, halign: "center" },
+        5: { cellWidth: 22, halign: "center" }
+      };
     }
 
     autoTable(doc, {
@@ -129,8 +144,8 @@ export default function AuditoriaView() {
       body: tableBody,
       theme: "grid",
       headStyles: { fillColor: [198, 40, 40], textColor: [255, 255, 255], fontStyle: "bold", halign: "center" },
-      styles: { fontSize: 9, cellPadding: 3, lineColor: [0, 0, 0], lineWidth: 0.1, valign: "middle" },
-      columnStyles: { 0: { halign: "center" }, 1: { halign: "center" }, 2: { halign: "left" }, 3: { halign: "center" }, 4: { halign: "center" }, 5: { halign: "center" } },
+      styles: { fontSize: 8.5, cellPadding: 2.5, lineColor: [0, 0, 0], lineWidth: 0.1, valign: "middle" },
+      columnStyles: tableColStyles,
       margin: { left: marginX, right: marginX }
     });
 
