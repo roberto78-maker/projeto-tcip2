@@ -22,6 +22,7 @@ from custodia.models import Apreensao, Historico, LoteIncineracao  # noqa: E402
 
 PDF_DIR = BASE_DIR.parent / "laudos_incineracao"
 
+
 def main():
     print("=" * 70)
     print("SUBSTITUIÇÃO DE PDFs DOS LOTES INCINERADOS (01 a 09)")
@@ -45,7 +46,9 @@ def main():
         try:
             lote = LoteIncineracao.objects.get(numero=num)
         except LoteIncineracao.DoesNotExist:
-            lote = LoteIncineracao.objects.filter(protocolo__icontains=f"{num:06d}").first()
+            lote = LoteIncineracao.objects.filter(
+                protocolo__icontains=f"{num:06d}"
+            ).first()
             if not lote:
                 print(f"[ERRO] Lote {num:02d} não encontrado.")
                 continue
@@ -58,7 +61,9 @@ def main():
             continue
 
         public_id = f"lote_{lote.protocolo.replace('.', '_').replace('/', '_')}"
-        print(f"[UPLOAD] Enviando {pdf_file.name} para o Cloudinary (Public ID: {public_id})...")
+        print(
+            f"[UPLOAD] Enviando {pdf_file.name} para o Cloudinary (Public ID: {public_id})..."
+        )
 
         with open(pdf_file, "rb") as f:
             upload_result = cloudinary.uploader.upload(
@@ -86,12 +91,15 @@ def main():
                 acao=f"Substituição do PDF assinado oficial do Lote {lote.protocolo}",
             )
 
-        print(f"[SUCESSO] Lote {num:02d} ({lote.protocolo}) atualizado com {total_itens} apreensões!")
+        print(
+            f"[SUCESSO] Lote {num:02d} ({lote.protocolo}) atualizado com {total_itens} apreensões!"
+        )
         sucessos += 1
 
     print("=" * 70)
     print(f"FINALIZADO COM SUCESSO! {sucessos} lotes atualizados.")
     print("=" * 70)
+
 
 if __name__ == "__main__":
     main()
