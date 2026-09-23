@@ -48,6 +48,32 @@ export default function AuditoriaView() {
     // eslint-disable-next-line
   }, []);
 
+  const handleSalvarObservacao = async (texto, modoEdicaoCompleta = false) => {
+    if (!obsVisivel) return;
+
+    let textoFinal = texto;
+    if (!modoEdicaoCompleta && texto && texto.trim()) {
+      const dt = new Date().toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+      const operador = obterNomeOperadorLogado();
+      const local = obterLocalProcesso(obsVisivel);
+      const obsAnterior = obsVisivel.observacao_cofre ? obsVisivel.observacao_cofre.trim() : "";
+      const carimbo = `[ 📝 OBSERVAÇÃO - ${dt} | LOCAL: ${local} | OPERADOR: ${operador} ]\n${texto.trim()}`;
+      textoFinal = obsAnterior ? `${obsAnterior}\n\n${carimbo}` : carimbo;
+    }
+
+    try {
+      await updateApreensao(obsVisivel.id, {
+        ...obsVisivel,
+        observacao_cofre: textoFinal,
+      });
+      setObsVisivel(null);
+      buscarRelatorio();
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao salvar observação.");
+    }
+  };
+
   const formatarPesoDisplay = (valor, unidade) => {
     if (unidade === "Unid") return `${valor} Unid.`;
     const num = parseFloat(String(valor).replace(",", ".")) || 0;
