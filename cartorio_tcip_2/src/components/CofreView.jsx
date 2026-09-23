@@ -1,6 +1,8 @@
 import React, { useState, useRef, useMemo } from "react";
 import { updateApreensao, destinarIncineracao, removerPdf } from "../services/api.js";
 import { usePagedList } from "../hooks/usePagedList.js";
+import { ModalObservacao } from "./TriagemModals.jsx";
+import { obterLocalProcesso, obterNomeOperadorLogado } from "../hooks/useTriagem.js";
 
 const formatarPesoDisplay = (valor, unidade) => {
   if (unidade === "Unid") return `${valor} Unid.`;
@@ -141,6 +143,32 @@ export default function CofreView() {
     }
   };
 
+  const handleSalvarObservacao = async (texto, modoEdicaoCompleta = false) => {
+    if (!obsVisivel) return;
+
+    let textoFinal = texto;
+    if (!modoEdicaoCompleta && texto && texto.trim()) {
+      const dt = new Date().toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+      const operador = obterNomeOperadorLogado();
+      const local = obterLocalProcesso(obsVisivel);
+      const obsAnterior = obsVisivel.observacao_cofre ? obsVisivel.observacao_cofre.trim() : "";
+      const carimbo = `[ 📝 OBSERVAÇÃO - ${dt} | LOCAL: ${local} | OPERADOR: ${operador} ]\n${texto.trim()}`;
+      textoFinal = obsAnterior ? `${obsAnterior}\n\n${carimbo}` : carimbo;
+    }
+
+    try {
+      await updateApreensao(obsVisivel.id, {
+        ...obsVisivel,
+        observacao_cofre: textoFinal,
+      });
+      setObsVisivel(null);
+      recarregar();
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao salvar observação.");
+    }
+  };
+
   // ─── Derived values ───────────────────────────────────────────────────────
   const corAba  = abaAtiva === "DROGAS" ? "#10b981" : "#3b82f6";
   const shown   = itens.length;
@@ -151,17 +179,13 @@ export default function CofreView() {
   return (
     <div className="card" style={{ padding: "0", overflow: "hidden" }}>
 
-      {/* Observation modal */}
+      {/* Standardized Observation modal with automatic stamp and zero shaking */}
       {obsVisivel && (
-        <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 2000, backdropFilter: "blur(4px)" }}>
-          <div style={{ background: "white", padding: "30px", borderRadius: "16px", width: "500px" }}>
-            <h3 style={{ marginBottom: "15px" }}>📌 Observação de Entrada</h3>
-            <div style={{ background: "#f8fafc", padding: "15px", borderRadius: "8px", marginBottom: "20px", whiteSpace: "pre-wrap" }}>
-              {obsVisivel.observacao_cofre || "Nenhuma observação."}
-            </div>
-            <button className="btn-blue" style={{ width: "100%" }} onClick={() => setObsVisivel(null)}>FECHAR</button>
-          </div>
-        </div>
+        <ModalObservacao
+          item={obsVisivel}
+          onSave={handleSalvarObservacao}
+          onClose={() => setObsVisivel(null)}
+        />
       )}
 
       {/* Header */}
@@ -290,9 +314,43 @@ export default function CofreView() {
                         {formatarPesoDisplay(item.peso, item.unidade)}
                       </td>
                       <td style={{ textAlign: "center" }}>
-                        {hasObs
-                          ? <button onClick={() => setObsVisivel(item)} style={{ background: "#f1f5f9", border: "1px solid #cbd5e1", borderRadius: "15px", cursor: "pointer", fontSize: "10px", padding: "4px 10px" }}>VER</button>
-                          : "—"}
+                        {hasObs ? (
+                          <button
+                            onClick={() => setObsVisivel(item)}
+                            style={{
+                              background: "#e0f2fe",
+                              border: "1px solid #bae6fd",
+                              color: "#0369a1",
+                              fontWeight: "700",
+                              borderRadius: "15px",
+                              cursor: "pointer",
+                              fontSize: "11px",
+                              padding: "4px 10px",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "4px"
+                            }}
+                            title="Ver / Adicionar anotações de acompanhamento"
+                          >
+                            📝 VER
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => setObsVisivel(item)}
+                            style={{
+                              background: "transparent",
+                              border: "1px dashed #cbd5e1",
+                              color: "#94a3b8",
+                              borderRadius: "15px",
+                              cursor: "pointer",
+                              fontSize: "10px",
+                              padding: "3px 8px"
+                            }}
+                            title="Adicionar anotação de acompanhamento"
+                          >
+                            + OBS
+                          </button>
+                        )}
                       </td>
                       <td>
                         {hasPDF ? (
