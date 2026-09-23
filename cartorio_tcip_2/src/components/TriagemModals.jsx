@@ -416,7 +416,7 @@ export function TriagemModals({
   return content;
 }
 
-function ModalObservacao({ item, onSave, onClose }) {
+export function ModalObservacao({ item, onSave, onClose }) {
   const [novaObs, setNovaObs] = useState("");
   const [textoCompleto, setTextoCompleto] = useState(item.observacao_cofre || "");
   const [modoEdicaoCompleta, setModoEdicaoCompleta] = useState(false);
