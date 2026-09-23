@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { getRelatorioIncineracao } from "../services/api";
+import { getRelatorioIncineracao, updateApreensao } from "../services/api";
 import { getUsuario } from "../services/auth";
 import logoBpm from "../assets/brasao.png";
 import { JUIZADOS, SUBSTANCIAS, CRIMES_GERAIS } from "../constants/options.js";
+import { ModalObservacao } from "./TriagemModals.jsx";
+import { obterLocalProcesso, obterNomeOperadorLogado } from "../hooks/useTriagem.js";
 
 export default function AuditoriaView() {
   const [data, setData] = useState(null);
