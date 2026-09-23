@@ -530,17 +530,13 @@ export default function AuditoriaView() {
         ) : (
           <div className="tcip-table-container">
 
-            {/* Modal de Observação */}
+            {/* Modal de Observação Padronizado */}
             {obsVisivel && (
-              <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 2000, backdropFilter: "blur(4px)" }}>
-                <div style={{ background: "white", padding: "30px", borderRadius: "16px", width: "500px", maxWidth: "90vw" }}>
-                  <h3 style={{ marginBottom: "15px" }}>📌 Observação de Entrada</h3>
-                  <div style={{ background: "#f8fafc", padding: "15px", borderRadius: "8px", marginBottom: "20px", whiteSpace: "pre-wrap", fontSize: "14px", color: "#334155" }}>
-                    {obsVisivel.observacao_cofre || "Nenhuma observação."}
-                  </div>
-                  <button className="btn-blue" style={{ width: "100%" }} onClick={() => setObsVisivel(null)}>FECHAR</button>
-                </div>
-              </div>
+              <ModalObservacao
+                item={obsVisivel}
+                onSave={handleSalvarObservacao}
+                onClose={() => setObsVisivel(null)}
+              />
             )}
 
             <table className="tcip-table">
