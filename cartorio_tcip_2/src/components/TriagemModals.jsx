@@ -443,7 +443,7 @@ export function ModalObservacao({ item, onSave, onClose }) {
     }
   };
 
-  return (
+  const modalNode = (
     <div
       style={{
         position: "fixed",
@@ -655,5 +655,11 @@ export function ModalObservacao({ item, onSave, onClose }) {
       </div>
     </div>
   );
+
+  if (typeof document !== "undefined") {
+    return createPortal(modalNode, document.body);
+  }
+
+  return modalNode;
 }
 
