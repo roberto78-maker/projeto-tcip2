@@ -5,6 +5,7 @@ export const NATUREZAS = [
 
 export const CRIMES_GERAIS = [
   "Afastar-se do Local do Acidente: Artigo 305 do CTB",
+  "Afirmação Falsa ou Enganosa Sobre o Produto: Artigo 66 do CDC",
   "Ameaça: Artigo 147 do CP",
   "Calúnia: Artigo 138 do CP",
   "Conduzir Veículo sem Habilitação: Artigo 309 do CTB",
