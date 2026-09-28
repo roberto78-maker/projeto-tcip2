@@ -7,6 +7,7 @@ import logoBpm from "../assets/brasao.png";
 import { JUIZADOS, SUBSTANCIAS, CRIMES_GERAIS } from "../constants/options.js";
 import { ModalObservacao } from "./TriagemModals.jsx";
 import { obterLocalProcesso, obterNomeOperadorLogado } from "../hooks/useTriagem.js";
+import { formatarProcesso, formatarBOU } from "../services/cadastroWorkflow.js";
 
 export default function AuditoriaView() {
   const [data, setData] = useState(null);
@@ -304,7 +305,14 @@ export default function AuditoriaView() {
   };
 
   const handleFiltroChange = (e) => {
-    setFiltros({ ...filtros, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === "processo") {
+      setFiltros((prev) => ({ ...prev, processo: formatarProcesso(value) }));
+    } else if (name === "bou") {
+      setFiltros((prev) => ({ ...prev, bou: formatarBOU(value) }));
+    } else {
+      setFiltros((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleLimparFiltros = () => {
