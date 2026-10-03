@@ -64,6 +64,17 @@ export function formatarBOU(valor) {
   }
 }
 
+export function formatarBuscaOuBOU(valor) {
+  if (!valor) return "";
+  if (/[a-zA-ZáéíóúÁÉÍÓÚãõÃÕâêîôûÂÊÎÔÛçÇ]/.test(valor)) {
+    return valor;
+  }
+  if (/^[\d/]+$/.test(valor)) {
+    return formatarBOU(valor);
+  }
+  return valor;
+}
+
 export function formatarProcesso(valor) {
   const d = String(valor).replace(/\D/g, "").slice(0, 13);
   if (d.length <= 7) return d;

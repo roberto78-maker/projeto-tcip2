@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { excluirApreensao, updateApreensao, removerPdf, invalidateApreensaoCache, getApreensoesPaginado } from "../services/api.js";
 import { getUsuario } from "../services/auth.js";
+import { formatarBuscaOuBOU } from "../services/cadastroWorkflow.js";
 import { usePagedList } from "./usePagedList.js";
 
 function buildFilters(abaAtiva, busca) {
@@ -110,14 +111,15 @@ export function useTriagem() {
   }, []);
 
   const handleBuscaChange = (value) => {
-    setValorBusca(value);
+    const formatted = formatarBuscaOuBOU(value);
+    setValorBusca(formatted);
 
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
 
     debounceRef.current = setTimeout(() => {
-      setBusca(value);
+      setBusca(formatted);
     }, 400);
   };
 
