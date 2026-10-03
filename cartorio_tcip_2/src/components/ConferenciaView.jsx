@@ -74,7 +74,7 @@ export default function ConferenciaView() {
 
           <div style={{ display: "flex", gap: "10px" }}>
             <input
-              placeholder="🔍 Buscar por Nº BOU ou Noticiado..."
+              placeholder="🔍 Buscar por BOU (2026/0000000) ou Noticiado..."
               value={busca}
               onChange={(event) => handleBuscaChange(event.target.value)}
               style={{
