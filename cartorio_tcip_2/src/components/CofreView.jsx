@@ -1,6 +1,7 @@
 import React, { useState, useRef, useMemo } from "react";
 import { updateApreensao, destinarIncineracao, removerPdf } from "../services/api.js";
 import { usePagedList } from "../hooks/usePagedList.js";
+import { formatarBuscaOuBOU } from "../services/cadastroWorkflow.js";
 import { ModalObservacao } from "./TriagemModals.jsx";
 import { obterLocalProcesso, obterNomeOperadorLogado } from "../hooks/useTriagem.js";
 
@@ -78,11 +79,12 @@ export default function CofreView() {
 
   // ─── Search: debounce 400 ms before updating state ────────────────────────
   const handleBuscaChange = (valor) => {
-    setBusca(valor);
+    const formatted = formatarBuscaOuBOU(valor);
+    setBusca(formatted);
     setCurrentPage(1);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      setBusca(valor);
+      setBusca(formatted);
       setCurrentPage(1);
     }, 400);
   };
@@ -206,7 +208,7 @@ export default function CofreView() {
           {/* Search — debounced, triggers backend ?search= filter */}
           <div style={{ display: "flex", gap: "10px" }}>
             <input
-              placeholder="🔍 Buscar BOU, Noticiado ou Substância..."
+              placeholder="🔍 Buscar BOU (2026/0000000), Noticiado ou Substância..."
               value={busca}
               onChange={(e) => handleBuscaChange(e.target.value)}
               style={{ padding: "10px", border: "1px solid #cbd5e1", borderRadius: "8px", width: "290px" }}
