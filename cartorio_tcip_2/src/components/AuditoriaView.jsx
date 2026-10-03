@@ -445,7 +445,7 @@ export default function AuditoriaView() {
 
           <div className="auditoria-filtro-coluna">
             <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", marginBottom: "5px", color: "#475569" }}>Nº Boletim (BOU):</label>
-            <input type="text" name="bou" placeholder="Buscar por BOU..." value={filtros.bou} onChange={handleFiltroChange} className="input-tcip" />
+            <input type="text" name="bou" placeholder="Buscar por BOU (2026/0000000)..." value={filtros.bou} onChange={handleFiltroChange} className="input-tcip" />
           </div>
 
           <div className="auditoria-filtro-coluna">
